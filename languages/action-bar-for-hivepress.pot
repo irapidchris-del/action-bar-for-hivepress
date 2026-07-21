@@ -1,0 +1,353 @@
+# Copyright (C) 2026 ChrisB
+# This file is distributed under the GPLv2 or later.
+msgid ""
+msgstr ""
+"Project-Id-Version: Action Bar for HivePress 1.0.0\n"
+"Report-Msgid-Bugs-To: https://community.hivepress.io/u/chrisb\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2026-07-20T22:14:48+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Domain: action-bar-for-hivepress\n"
+
+#: action-bar-for-hivepress.php:36
+msgid "Settings"
+msgstr ""
+
+#: action-bar-for-hivepress.php:48
+msgid "Action Bar for HivePress requires the HivePress plugin to be installed and activated."
+msgstr ""
+
+#: includes/components/class-action-bar.php:72
+#: includes/components/class-action-bar.php:92
+msgid "Home"
+msgstr ""
+
+#: includes/components/class-action-bar.php:78
+msgid "Browse"
+msgstr ""
+
+#: includes/components/class-action-bar.php:84
+#: includes/components/class-action-bar.php:105
+msgid "Account"
+msgstr ""
+
+#: includes/components/class-action-bar.php:98
+#: includes/components/class-action-bar.php:122
+msgid "Add listing"
+msgstr ""
+
+#: includes/components/class-action-bar.php:120
+msgid "Homepage"
+msgstr ""
+
+#: includes/components/class-action-bar.php:121
+msgid "Listings"
+msgstr ""
+
+#: includes/components/class-action-bar.php:123
+msgid "Vendors"
+msgstr ""
+
+#: includes/components/class-action-bar.php:124
+msgid "Account or login"
+msgstr ""
+
+#: includes/components/class-action-bar.php:125
+msgid "Messages"
+msgstr ""
+
+#: includes/components/class-action-bar.php:126
+msgid "Favourites"
+msgstr ""
+
+#: includes/components/class-action-bar.php:127
+#: includes/configs/settings.php:79
+msgid "Custom URL"
+msgstr ""
+
+#: includes/components/class-action-bar.php:132
+msgid "Placed orders"
+msgstr ""
+
+#: includes/components/class-action-bar.php:133
+msgid "Cart"
+msgstr ""
+
+#: includes/components/class-action-bar.php:221
+msgid "Requests"
+msgstr ""
+
+#: includes/components/class-action-bar.php:222
+msgid "Post a request"
+msgstr ""
+
+#: includes/components/class-action-bar.php:223
+msgid "Select plan"
+msgstr ""
+
+#: includes/components/class-action-bar.php:224
+msgid "Become a vendor"
+msgstr ""
+
+#: includes/components/class-action-bar.php:225
+msgid "My listings"
+msgstr ""
+
+#: includes/components/class-action-bar.php:226
+msgid "My requests"
+msgstr ""
+
+#: includes/components/class-action-bar.php:227
+msgid "Offers"
+msgstr ""
+
+#: includes/components/class-action-bar.php:228
+msgid "Bookings"
+msgstr ""
+
+#: includes/components/class-action-bar.php:229
+msgid "Searches"
+msgstr ""
+
+#: includes/components/class-action-bar.php:230
+msgid "Memberships"
+msgstr ""
+
+#: includes/components/class-action-bar.php:231
+msgid "Packages"
+msgstr ""
+
+#: includes/components/class-action-bar.php:232
+msgid "Dashboard"
+msgstr ""
+
+#: includes/components/class-action-bar.php:233
+msgid "Calendar"
+msgstr ""
+
+#: includes/components/class-action-bar.php:234
+msgid "Received orders"
+msgstr ""
+
+#: includes/components/class-action-bar.php:235
+msgid "Payouts"
+msgstr ""
+
+#: includes/components/class-action-bar.php:236
+msgid "Sign out"
+msgstr ""
+
+#: includes/components/class-action-bar.php:809
+msgid "Mobile navigation"
+msgstr ""
+
+#: includes/components/class-action-bar.php:836
+msgid "Menu item"
+msgstr ""
+
+#: includes/configs/settings.php:23
+msgid "Bar background"
+msgstr ""
+
+#: includes/configs/settings.php:24
+msgid "Bar border"
+msgstr ""
+
+#: includes/configs/settings.php:25
+msgid "Icon colour"
+msgstr ""
+
+#: includes/configs/settings.php:26
+msgid "Label colour"
+msgstr ""
+
+#: includes/configs/settings.php:27
+msgid "Active colour"
+msgstr ""
+
+#: includes/configs/settings.php:27
+msgid "Applied to the item that matches the current page."
+msgstr ""
+
+#: includes/configs/settings.php:28
+msgid "Prominent background"
+msgstr ""
+
+#: includes/configs/settings.php:29
+msgid "Prominent icon colour"
+msgstr ""
+
+#: includes/configs/settings.php:30
+msgid "Badge background"
+msgstr ""
+
+#: includes/configs/settings.php:31
+msgid "Badge text colour"
+msgstr ""
+
+#: includes/configs/settings.php:58
+msgid "Link"
+msgstr ""
+
+#: includes/configs/settings.php:65
+msgid "Icon"
+msgstr ""
+
+#: includes/configs/settings.php:72
+msgid "Label"
+msgstr ""
+
+#: includes/configs/settings.php:86
+msgid "Style"
+msgstr ""
+
+#: includes/configs/settings.php:90
+msgid "Default"
+msgstr ""
+
+#: includes/configs/settings.php:91
+msgid "Prominent"
+msgstr ""
+
+#: includes/configs/settings.php:103
+msgid "User Bar"
+msgstr ""
+
+#: includes/configs/settings.php:104
+msgid "Add up to 5 items shown to visitors and regular users. For each item, choose a page or link from the first dropdown, or select Custom URL and type a full address such as https://example.com/contact/ into the URL box. Then pick an icon and, if you like, add the label text shown on the button. The Prominent style lifts an item into a highlighted circle, ideal for one main action. Items without a link are not displayed."
+msgstr ""
+
+#: includes/configs/settings.php:109
+msgid "Vendor Bar"
+msgstr ""
+
+#: includes/configs/settings.php:110
+msgid "Add up to 5 items shown to users with a published vendor profile when the vendor bar is enabled. The fields work the same way as the User Bar items above."
+msgstr ""
+
+#: includes/configs/settings.php:116
+msgid "Items"
+msgstr ""
+
+#: includes/configs/settings.php:117
+msgid "Add item"
+msgstr ""
+
+#: includes/configs/settings.php:135
+msgid "Action Bar"
+msgstr ""
+
+#: includes/configs/settings.php:141
+msgid "Display"
+msgstr ""
+
+#: includes/configs/settings.php:142
+msgid "The action bar is a fixed bottom navigation bar that gives your website an app-like feel on smaller screens."
+msgstr ""
+
+#: includes/configs/settings.php:147
+msgid "Mobile devices"
+msgstr ""
+
+#: includes/configs/settings.php:148
+msgid "Show the action bar on mobile devices"
+msgstr ""
+
+#: includes/configs/settings.php:155
+msgid "Tablet devices"
+msgstr ""
+
+#: includes/configs/settings.php:156
+msgid "Show the action bar on tablet devices"
+msgstr ""
+
+#: includes/configs/settings.php:162
+msgid "Bar height"
+msgstr ""
+
+#: includes/configs/settings.php:163
+msgid "The height of the action bar in pixels, excluding the safe area."
+msgstr ""
+
+#: includes/configs/settings.php:172
+msgid "Label position"
+msgstr ""
+
+#: includes/configs/settings.php:173
+msgid "Choose where item labels appear relative to the icons."
+msgstr ""
+
+#: includes/configs/settings.php:177
+msgid "Below icons"
+msgstr ""
+
+#: includes/configs/settings.php:178
+msgid "Above icons"
+msgstr ""
+
+#: includes/configs/settings.php:186
+msgid "Unread badge"
+msgstr ""
+
+#: includes/configs/settings.php:187
+msgid "Show the unread message count"
+msgstr ""
+
+#: includes/configs/settings.php:188
+msgid "Displays the unread count from the Messages extension on Account and Messages items."
+msgstr ""
+
+#: includes/configs/settings.php:195
+msgid "Vendor bar"
+msgstr ""
+
+#: includes/configs/settings.php:196
+msgid "Show different items to vendors"
+msgstr ""
+
+#: includes/configs/settings.php:197
+msgid "If enabled, users with a published vendor profile see the Vendor Bar items instead of the User Bar items. Tick to reveal the Vendor Bar section below."
+msgstr ""
+
+#: includes/configs/settings.php:203
+msgid "Safe area"
+msgstr ""
+
+#: includes/configs/settings.php:204
+msgid "Extend the viewport for devices with a notch"
+msgstr ""
+
+#: includes/configs/settings.php:205
+msgid "Adds viewport-fit=cover to the viewport meta tag so the safe area padding takes effect on iOS. Leave this disabled if your theme already sets it."
+msgstr ""
+
+#: includes/configs/settings.php:213
+msgid "Visibility"
+msgstr ""
+
+#: includes/configs/settings.php:218
+msgid "Hide on pages"
+msgstr ""
+
+#: includes/configs/settings.php:219
+msgid "Select the pages where the action bar is hidden."
+msgstr ""
+
+#: includes/configs/settings.php:228
+msgid "Checkout pages"
+msgstr ""
+
+#: includes/configs/settings.php:229
+msgid "Hide the action bar on the WooCommerce cart and checkout pages"
+msgstr ""
+
+#: includes/configs/settings.php:238
+msgid "Colours"
+msgstr ""
+
+#: includes/configs/settings.php:239
+msgid "Customise the action bar colours. Clear a field and save to restore its default."
+msgstr ""
+
