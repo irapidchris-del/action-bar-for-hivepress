@@ -1,6 +1,7 @@
 <?php
 /**
  * Plugin Name: Action Bar for HivePress
+ * Plugin URI: https://github.com/irapidchris-del/action-bar-for-hivepress
  * Description: Adds a customisable, app-style bottom navigation bar to HivePress websites on mobile and tablet devices.
  * Version: 1.0.0
  * Author: ChrisB
@@ -9,8 +10,10 @@
  * Domain Path: /languages/
  * Requires at least: 6.0
  * Requires PHP: 7.4
+ * Requires Plugins: hivepress
  * License: GPLv2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
+ * Update URI: false
  *
  * @package ActionBar
  */

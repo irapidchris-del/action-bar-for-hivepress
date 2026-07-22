@@ -302,11 +302,15 @@ final class Action_Bar extends Component {
 
 		$pages = get_posts(
 			[
-				'post_type'   => 'page',
-				'post_status' => 'publish',
-				'numberposts' => -1,
-				'orderby'     => 'title',
-				'order'       => 'ASC',
+				'post_type'              => 'page',
+				'post_status'            => 'publish',
+				'numberposts'            => -1,
+				'orderby'                => 'title',
+				'order'                  => 'ASC',
+				'no_found_rows'          => true,
+				'update_post_meta_cache' => false,
+				'update_post_term_cache' => false,
+				'suppress_filters'       => false,
 			]
 		);
 
@@ -435,19 +439,25 @@ final class Action_Bar extends Component {
 		// Get item rows.
 		$rows = get_option( 'hp_action_bar_' . $bar . '_items', null );
 
-		if ( is_null( $rows ) ) {
-			$rows = $this->migrate_legacy_items( $bar );
+		// Fall back to the beta options without persisting them (the admin-side migration handles the rewrite).
+		if ( is_null( $rows ) && ! get_option( 'hp_action_bar_migrated' ) ) {
+			$rows = $this->get_legacy_items( $bar );
 		}
 
 		if ( is_null( $rows ) ) {
 			$rows = $this->get_item_defaults( $bar );
 		}
 
-		$rows = array_slice( array_filter( (array) $rows, 'is_array' ), 0, 5 );
+		$rows = array_filter( (array) $rows, 'is_array' );
 
 		$items = [];
 
 		foreach ( $rows as $row ) {
+
+			// Keep at most five valid items.
+			if ( count( $items ) >= 5 ) {
+				break;
+			}
 
 			// Get item link.
 			$link = hp\get_array_value( $row, 'link' );
@@ -522,7 +532,29 @@ final class Action_Bar extends Component {
 		 * @param string $bar Bar name.
 		 * @return array Item arguments.
 		 */
-		$this->items = (array) apply_filters( 'hivepress/v1/action_bar/items', $items, $bar );
+		$items = (array) apply_filters( 'hivepress/v1/action_bar/items', $items, $bar );
+
+		// Normalize the item structure so developer-added items never trigger warnings when rendered.
+		$this->items = [];
+
+		foreach ( $items as $item ) {
+			if ( ! is_array( $item ) ) {
+				continue;
+			}
+
+			$this->items[] = array_merge(
+				[
+					'link'        => '',
+					'url'         => '',
+					'icon'        => 'fas fa-circle',
+					'label'       => '',
+					'style'       => 'default',
+					'badge'       => false,
+					'badge_count' => 0,
+				],
+				$item
+			);
+		}
 
 		return $this->items;
 	}
@@ -533,6 +565,12 @@ final class Action_Bar extends Component {
 	 * @return void
 	 */
 	public function maybe_migrate_items() {
+
+		// Run the one-time upgrade routine only once.
+		if ( get_option( 'hp_action_bar_migrated' ) ) {
+			return;
+		}
+
 		foreach ( [ 'user', 'vendor' ] as $bar ) {
 			if ( is_null( get_option( 'hp_action_bar_' . $bar . '_items', null ) ) ) {
 				$this->migrate_legacy_items( $bar );
@@ -540,6 +578,8 @@ final class Action_Bar extends Component {
 
 			$this->normalize_items( $bar );
 		}
+
+		update_option( 'hp_action_bar_migrated', '1' );
 	}
 
 	/**
@@ -588,12 +628,12 @@ final class Action_Bar extends Component {
 	}
 
 	/**
-	 * Migrates item settings from the beta versions.
+	 * Reads the beta item options without modifying them.
 	 *
 	 * @param string $bar Bar name.
 	 * @return array<int, array<string, string>>|null
 	 */
-	protected function migrate_legacy_items( $bar ) {
+	protected function get_legacy_items( $bar ) {
 		$found = false;
 
 		$rows = [];
@@ -629,6 +669,22 @@ final class Action_Bar extends Component {
 		}
 
 		if ( ! $found ) {
+			return null;
+		}
+
+		return $rows;
+	}
+
+	/**
+	 * Migrates item settings from the beta versions.
+	 *
+	 * @param string $bar Bar name.
+	 * @return array<int, array<string, string>>|null
+	 */
+	protected function migrate_legacy_items( $bar ) {
+		$rows = $this->get_legacy_items( $bar );
+
+		if ( is_null( $rows ) ) {
 			return null;
 		}
 
@@ -805,8 +861,12 @@ final class Action_Bar extends Component {
 	 */
 	public function enqueue_backend_assets() {
 
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		if ( 'hp_settings' !== hp\get_array_value( $_GET, 'page' ) ) {
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended
+		$page = sanitize_key( wp_unslash( (string) hp\get_array_value( $_GET, 'page' ) ) );
+		$tab  = sanitize_key( wp_unslash( (string) hp\get_array_value( $_GET, 'tab' ) ) );
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
+
+		if ( 'hp_settings' !== $page || 'action_bar' !== $tab ) {
 			return;
 		}
 
@@ -892,7 +952,17 @@ final class Action_Bar extends Component {
 			}
 
 			if ( ! $aria_label ) {
-				$aria_label = hp\get_array_value( $this->get_link_options(), $item['link'], esc_html__( 'Menu item', 'action-bar-for-hivepress' ) );
+				$aria_label = hp\get_array_value( $this->get_link_options(), $item['link'], esc_attr__( 'Menu item', 'action-bar-for-hivepress' ) );
+			}
+
+			// Announce the unread count to assistive technology, since the anchor aria-label hides the badge text.
+			if ( $item['badge'] ) {
+				$aria_badge_count = absint( hp\get_array_value( $item, 'badge_count' ) );
+
+				if ( $aria_badge_count ) {
+					/* translators: 1: item name, 2: number of unread items. */
+					$aria_label = sprintf( _x( '%1$s, %2$s unread', 'action bar item', 'action-bar-for-hivepress' ), $aria_label, number_format_i18n( $aria_badge_count ) );
+				}
 			}
 
 			// Render item.
@@ -903,7 +973,9 @@ final class Action_Bar extends Component {
 			if ( $item['badge'] ) {
 				$badge_count = absint( hp\get_array_value( $item, 'badge_count' ) );
 
-				$output .= '<span class="hp-action-bar__badge"' . ( $badge_count ? '' : ' hidden' ) . '>' . esc_html( $badge_count > 99 ? '99+' : (string) $badge_count ) . '</span>';
+				$badge_label = $badge_count > 99 ? number_format_i18n( 99 ) . '+' : number_format_i18n( $badge_count );
+
+				$output .= '<span class="hp-action-bar__badge"' . ( $badge_count ? '' : ' hidden' ) . '>' . esc_html( $badge_label ) . '</span>';
 			}
 
 			$output .= '</span>';
