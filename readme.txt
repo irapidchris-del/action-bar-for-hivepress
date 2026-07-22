@@ -18,9 +18,9 @@ Features:
 
 * Up to five items per bar, managed with sortable repeater rows, each with a Font Awesome icon, an optional label, and a link.
 * The Vendor Bar settings stay hidden until the vendor bar is enabled, keeping the settings page tidy.
-* Link choices for the homepage, listings, listing submission, vendors, account or login, messages, favourites, or any custom URL.
+* Link choices for the homepage, listings, listing submission, vendors, account or login, messages, favourites, any HivePress account or extension page, any published WordPress page, the WooCommerce cart and orders, or any custom URL.
 * Optional prominent style per item, ideal for a raised central action such as Add listing.
-* A separate Vendor Bar shown to users with a published vendor profile, alongside the standard User Bar.
+* A separate Vendor Bar shown to users with a published vendor profile instead of the standard User Bar.
 * Full colour controls with sensible light grey defaults, including bar, icon, label, active, prominent, and badge colours.
 * A notification badge you can switch on per item, mirroring HivePress's own counter, including messages, bookings, and orders where those extensions are active.
 * Adjustable bar height between 44 and 120 pixels.
@@ -43,7 +43,7 @@ Developer filters: `hivepress/v1/action_bar/items`, `hivepress/v1/action_bar/vis
 
 = Which icons can I use? =
 
-The icon dropdown offers a curated set from the Font Awesome 5 Free solid library bundled with HivePress. You can also enter any Font Awesome classes in the custom icon field, for example `fas fa-rocket`. If your site loads a different Font Awesome version, use class names valid for that version.
+Each item has an icon dropdown listing the Font Awesome 5 Free solid library bundled with HivePress, so you can pick any solid icon by name. If you need an icon from another Font Awesome style or version (such as a brand or regular icon), set it with the `hivepress/v1/action_bar/items` filter, where you can supply full class names like `fab fa-whatsapp` or `far fa-heart`.
 
 = How does the notification badge work? =
 
@@ -65,3 +65,4 @@ Mobile is 767px and below, tablet is 768px to 1024px. Both can be changed with t
 
 = 1.0.0 =
 * Initial release.
+* Settings from the beta versions are migrated automatically to the new repeater-based item settings, and the beta per-item options are removed. Custom icon classes from the beta are no longer editable in the settings screen; set them with the `hivepress/v1/action_bar/items` filter instead.

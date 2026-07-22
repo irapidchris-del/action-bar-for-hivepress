@@ -7,15 +7,37 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-07-22T00:13:22+00:00\n"
+"POT-Creation-Date: 2026-07-22T21:46:01+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"X-Generator: action-bar-for-hivepress make-pot\n"
 "X-Domain: action-bar-for-hivepress\n"
 
-#: action-bar-for-hivepress.php:36
+#. Name of the plugin
+msgid "Action Bar for HivePress"
+msgstr ""
+
+#. Plugin URI of the plugin
+msgid "https://github.com/irapidchris-del/action-bar-for-hivepress"
+msgstr ""
+
+#. Description of the plugin
+msgid "Adds a customisable, app-style bottom navigation bar to HivePress websites on mobile and tablet devices."
+msgstr ""
+
+#. Author of the plugin
+msgid "ChrisB"
+msgstr ""
+
+#. Author URI of the plugin
+msgid "https://community.hivepress.io/u/chrisb"
+msgstr ""
+
+#: action-bar-for-hivepress.php:39
 msgid "Settings"
 msgstr ""
 
-#: action-bar-for-hivepress.php:48
+#: action-bar-for-hivepress.php:51
 msgid "Action Bar for HivePress requires the HivePress plugin to be installed and activated."
 msgstr ""
 
@@ -75,76 +97,81 @@ msgstr ""
 msgid "Cart"
 msgstr ""
 
-#: includes/components/class-action-bar.php:219
+#: includes/components/class-action-bar.php:246
 msgid "Requests"
 msgstr ""
 
-#: includes/components/class-action-bar.php:220
+#: includes/components/class-action-bar.php:247
 msgid "Post a request"
 msgstr ""
 
-#: includes/components/class-action-bar.php:221
+#: includes/components/class-action-bar.php:248
 msgid "Select plan"
 msgstr ""
 
-#: includes/components/class-action-bar.php:222
+#: includes/components/class-action-bar.php:249
 msgid "Become a vendor"
 msgstr ""
 
-#: includes/components/class-action-bar.php:223
+#: includes/components/class-action-bar.php:250
 msgid "My listings"
 msgstr ""
 
-#: includes/components/class-action-bar.php:224
+#: includes/components/class-action-bar.php:251
 msgid "My requests"
 msgstr ""
 
-#: includes/components/class-action-bar.php:225
+#: includes/components/class-action-bar.php:252
 msgid "Offers"
 msgstr ""
 
-#: includes/components/class-action-bar.php:226
+#: includes/components/class-action-bar.php:253
 msgid "Bookings"
 msgstr ""
 
-#: includes/components/class-action-bar.php:227
+#: includes/components/class-action-bar.php:254
 msgid "Searches"
 msgstr ""
 
-#: includes/components/class-action-bar.php:228
+#: includes/components/class-action-bar.php:255
 msgid "Memberships"
 msgstr ""
 
-#: includes/components/class-action-bar.php:229
+#: includes/components/class-action-bar.php:256
 msgid "Packages"
 msgstr ""
 
-#: includes/components/class-action-bar.php:230
+#: includes/components/class-action-bar.php:257
 msgid "Dashboard"
 msgstr ""
 
-#: includes/components/class-action-bar.php:231
+#: includes/components/class-action-bar.php:258
 msgid "Calendar"
 msgstr ""
 
-#: includes/components/class-action-bar.php:232
+#: includes/components/class-action-bar.php:259
 msgid "Received orders"
 msgstr ""
 
-#: includes/components/class-action-bar.php:233
+#: includes/components/class-action-bar.php:260
 msgid "Payouts"
 msgstr ""
 
-#: includes/components/class-action-bar.php:234
+#: includes/components/class-action-bar.php:261
 msgid "Sign out"
 msgstr ""
 
-#: includes/components/class-action-bar.php:836
+#: includes/components/class-action-bar.php:931
 msgid "Mobile navigation"
 msgstr ""
 
-#: includes/components/class-action-bar.php:863
+#: includes/components/class-action-bar.php:955
 msgid "Menu item"
+msgstr ""
+
+#: includes/components/class-action-bar.php:964
+msgctxt "action bar item"
+msgid "%1$s, %2$s unread"
 msgstr ""
 
 #: includes/configs/settings.php:23
@@ -212,7 +239,6 @@ msgid "Prominent"
 msgstr ""
 
 #: includes/configs/settings.php:98
-#: includes/configs/settings.php:218
 msgid "Unread badge"
 msgstr ""
 
@@ -324,12 +350,16 @@ msgstr ""
 msgid "Bold"
 msgstr ""
 
+#: includes/configs/settings.php:218
+msgid "Notification badge"
+msgstr ""
+
 #: includes/configs/settings.php:219
-msgid "Allow the unread message badge on items"
+msgid "Allow the notification badge on items"
 msgstr ""
 
 #: includes/configs/settings.php:220
-msgid "Tick the Unread badge option on individual items to choose where the count appears. Requires the Messages extension with message storage enabled."
+msgid "Tick the Unread badge option on individual items to choose where the count appears. Items linked to Messages show the unread message count (requires the Messages extension with message storage enabled); other items show the combined HivePress notification count."
 msgstr ""
 
 #: includes/configs/settings.php:227
@@ -383,4 +413,3 @@ msgstr ""
 #: includes/configs/settings.php:271
 msgid "Customise the action bar colours. Clear a field and save to restore its default."
 msgstr ""
-

@@ -215,9 +215,9 @@ return [
 						],
 
 						'action_bar_enable_badge'      => [
-							'label'       => esc_html__( 'Unread badge', 'action-bar-for-hivepress' ),
-							'caption'     => esc_html__( 'Allow the unread message badge on items', 'action-bar-for-hivepress' ),
-							'description' => esc_html__( 'Tick the Unread badge option on individual items to choose where the count appears. Requires the Messages extension with message storage enabled.', 'action-bar-for-hivepress' ),
+							'label'       => esc_html__( 'Notification badge', 'action-bar-for-hivepress' ),
+							'caption'     => esc_html__( 'Allow the notification badge on items', 'action-bar-for-hivepress' ),
+							'description' => esc_html__( 'Tick the Unread badge option on individual items to choose where the count appears. Items linked to Messages show the unread message count (requires the Messages extension with message storage enabled); other items show the combined HivePress notification count.', 'action-bar-for-hivepress' ),
 							'type'        => 'checkbox',
 							'default'     => true,
 							'_order'      => 40,
