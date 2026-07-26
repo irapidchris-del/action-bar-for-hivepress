@@ -39,6 +39,8 @@ Developer filters: `hivepress/v1/action_bar/items`, `hivepress/v1/action_bar/vis
 2. Activate the plugin through the Plugins screen. HivePress must be installed and active.
 3. Configure the bar under HivePress, Settings, Action Bar.
 
+Once installed, the plugin checks for new versions automatically and updates through the normal WordPress Plugins screen, just like a plugin from the WordPress.org directory.
+
 == Frequently Asked Questions ==
 
 = Which icons can I use? =
@@ -61,8 +63,13 @@ For signed-in users it links directly to the account settings page, and for sign
 
 Mobile is 767px and below, tablet is 768px to 1024px. Both can be changed with the `hivepress/v1/action_bar/breakpoints` filter.
 
+= How are updates delivered? =
+
+The plugin includes an update checker that watches the official GitHub repository for new releases. When a newer version is published, WordPress shows the update on the Plugins and Dashboard, Updates screens, and you can install it with the usual one-click update. You can force an immediate check with the Check for updates link on the Plugins screen. No account, licence key, or extra configuration is required.
+
 == Changelog ==
 
 = 1.0.0 =
 * Initial release.
+* Automatic updates from the official GitHub repository through the standard WordPress Plugins screen.
 * Settings from the beta versions are migrated automatically to the new repeater-based item settings, and the beta per-item options are removed. Custom icon classes from the beta are no longer editable in the settings screen; set them with the `hivepress/v1/action_bar/items` filter instead.

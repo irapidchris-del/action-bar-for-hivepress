@@ -21,6 +21,38 @@
 // Exit if accessed directly.
 defined( 'ABSPATH' ) || exit;
 
+// Set up updates from GitHub releases.
+add_action(
+	'init',
+	function() {
+		$loader = __DIR__ . '/vendor/plugin-update-checker/plugin-update-checker.php';
+
+		if ( ! file_exists( $loader ) ) {
+			return;
+		}
+
+		require_once $loader;
+
+		if ( ! class_exists( '\YahnisElsts\PluginUpdateChecker\v5\PucFactory' ) ) {
+			return;
+		}
+
+		$update_checker = \YahnisElsts\PluginUpdateChecker\v5\PucFactory::buildUpdateChecker(
+			'https://github.com/irapidchris-del/action-bar-for-hivepress/',
+			__FILE__,
+			'action-bar-for-hivepress'
+		);
+
+		// Deliver updates from the release asset (action-bar-for-hivepress.zip) so the installed folder name never changes.
+		$api = $update_checker->getVcsApi();
+
+		if ( method_exists( $api, 'enableReleaseAssets' ) ) {
+			$api->enableReleaseAssets( '/action-bar-for-hivepress\.zip/' );
+		}
+	},
+	1
+);
+
 // Register the extension directory.
 add_filter(
 	'hivepress/v1/extensions',
