@@ -46,7 +46,6 @@ DIST_ITEMS=(
 	"includes"
 	"assets"
 	"languages"
-	"vendor"
 )
 
 for item in "${DIST_ITEMS[@]}"; do

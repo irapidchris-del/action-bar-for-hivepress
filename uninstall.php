@@ -25,6 +25,9 @@ function action_bar_for_hivepress_delete_options() {
 		// Use the options API so persistent object caches are invalidated too.
 		delete_option( $option_name );
 	}
+
+	// Remove the cached GitHub release lookup used by the updater.
+	delete_site_transient( 'action_bar_for_hivepress_release' );
 }
 
 if ( is_multisite() ) {

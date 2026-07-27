@@ -13,7 +13,7 @@
  * Requires Plugins: hivepress
  * License: GPLv2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
- * Update URI: false
+ * Update URI: https://github.com/irapidchris-del/action-bar-for-hivepress
  *
  * @package ActionBar
  */
@@ -22,36 +22,9 @@
 defined( 'ABSPATH' ) || exit;
 
 // Set up updates from GitHub releases.
-add_action(
-	'init',
-	function() {
-		$loader = __DIR__ . '/vendor/plugin-update-checker/plugin-update-checker.php';
+require_once __DIR__ . '/includes/updater.php';
 
-		if ( ! file_exists( $loader ) ) {
-			return;
-		}
-
-		require_once $loader;
-
-		if ( ! class_exists( '\YahnisElsts\PluginUpdateChecker\v5\PucFactory' ) ) {
-			return;
-		}
-
-		$update_checker = \YahnisElsts\PluginUpdateChecker\v5\PucFactory::buildUpdateChecker(
-			'https://github.com/irapidchris-del/action-bar-for-hivepress/',
-			__FILE__,
-			'action-bar-for-hivepress'
-		);
-
-		// Deliver updates from the release asset (action-bar-for-hivepress.zip) so the installed folder name never changes.
-		$api = $update_checker->getVcsApi();
-
-		if ( method_exists( $api, 'enableReleaseAssets' ) ) {
-			$api->enableReleaseAssets( '/action-bar-for-hivepress\.zip/' );
-		}
-	},
-	1
-);
+ActionBar\Updater\bootstrap( __FILE__ );
 
 // Register the extension directory.
 add_filter(

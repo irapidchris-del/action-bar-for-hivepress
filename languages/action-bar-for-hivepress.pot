@@ -7,7 +7,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-07-22T21:46:01+00:00\n"
+"POT-Creation-Date: 2026-07-27T21:41:37+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "X-Generator: action-bar-for-hivepress make-pot\n"
@@ -33,11 +33,11 @@ msgstr ""
 msgid "https://community.hivepress.io/u/chrisb"
 msgstr ""
 
-#: action-bar-for-hivepress.php:39
+#: action-bar-for-hivepress.php:44
 msgid "Settings"
 msgstr ""
 
-#: action-bar-for-hivepress.php:51
+#: action-bar-for-hivepress.php:56
 msgid "Action Bar for HivePress requires the HivePress plugin to be installed and activated."
 msgstr ""
 
@@ -412,4 +412,28 @@ msgstr ""
 
 #: includes/configs/settings.php:271
 msgid "Customise the action bar colours. Clear a field and save to restore its default."
+msgstr ""
+
+#: includes/updater.php:240
+msgid "See the GitHub releases page for the changelog."
+msgstr ""
+
+#: includes/updater.php:253
+msgid "Check for updates"
+msgstr ""
+
+#: includes/updater.php:308
+msgid "A new version of Action Bar for HivePress (%s) is available."
+msgstr ""
+
+#: includes/updater.php:311
+msgid "Action Bar for HivePress is up to date."
+msgstr ""
+
+#: includes/updater.php:314
+msgid "Could not reach GitHub to check for updates. Please try again later."
+msgstr ""
+
+#: includes/updater.php:356
+msgid "Could not rename the update directory."
 msgstr ""
