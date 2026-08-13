@@ -1,16 +1,19 @@
 <?php
 /**
  * Plugin Name: Action Bar for HivePress
+ * Plugin URI: https://github.com/irapidchris-del/action-bar-for-hivepress
  * Description: Adds a customisable, app-style bottom navigation bar to HivePress websites on mobile and tablet devices.
- * Version: 1.0.0
+ * Version: 1.2.0
  * Author: ChrisB
- * Author URI: https://community.hivepress.io/u/chrisb
+ * Author URI: https://community.hivepress.io/u/chrisb/summary
  * Text Domain: action-bar-for-hivepress
  * Domain Path: /languages/
- * Requires at least: 6.0
+ * Requires at least: 5.8
  * Requires PHP: 7.4
+ * Requires Plugins: hivepress
  * License: GPLv2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
+ * Update URI: https://github.com/irapidchris-del/action-bar-for-hivepress
  *
  * @package ActionBar
  */
@@ -18,15 +21,61 @@
 // Exit if accessed directly.
 defined( 'ABSPATH' ) || exit;
 
-// Register the extension directory.
-add_filter(
-	'hivepress/v1/extensions',
-	function( $extensions ) {
+define( 'HPAB_VERSION', '1.2.0' );
+
+// Set up updates from GitHub releases.
+require_once __DIR__ . '/includes/updater.php';
+
+ActionBar\Updater\bootstrap( __FILE__ );
+
+/**
+ * Registers the extension.
+ *
+ * Two registration forms exist and both have a failure mode. HivePress resolves
+ * a bare directory path to `{dirname}/{dirname}.php`, so the string form fails
+ * silently whenever the installed folder name differs from the main file name
+ * (a source zip unpacks to `action-bar-for-hivepress-main`, for instance). The
+ * array form always registers, but core's updater probe concatenates every
+ * entry as a string, so an array entry makes it log a warning on each request
+ * unless the probe has already been satisfied. So: the string form whenever the
+ * folder name matches, and only for a renamed folder the array form, with the
+ * probe run here first over the string entries so core's loop never reaches
+ * the array. The filter is registered late so extensions that bundle the
+ * updates package are already listed by the time that probe runs.
+ *
+ * @param array<string, mixed> $extensions Extension arguments.
+ * @return array<string, mixed>
+ */
+function hpab_register_extension( $extensions ) {
+	if ( file_exists( __DIR__ . '/' . basename( __DIR__ ) . '.php' ) ) {
 		$extensions[] = __DIR__;
 
 		return $extensions;
 	}
-);
+
+	if ( ! isset( $extensions['updates'] ) ) {
+		$path = '/vendor/hivepress/hivepress-updates';
+
+		foreach ( $extensions as $dir ) {
+			if ( is_string( $dir ) && file_exists( $dir . $path . '/hivepress-updates.php' ) ) {
+				$extensions['updates'] = $dir . $path;
+
+				break;
+			}
+		}
+	}
+
+	$extensions['action_bar_for_hivepress'] = [
+		'name'    => 'Action Bar for HivePress',
+		'version' => HPAB_VERSION,
+		'path'    => __DIR__,
+		'url'     => rtrim( plugin_dir_url( __FILE__ ), '/' ),
+	];
+
+	return $extensions;
+}
+
+add_filter( 'hivepress/v1/extensions', 'hpab_register_extension', 100 );
 
 // Add a settings link on the Plugins screen.
 add_filter(
@@ -45,7 +94,98 @@ add_action(
 	'admin_notices',
 	function() {
 		if ( ! class_exists( '\HivePress\Core' ) && current_user_can( 'activate_plugins' ) ) {
-			echo '<div class="notice notice-error"><p>' . esc_html__( 'Action Bar for HivePress requires the HivePress plugin to be installed and activated.', 'action-bar-for-hivepress' ) . '</p></div>';
+
+			// Dismissible, because an undismissable notice on every admin screen is admin hijacking even
+			// when the thing it says is true. WordPress only hides it for the current page load, so the
+			// warning returns until HivePress is actually activated.
+			echo '<div class="notice notice-error is-dismissible"><p>' . esc_html__( 'Action Bar for HivePress requires the HivePress plugin to be installed and activated.', 'action-bar-for-hivepress' ) . '</p></div>';
 		}
 	}
 );
+
+/**
+ * The author's support page.
+ *
+ * One place, so the settings tab, the Plugins row and the View details popup can never drift apart.
+ *
+ * @return string
+ */
+function hpab_get_support_url() {
+	return 'https://ko-fi.com/chrisbathivepresscommunity';
+}
+
+/**
+ * Adds a quiet "Buy me a coffee" link to this plugin's row meta.
+ *
+ * WordPress fires plugin_row_meta for EVERY plugin on the screen and joins the items with a pipe,
+ * so without the basename test the link would appear on every row on the site.
+ *
+ * @param array<string> $meta Row meta links.
+ * @param string        $plugin_file Plugin file the row belongs to.
+ * @return array<string>
+ */
+function hpab_add_row_meta( $meta, $plugin_file ) {
+	if ( plugin_basename( __FILE__ ) === $plugin_file ) {
+		$meta[] = '<a href="' . esc_url( hpab_get_support_url() ) . '" target="_blank" rel="noopener noreferrer">' . esc_html__( 'Buy me a coffee', 'action-bar-for-hivepress' ) . '</a>';
+	}
+
+	return $meta;
+}
+
+add_filter( 'plugin_row_meta', 'hpab_add_row_meta', 10, 2 );
+
+/**
+ * Prints the support line under the settings form.
+ *
+ * A HivePress settings section carrying only a description would be the tidier home for this, but
+ * Admin::register_settings skips any section with no fields (class-admin.php:288), so a
+ * description-only section renders nothing at all. Appending to the form from admin_footer is the
+ * supported way, and inventing a stored option purely to make a section appear is not.
+ *
+ * @return void
+ */
+function hpab_print_support_link() {
+
+	// phpcs:disable WordPress.Security.NonceVerification.Recommended -- read-only screen check that changes nothing; the capability test below is the gate.
+	$page = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : '';
+	$tab  = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : '';
+	// phpcs:enable WordPress.Security.NonceVerification.Recommended
+
+	if ( 'hp_settings' !== $page || 'action_bar' !== $tab || ! current_user_can( 'manage_options' ) ) {
+		return;
+	}
+	?>
+	<script>
+	( function() {
+		var form = document.querySelector( 'form[action*="options.php"]' );
+
+		if ( ! form ) {
+			return;
+		}
+
+		var p = document.createElement( 'p' );
+
+		p.className = 'description';
+		p.style.marginTop = '1.5rem';
+
+		// Built as text plus one anchor, never innerHTML: the wording is translatable and a
+		// translation is not trusted markup.
+		p.appendChild( document.createTextNode( <?php echo wp_json_encode( __( 'If this plugin saved you time or money, consider ', 'action-bar-for-hivepress' ) ); ?> ) );
+
+		var a = document.createElement( 'a' );
+
+		a.href = <?php echo wp_json_encode( esc_url( hpab_get_support_url() ) ); ?>;
+		a.target = '_blank';
+		a.rel = 'noopener noreferrer';
+		a.appendChild( document.createTextNode( <?php echo wp_json_encode( __( 'buying me a coffee', 'action-bar-for-hivepress' ) ); ?> ) );
+
+		p.appendChild( a );
+		p.appendChild( document.createTextNode( <?php echo wp_json_encode( __( '. Sharing these tools for free takes a lot of time and resources, and your support helps me keep doing it for the community. Thank you!', 'action-bar-for-hivepress' ) ); ?> ) );
+
+		form.appendChild( p );
+	}() );
+	</script>
+	<?php
+}
+
+add_action( 'admin_footer', 'hpab_print_support_link' );

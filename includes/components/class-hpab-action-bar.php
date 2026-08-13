@@ -14,8 +14,13 @@ defined( 'ABSPATH' ) || exit;
 
 /**
  * Renders the mobile action bar.
+ *
+ * The class and file names are both prefixed because HivePress globs
+ * `includes/components/*.php` across every extension and loads one class per
+ * file name, so an unprefixed name silently loses to any other plugin shipping
+ * the same one.
  */
-final class Action_Bar extends Component {
+final class Hpab_Action_Bar extends Component {
 
 	/**
 	 * Resolved action bar items.
@@ -60,25 +65,33 @@ final class Action_Bar extends Component {
 	 * @return array<int, array<string, mixed>>
 	 */
 	public function get_item_defaults( $bar ) {
+
+		/*
+		 * These labels are plain __() rather than esc_html__() on purpose. The array is handed to the
+		 * repeater field as its `default`, so the first save writes these exact strings into the option,
+		 * and render_action_bar() escapes the stored label again on output. Escaping here would store the
+		 * escaped form and then escape it a second time, so a translation containing an apostrophe or an
+		 * ampersand would show its entity on screen for good. Escape late, once, at output.
+		 */
 		$defaults = [
 			'user'   => [
 				[
 					'link'  => 'home',
 					'icon'  => 'home',
-					'label' => esc_html__( 'Home', 'action-bar-for-hivepress' ),
+					'label' => __( 'Home', 'action-bar-for-hivepress' ),
 				],
 
 				[
 					'link'  => 'listings',
 					'icon'  => 'search',
-					'label' => esc_html__( 'Browse', 'action-bar-for-hivepress' ),
+					'label' => __( 'Browse', 'action-bar-for-hivepress' ),
 				],
 
 				[
 					'link'  => 'account',
 					'icon'  => 'user',
-					'label' => esc_html__( 'Account', 'action-bar-for-hivepress' ),
-					'badge' => true,
+					'label' => __( 'Account', 'action-bar-for-hivepress' ),
+					'badge' => 'notices',
 				],
 			],
 
@@ -86,21 +99,21 @@ final class Action_Bar extends Component {
 				[
 					'link'  => 'home',
 					'icon'  => 'home',
-					'label' => esc_html__( 'Home', 'action-bar-for-hivepress' ),
+					'label' => __( 'Home', 'action-bar-for-hivepress' ),
 				],
 
 				[
 					'link'  => 'listing_submit',
 					'icon'  => 'plus',
-					'label' => esc_html__( 'Add listing', 'action-bar-for-hivepress' ),
+					'label' => __( 'Add listing', 'action-bar-for-hivepress' ),
 					'style' => 'prominent',
 				],
 
 				[
 					'link'  => 'account',
 					'icon'  => 'user',
-					'label' => esc_html__( 'Account', 'action-bar-for-hivepress' ),
-					'badge' => true,
+					'label' => __( 'Account', 'action-bar-for-hivepress' ),
+					'badge' => 'notices',
 				],
 			],
 		];
@@ -135,12 +148,51 @@ final class Action_Bar extends Component {
 	}
 
 	/**
+	 * Gets the badge counter options.
+	 *
+	 * HivePress keeps two unread counters: the messages-only count in the
+	 * `message_unread_count` request context, and the combined count in
+	 * `notice_count`, which Messages, Bookings and Marketplace all add into.
+	 * The combined count already includes unread messages.
+	 *
+	 * @return array<string, string>
+	 */
+	public function get_badge_options() {
+		$options = $this->get_badge_sources();
+
+		// Only offer the message counter when Messages is active, because nothing else sets that context
+		// and the option would otherwise be a choice that silently shows nothing.
+		if ( ! hivepress()->get_version( 'messages' ) ) {
+			unset( $options['messages'] );
+		}
+
+		return $options;
+	}
+
+	/**
+	 * Gets every badge counter the plugin understands.
+	 *
+	 * Kept separate from get_badge_options(), which is the narrower list offered on the settings
+	 * screen. Validation and migration must use this one: judging a stored value against the offered
+	 * list would rewrite an admin's choice of message counter the moment the Messages extension was
+	 * deactivated, and that rewrite is permanent.
+	 *
+	 * @return array<string, string>
+	 */
+	public function get_badge_sources() {
+		return [
+			'notices'  => esc_html__( 'All notifications', 'action-bar-for-hivepress' ),
+			'messages' => esc_html__( 'Unread messages', 'action-bar-for-hivepress' ),
+		];
+	}
+
+	/**
 	 * Gets the extension URL.
 	 *
 	 * @return string
 	 */
 	protected function get_extension_url() {
-		return (string) hivepress()->get_url( 'action_bar_for_hivepress' ); // @phpstan-ignore method.notFound (get_url() is provided by the HivePress core magic method.)
+		return (string) hivepress()->get_url( 'action_bar_for_hivepress' );
 	}
 
 	/**
@@ -149,7 +201,7 @@ final class Action_Bar extends Component {
 	 * @return string
 	 */
 	protected function get_extension_version() {
-		return (string) hivepress()->get_version( 'action_bar_for_hivepress' ); // @phpstan-ignore method.notFound (get_version() is provided by the HivePress core magic method.)
+		return (string) hivepress()->get_version( 'action_bar_for_hivepress' );
 	}
 
 	/**
@@ -158,7 +210,7 @@ final class Action_Bar extends Component {
 	 * @return string
 	 */
 	protected function get_extension_path() {
-		return (string) hivepress()->get_path( 'action_bar_for_hivepress' ); // @phpstan-ignore method.notFound (get_path() is provided by the HivePress core magic method.)
+		return (string) hivepress()->get_path( 'action_bar_for_hivepress' );
 	}
 
 	/**
@@ -183,14 +235,15 @@ final class Action_Bar extends Component {
 	 * Checks if a boolean setting is enabled.
 	 *
 	 * @param string $name Setting name.
-	 * @param bool   $default Default value.
+	 * @param bool   $fallback Value to use when the option has never been saved.
 	 * @return bool
 	 */
-	protected function is_setting_enabled( $name, $default = false ) {
+	protected function is_setting_enabled( $name, $fallback = false ) {
 		$value = get_option( 'hp_action_bar_' . $name, null );
 
+		// An absent option means the default still applies, while a stored empty string is a deliberately unticked box.
 		if ( null === $value ) {
-			return $default;
+			return $fallback;
 		}
 
 		return (bool) $value;
@@ -200,13 +253,65 @@ final class Action_Bar extends Component {
 	 * Gets a colour setting value.
 	 *
 	 * @param string $name Colour name.
-	 * @param string $default Default value.
+	 * @param string $fallback Value to use when the option is empty or not a valid hex colour.
 	 * @return string
 	 */
-	protected function get_color( $name, $default ) {
+	protected function get_color( $name, $fallback ) {
 		$color = sanitize_hex_color( (string) get_option( 'hp_action_bar_color_' . $name ) );
 
-		return $color ? $color : $default;
+		return $color ? $color : $fallback;
+	}
+
+	/**
+	 * Checks if the glass effect is switched on.
+	 *
+	 * @return bool
+	 */
+	protected function is_glass_enabled() {
+		return $this->is_setting_enabled( 'glass' );
+	}
+
+	/**
+	 * Gets a numeric setting, clamped to its range.
+	 *
+	 * @param string $name Setting name.
+	 * @param int    $fallback Value to use when the option is absent or not a number.
+	 * @param int    $min Lowest allowed value.
+	 * @param int    $max Highest allowed value.
+	 * @return int
+	 */
+	protected function get_number_setting( $name, $fallback, $min, $max ) {
+		$value = get_option( 'hp_action_bar_' . $name, null );
+
+		// A cleared number field stores an empty string, which is not numeric, so the default applies. An
+		// explicit 0 is numeric and must survive, which is why this tests is_numeric rather than truthiness.
+		if ( ! is_numeric( $value ) ) {
+			return $fallback;
+		}
+
+		return (int) max( $min, min( $max, (int) $value ) );
+	}
+
+	/**
+	 * Converts a hex colour to an rgba() value.
+	 *
+	 * @param string $hex Hex colour, with or without the leading hash.
+	 * @param float  $alpha Alpha channel between 0 and 1.
+	 * @return string Empty string when the colour cannot be parsed.
+	 */
+	protected function get_rgba_color( $hex, $alpha ) {
+		$hex = ltrim( (string) $hex, '#' );
+
+		// sanitize_hex_color() accepts the three-digit form, so expand it before reading pairs.
+		if ( 3 === strlen( $hex ) ) {
+			$hex = $hex[0] . $hex[0] . $hex[1] . $hex[1] . $hex[2] . $hex[2];
+		}
+
+		if ( 6 !== strlen( $hex ) || ! ctype_xdigit( $hex ) ) {
+			return '';
+		}
+
+		return 'rgba(' . hexdec( substr( $hex, 0, 2 ) ) . ',' . hexdec( substr( $hex, 2, 2 ) ) . ',' . hexdec( substr( $hex, 4, 2 ) ) . ',' . round( $alpha, 2 ) . ')';
 	}
 
 	/**
@@ -221,7 +326,7 @@ final class Action_Bar extends Component {
 			$is_vendor = false;
 
 			if ( is_user_logged_in() && class_exists( '\HivePress\Models\Vendor' ) ) {
-				$is_vendor = (bool) \HivePress\Models\Vendor::query()->filter( // @phpstan-ignore staticMethod.notFound (query() is provided by the HivePress model magic method.)
+				$is_vendor = (bool) \HivePress\Models\Vendor::query()->filter(
 					[
 						'status' => 'publish',
 						'user'   => get_current_user_id(),
@@ -243,22 +348,21 @@ final class Action_Bar extends Component {
 
 		// Set candidate routes.
 		$candidates = [
-			'requests_view_page'              => esc_html__( 'Requests', 'action-bar-for-hivepress' ),
-			'request_submit_page'             => esc_html__( 'Post a request', 'action-bar-for-hivepress' ),
-			'membership_plans_view_page'      => esc_html__( 'Select plan', 'action-bar-for-hivepress' ),
-			'vendor_register_page'            => esc_html__( 'Become a vendor', 'action-bar-for-hivepress' ),
-			'listings_edit_page'              => esc_html__( 'My listings', 'action-bar-for-hivepress' ),
-			'requests_edit_page'              => esc_html__( 'My requests', 'action-bar-for-hivepress' ),
-			'offers_view_page'                => esc_html__( 'Offers', 'action-bar-for-hivepress' ),
-			'bookings_view_page'              => esc_html__( 'Bookings', 'action-bar-for-hivepress' ),
-			'search_alerts_view_page'         => esc_html__( 'Searches', 'action-bar-for-hivepress' ),
-			'memberships_view_page'           => esc_html__( 'Memberships', 'action-bar-for-hivepress' ),
-			'user_listing_packages_view_page' => esc_html__( 'Packages', 'action-bar-for-hivepress' ),
-			'vendor_dashboard_page'           => esc_html__( 'Dashboard', 'action-bar-for-hivepress' ),
-			'vendor_calendar_page'            => esc_html__( 'Calendar', 'action-bar-for-hivepress' ),
-			'orders_edit_page'                => esc_html__( 'Received orders', 'action-bar-for-hivepress' ),
-			'payouts_view_page'               => esc_html__( 'Payouts', 'action-bar-for-hivepress' ),
-			'user_logout_page'                => esc_html__( 'Sign out', 'action-bar-for-hivepress' ),
+			'requests_view_page'         => esc_html__( 'Requests', 'action-bar-for-hivepress' ),
+			'request_submit_page'        => esc_html__( 'Post a request', 'action-bar-for-hivepress' ),
+			'membership_plans_view_page' => esc_html__( 'Select plan', 'action-bar-for-hivepress' ),
+			'vendor_register_page'       => esc_html__( 'Become a vendor', 'action-bar-for-hivepress' ),
+			'listings_edit_page'         => esc_html__( 'My listings', 'action-bar-for-hivepress' ),
+			'requests_edit_page'         => esc_html__( 'My requests', 'action-bar-for-hivepress' ),
+			'offers_view_page'           => esc_html__( 'Offers', 'action-bar-for-hivepress' ),
+			'bookings_view_page'         => esc_html__( 'Bookings', 'action-bar-for-hivepress' ),
+			'search_alerts_view_page'    => esc_html__( 'Searches', 'action-bar-for-hivepress' ),
+			'memberships_view_page'      => esc_html__( 'Memberships', 'action-bar-for-hivepress' ),
+			'vendor_dashboard_page'      => esc_html__( 'Dashboard', 'action-bar-for-hivepress' ),
+			'vendor_calendar_page'       => esc_html__( 'Calendar', 'action-bar-for-hivepress' ),
+			'orders_edit_page'           => esc_html__( 'Received orders', 'action-bar-for-hivepress' ),
+			'payouts_view_page'          => esc_html__( 'Payouts', 'action-bar-for-hivepress' ),
+			'user_logout_page'           => esc_html__( 'Sign out', 'action-bar-for-hivepress' ),
 		];
 
 		foreach ( $candidates as $route => $label ) {
@@ -302,11 +406,15 @@ final class Action_Bar extends Component {
 
 		$pages = get_posts(
 			[
-				'post_type'   => 'page',
-				'post_status' => 'publish',
-				'numberposts' => -1,
-				'orderby'     => 'title',
-				'order'       => 'ASC',
+				'post_type'              => 'page',
+				'post_status'            => 'publish',
+				'numberposts'            => -1,
+				'orderby'                => 'title',
+				'order'                  => 'ASC',
+				'no_found_rows'          => true,
+				'update_post_meta_cache' => false,
+				'update_post_term_cache' => false,
+				'suppress_filters'       => false,
 			]
 		);
 
@@ -324,7 +432,7 @@ final class Action_Bar extends Component {
 	 * @return string
 	 */
 	protected function get_route_url( $name ) {
-		return (string) hivepress()->router->get_url( $name ); // @phpstan-ignore property.notFound (Component access is provided by the HivePress core magic method.)
+		return (string) hivepress()->router->get_url( $name );
 	}
 
 	/**
@@ -432,22 +540,81 @@ final class Action_Bar extends Component {
 			$bar = 'vendor';
 		}
 
+		$items = $this->get_bar_items( $bar );
+
+		// Removing every vendor row stores an empty option rather than no option, which would otherwise leave
+		// vendors with no navigation at all, so an empty vendor bar falls back to the items everyone else sees.
+		if ( ! $items && 'vendor' === $bar ) {
+			$bar = 'user';
+
+			$items = $this->get_bar_items( $bar );
+		}
+
+		/**
+		 * Filters the action bar items.
+		 *
+		 * @hook hivepress/v1/action_bar/items
+		 * @param {array} $items Item arguments.
+		 * @param {string} $bar Bar name.
+		 * @return {array} Item arguments.
+		 */
+		$items = (array) apply_filters( 'hivepress/v1/action_bar/items', $items, $bar );
+
+		// Normalize the item structure so developer-added items never trigger warnings when rendered.
+		$this->items = [];
+
+		foreach ( $items as $item ) {
+			if ( ! is_array( $item ) ) {
+				continue;
+			}
+
+			$this->items[] = array_merge(
+				[
+					'link'        => '',
+					'url'         => '',
+					'icon'        => 'fas fa-circle',
+					'label'       => '',
+					'style'       => 'default',
+					'badge'       => false,
+					'badge_count' => 0,
+				],
+				$item
+			);
+		}
+
+		return $this->items;
+	}
+
+	/**
+	 * Gets the resolved items for one bar.
+	 *
+	 * @param string $bar Bar name.
+	 * @return array<int, array<string, mixed>>
+	 */
+	protected function get_bar_items( $bar ) {
+
 		// Get item rows.
 		$rows = get_option( 'hp_action_bar_' . $bar . '_items', null );
 
-		if ( is_null( $rows ) ) {
-			$rows = $this->migrate_legacy_items( $bar );
+		// Fall back to the beta options without persisting them (the admin-side migration handles the rewrite).
+		if ( is_null( $rows ) && ! get_option( 'hp_action_bar_migrated' ) ) {
+			$rows = $this->get_legacy_items( $bar );
 		}
 
 		if ( is_null( $rows ) ) {
 			$rows = $this->get_item_defaults( $bar );
 		}
 
-		$rows = array_slice( array_filter( (array) $rows, 'is_array' ), 0, 5 );
+		$rows = array_filter( (array) $rows, 'is_array' );
 
 		$items = [];
 
 		foreach ( $rows as $row ) {
+
+			// Keep at most five valid items.
+			if ( count( $items ) >= 5 ) {
+				break;
+			}
 
 			// Get item link.
 			$link = hp\get_array_value( $row, 'link' );
@@ -486,16 +653,26 @@ final class Action_Bar extends Component {
 				$style = 'default';
 			}
 
-			// Check item badge.
-			$badge = $this->is_setting_enabled( 'enable_badge', true ) && hp\get_array_value( $row, 'badge' );
+			// Get item badge source.
+			$badge = hp\get_array_value( $row, 'badge' );
+
+			// Rows saved before the badge became a choice of counter store a boolean tick, which used to mean
+			// the message count on Messages items and the combined count everywhere else.
+			if ( $badge && ! isset( $this->get_badge_sources()[ $badge ] ) ) {
+				$badge = 'messages' === $link ? 'messages' : 'notices';
+			}
+
+			if ( ! $this->is_setting_enabled( 'enable_badge', true ) ) {
+				$badge = '';
+			}
 
 			// Get item badge count.
 			$badge_count = 0;
 
 			if ( $badge ) {
-				$request = hivepress()->request; // @phpstan-ignore property.notFound (Component access is provided by the HivePress core magic method.)
+				$request = hivepress()->request;
 
-				if ( 'messages' === $link ) {
+				if ( 'messages' === $badge ) {
 					$badge_count = absint( $request->get_context( 'message_unread_count' ) );
 				} else {
 					$badge_count = absint( $request->get_context( 'notice_count' ) );
@@ -503,28 +680,18 @@ final class Action_Bar extends Component {
 			}
 
 			$items[] = [
-				'link'  => $link,
-				'url'   => $url,
-				'icon'  => $icon,
-				'label' => $label,
-				'style' => $style,
-				'badge' => $badge,
+				'link'        => $link,
+				'url'         => $url,
+				'icon'        => $icon,
+				'label'       => $label,
+				'style'       => $style,
+				'badge'       => $badge,
 
 				'badge_count' => $badge_count,
 			];
 		}
 
-		/**
-		 * Filters the action bar items.
-		 *
-		 * @hook hivepress/v1/action_bar/items
-		 * @param array $items Item arguments.
-		 * @param string $bar Bar name.
-		 * @return array Item arguments.
-		 */
-		$this->items = (array) apply_filters( 'hivepress/v1/action_bar/items', $items, $bar );
-
-		return $this->items;
+		return $items;
 	}
 
 	/**
@@ -533,13 +700,24 @@ final class Action_Bar extends Component {
 	 * @return void
 	 */
 	public function maybe_migrate_items() {
+
+		// The flag is versioned: absent runs everything, '1' re-runs only the row normalisation added in
+		// 1.1.0 (boolean badge ticks become a named counter), '2' is current.
+		$migrated = (string) get_option( 'hp_action_bar_migrated' );
+
+		if ( '2' === $migrated ) {
+			return;
+		}
+
 		foreach ( [ 'user', 'vendor' ] as $bar ) {
-			if ( is_null( get_option( 'hp_action_bar_' . $bar . '_items', null ) ) ) {
+			if ( ! $migrated && is_null( get_option( 'hp_action_bar_' . $bar . '_items', null ) ) ) {
 				$this->migrate_legacy_items( $bar );
 			}
 
 			$this->normalize_items( $bar );
 		}
+
+		update_option( 'hp_action_bar_migrated', '2' );
 	}
 
 	/**
@@ -574,7 +752,19 @@ final class Action_Bar extends Component {
 
 			// Keep the badge on account and message items saved before the per-item option existed.
 			if ( ! array_key_exists( 'badge', $row ) && in_array( hp\get_array_value( $row, 'link' ), [ 'account', 'messages' ], true ) ) {
-				$row['badge'] = '1';
+				$row['badge'] = 'messages' === hp\get_array_value( $row, 'link' ) ? 'messages' : 'notices';
+
+				$rows[ $index ] = $row;
+
+				$changed = true;
+			}
+
+			// Rewrite a boolean badge tick from 1.1.0's predecessor as the counter it used to show, so the
+			// settings screen select and the front end agree.
+			$badge = hp\get_array_value( $row, 'badge' );
+
+			if ( $badge && ! isset( $this->get_badge_sources()[ $badge ] ) ) {
+				$row['badge'] = 'messages' === hp\get_array_value( $row, 'link' ) ? 'messages' : 'notices';
 
 				$rows[ $index ] = $row;
 
@@ -588,12 +778,12 @@ final class Action_Bar extends Component {
 	}
 
 	/**
-	 * Migrates item settings from the beta versions.
+	 * Reads the beta item options without modifying them.
 	 *
 	 * @param string $bar Bar name.
 	 * @return array<int, array<string, string>>|null
 	 */
-	protected function migrate_legacy_items( $bar ) {
+	protected function get_legacy_items( $bar ) {
 		$found = false;
 
 		$rows = [];
@@ -629,6 +819,22 @@ final class Action_Bar extends Component {
 		}
 
 		if ( ! $found ) {
+			return null;
+		}
+
+		return $rows;
+	}
+
+	/**
+	 * Migrates item settings from the beta versions.
+	 *
+	 * @param string $bar Bar name.
+	 * @return array<int, array<string, string>>|null
+	 */
+	protected function migrate_legacy_items( $bar ) {
+		$rows = $this->get_legacy_items( $bar );
+
+		if ( is_null( $rows ) ) {
 			return null;
 		}
 
@@ -671,8 +877,8 @@ final class Action_Bar extends Component {
 		 * Filters the action bar visibility.
 		 *
 		 * @hook hivepress/v1/action_bar/visible
-		 * @param bool $visible Visibility flag.
-		 * @return bool Visibility flag.
+		 * @param {bool} $visible Visibility flag.
+		 * @return {bool} Visibility flag.
 		 */
 		return (bool) apply_filters( 'hivepress/v1/action_bar/visible', $visible );
 	}
@@ -697,28 +903,18 @@ final class Action_Bar extends Component {
 			'badge-text'           => $this->get_color( 'badge_text', '#ffffff' ),
 		];
 
-		// Get height.
-		$height = absint( get_option( 'hp_action_bar_height' ) );
+		// Get dimensions.
+		$height     = $this->get_number_setting( 'height', 56, 44, 120 );
+		$label_size = $this->get_number_setting( 'label_size', 11, 9, 16 );
 
-		if ( $height < 44 || $height > 120 ) {
-			$height = 56;
-		}
-
-		$styles = '.hp-action-bar{';
-
-		// Get label size.
-		$label_size = absint( get_option( 'hp_action_bar_label_size' ) );
-
-		if ( $label_size < 9 || $label_size > 16 ) {
-			$label_size = 11;
-		}
-
-		// Get label weight.
+		// Get label weight. This one is a select rather than a range, so an unrecognised value resets.
 		$label_weight = absint( get_option( 'hp_action_bar_label_weight' ) );
 
 		if ( ! in_array( $label_weight, [ 400, 500, 600, 700 ], true ) ) {
 			$label_weight = 500;
 		}
+
+		$styles = '.hp-action-bar{';
 
 		$styles .= '--hp-action-bar-height:' . $height . 'px;';
 
@@ -728,21 +924,41 @@ final class Action_Bar extends Component {
 			$styles .= '--hp-action-bar-' . $name . ':' . $color . ';';
 		}
 
+		// Set the glass values. The translucent background is emitted as its own property rather than
+		// replacing the solid one, so a browser without backdrop-filter support keeps the opaque bar
+		// instead of rendering unreadable text over the page.
+		if ( $this->is_glass_enabled() ) {
+			$tint = $this->get_rgba_color( $colors['background'], $this->get_number_setting( 'glass_opacity', 72, 10, 100 ) / 100 );
+
+			if ( $tint ) {
+				$styles .= '--hp-action-bar-glass-background:' . $tint . ';';
+			}
+
+			$styles .= '--hp-action-bar-glass-blur:' . $this->get_number_setting( 'glass_blur', 20, 0, 40 ) . 'px;';
+		}
+
 		$styles .= '}';
 
 		/**
 		 * Filters the responsive breakpoints.
 		 *
 		 * @hook hivepress/v1/action_bar/breakpoints
-		 * @param array $breakpoints Breakpoint values in pixels.
-		 * @return array Breakpoint values in pixels.
+		 * @param {array} $breakpoints Breakpoint values as CSS lengths.
+		 * @return {array} Breakpoint values as CSS lengths.
 		 */
 		$breakpoints = apply_filters(
 			'hivepress/v1/action_bar/breakpoints',
 			[
-				'mobile_max' => 767,
-				'tablet_min' => 768,
-				'tablet_max' => 1024,
+
+				/*
+				 * em, not px, so the bar switches at exactly the width HivePress's own grid switches at.
+				 * grid.min.css breaks at min-width 48em and 64em, which are 768px and 1024px only while
+				 * the root font size is the default 16px; a theme that changes it would otherwise leave
+				 * the columns reflowing at one width and the bar appearing at another.
+				 */
+				'mobile_max' => '47.99em',
+				'tablet_min' => '48em',
+				'tablet_max' => '64em',
 			]
 		);
 
@@ -750,14 +966,39 @@ final class Action_Bar extends Component {
 		$display = '.hp-action-bar{display:flex;}body.hp-action-bar-visible{padding-bottom:calc(' . ( $height + 12 ) . 'px + env(safe-area-inset-bottom, 0px));}';
 
 		if ( $this->is_setting_enabled( 'enable_mobile', true ) ) {
-			$styles .= '@media (max-width:' . absint( hp\get_array_value( $breakpoints, 'mobile_max', 767 ) ) . 'px){' . $display . '}';
+			$styles .= '@media (max-width:' . $this->get_css_length( hp\get_array_value( $breakpoints, 'mobile_max' ), '47.99em' ) . '){' . $display . '}';
 		}
 
 		if ( $this->is_setting_enabled( 'enable_tablet' ) ) {
-			$styles .= '@media (min-width:' . absint( hp\get_array_value( $breakpoints, 'tablet_min', 768 ) ) . 'px) and (max-width:' . absint( hp\get_array_value( $breakpoints, 'tablet_max', 1024 ) ) . 'px){' . $display . '}';
+			$styles .= '@media (min-width:' . $this->get_css_length( hp\get_array_value( $breakpoints, 'tablet_min' ), '48em' ) . ') and (max-width:' . $this->get_css_length( hp\get_array_value( $breakpoints, 'tablet_max' ), '64em' ) . '){' . $display . '}';
 		}
 
 		return $styles;
+	}
+
+	/**
+	 * Sanitises a CSS length for a media query.
+	 *
+	 * Filtered values reach a stylesheet, so only a bare number with an optional px, em or rem unit is
+	 * accepted. A plain number is treated as pixels, which keeps any filter written against the
+	 * earlier integer-only signature working.
+	 *
+	 * @param mixed  $value Filtered value.
+	 * @param string $fallback Value to use when the filtered one is not a usable length.
+	 * @return string
+	 */
+	protected function get_css_length( $value, $fallback ) {
+		$value = trim( (string) $value );
+
+		if ( preg_match( '/^\d+(\.\d+)?$/', $value ) ) {
+			return $value . 'px';
+		}
+
+		if ( preg_match( '/^\d+(\.\d+)?(px|em|rem)$/', $value ) ) {
+			return $value;
+		}
+
+		return $fallback;
 	}
 
 	/**
@@ -805,8 +1046,14 @@ final class Action_Bar extends Component {
 	 */
 	public function enqueue_backend_assets() {
 
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		if ( 'hp_settings' !== hp\get_array_value( $_GET, 'page' ) ) {
+		// No nonce applies here: these two values only decide whether this screen is the one that needs
+		// our assets, they are never used to write anything, and both are run through sanitize_key().
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended
+		$page = sanitize_key( wp_unslash( (string) hp\get_array_value( $_GET, 'page' ) ) );
+		$tab  = sanitize_key( wp_unslash( (string) hp\get_array_value( $_GET, 'tab' ) ) );
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
+
+		if ( 'hp_settings' !== $page || 'action_bar' !== $tab ) {
 			return;
 		}
 
@@ -868,6 +1115,14 @@ final class Action_Bar extends Component {
 			$classes[] = 'hp-action-bar--labels-above';
 		}
 
+		if ( $this->is_glass_enabled() ) {
+			$classes[] = 'hp-action-bar--glass';
+
+			if ( $this->is_setting_enabled( 'glass_highlight', true ) ) {
+				$classes[] = 'hp-action-bar--glass-edge';
+			}
+		}
+
 		$output = '<nav class="' . esc_attr( implode( ' ', $classes ) ) . '" aria-label="' . esc_attr__( 'Mobile navigation', 'action-bar-for-hivepress' ) . '">';
 
 		foreach ( $items as $item ) {
@@ -884,7 +1139,7 @@ final class Action_Bar extends Component {
 
 			if ( ! $aria_label && 0 === strpos( $item['link'], 'route_' ) ) {
 				// Route titles can be callables that are unsafe outside their own page context, so only string titles are used.
-				$title = hp\get_array_value( (array) hivepress()->router->get_route( substr( $item['link'], 6 ) ), 'title' ); // @phpstan-ignore property.notFound (Component access is provided by the HivePress core magic method.)
+				$title = hp\get_array_value( (array) hivepress()->router->get_route( substr( $item['link'], 6 ) ), 'title' );
 
 				if ( is_string( $title ) && $title ) {
 					$aria_label = $title;
@@ -892,7 +1147,17 @@ final class Action_Bar extends Component {
 			}
 
 			if ( ! $aria_label ) {
-				$aria_label = hp\get_array_value( $this->get_link_options(), $item['link'], esc_html__( 'Menu item', 'action-bar-for-hivepress' ) );
+				$aria_label = hp\get_array_value( $this->get_link_options(), $item['link'], esc_attr__( 'Menu item', 'action-bar-for-hivepress' ) );
+			}
+
+			// Announce the unread count to assistive technology, since the anchor aria-label hides the badge text.
+			if ( $item['badge'] ) {
+				$aria_badge_count = absint( hp\get_array_value( $item, 'badge_count' ) );
+
+				if ( $aria_badge_count ) {
+					/* translators: 1: item name, 2: number of unread items. */
+					$aria_label = sprintf( _x( '%1$s, %2$s unread', 'action bar item', 'action-bar-for-hivepress' ), $aria_label, number_format_i18n( $aria_badge_count ) );
+				}
 			}
 
 			// Render item.
@@ -903,7 +1168,9 @@ final class Action_Bar extends Component {
 			if ( $item['badge'] ) {
 				$badge_count = absint( hp\get_array_value( $item, 'badge_count' ) );
 
-				$output .= '<span class="hp-action-bar__badge"' . ( $badge_count ? '' : ' hidden' ) . '>' . esc_html( $badge_count > 99 ? '99+' : (string) $badge_count ) . '</span>';
+				$badge_label = $badge_count > 99 ? number_format_i18n( 99 ) . '+' : number_format_i18n( $badge_count );
+
+				$output .= '<span class="hp-action-bar__badge"' . ( $badge_count ? '' : ' hidden' ) . '>' . esc_html( $badge_label ) . '</span>';
 			}
 
 			$output .= '</span>';
@@ -917,7 +1184,9 @@ final class Action_Bar extends Component {
 
 		$output .= '</nav>';
 
+		// Every value interpolated into $output above was escaped as it was appended: esc_url() on the
+		// href, esc_attr() on the classes, icon and aria-label, and esc_html() on the label and badge
+		// text. The sniff cannot see that across statements, so the whole string is echoed once here.
 		echo $output; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	}
-
 }
