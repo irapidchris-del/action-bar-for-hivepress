@@ -91,11 +91,28 @@ function get_latest_release( $force = false ) {
 	if ( ! is_array( $release ) ) {
 		$release = fetch_latest_release();
 
-		// Failures are cached briefly so the API is not queried repeatedly.
+		// Failures are cached briefly so the API is not queried repeatedly. A "no releases yet" answer is
+		// a real answer rather than a failure, so it is cached for the full period like a success.
 		set_site_transient( UPDATE_CACHE_KEY, $release, $release ? 6 * HOUR_IN_SECONDS : HOUR_IN_SECONDS );
 	}
 
+	// The no-releases sentinel is an answer, but it is not a release.
+	if ( isset( $release['none'] ) ) {
+		return null;
+	}
+
 	return $release ? $release : null;
+}
+
+/**
+ * Checks whether the last lookup found a reachable repository with no published releases.
+ *
+ * @return bool
+ */
+function has_no_releases() {
+	$release = get_site_transient( UPDATE_CACHE_KEY );
+
+	return is_array( $release ) && isset( $release['none'] );
 }
 
 /**
@@ -110,12 +127,27 @@ function fetch_latest_release() {
 	$response = wp_remote_get(
 		'https://api.github.com/repos/' . UPDATE_REPO . '/releases/latest',
 		[
-			'timeout' => 10,
-			'headers' => [ 'Accept' => 'application/vnd.github+json' ],
+			'timeout'    => 10,
+			'headers'    => [ 'Accept' => 'application/vnd.github+json' ],
+
+			// Without an explicit user agent WordPress sends "WordPress/{version}; {site url}", which
+			// hands GitHub the site's address and its exact WordPress version on every check. GitHub
+			// only requires the header to identify something, so the slug and version tell it nothing.
+			'user-agent' => UPDATE_SLUG . '/' . get_version(),
 		]
 	);
 
-	if ( is_wp_error( $response ) || 200 !== wp_remote_retrieve_response_code( $response ) ) {
+	if ( is_wp_error( $response ) ) {
+		return [];
+	}
+
+	// A 404 is an answer, not a failure to get one: it is what every repository returns between
+	// creation and its first release, so it must not be reported as a connectivity problem.
+	if ( 404 === (int) wp_remote_retrieve_response_code( $response ) ) {
+		return [ 'none' => '1' ];
+	}
+
+	if ( 200 !== wp_remote_retrieve_response_code( $response ) ) {
 		return [];
 	}
 
@@ -235,6 +267,10 @@ function get_plugin_information( $result, $action, $args ) {
 		'requires_php'  => $plugin_data['RequiresPHP'],
 		'last_updated'  => $release['published'],
 		'download_link' => $release['package'],
+
+		// WordPress renders this by itself as "Donate to this plugin" in the View details popup, so the
+		// third placement of the support link costs one line.
+		'donate_link'   => function_exists( 'hpab_get_support_url' ) ? hpab_get_support_url() : '',
 		'sections'      => [
 			'description' => wpautop( esc_html( $plugin_data['Description'] ) ),
 			'changelog'   => $release['notes'] ? wpautop( esc_html( $release['notes'] ) ) : '<p>' . esc_html__( 'See the GitHub releases page for the changelog.', 'action-bar-for-hivepress' ) . '</p>',
@@ -279,7 +315,10 @@ function handle_update_check() {
 	$status = 'none';
 
 	if ( ! $release ) {
-		$status = 'error';
+
+		// A reachable repository with nothing published yet is not an error, and saying so stops a new
+		// owner hunting a network fault that does not exist.
+		$status = has_no_releases() ? 'norelease' : 'error';
 	} elseif ( version_compare( $release['version'], get_version(), '>' ) ) {
 		$status = 'available';
 	}
@@ -295,21 +334,30 @@ function handle_update_check() {
  * @return void
  */
 function show_update_check_notice() {
+
+	// No nonce is checked here because this only reads the result flag that handle_update_check() put in
+	// its own redirect after verifying a nonce. The value selects one of four fixed messages and is
+	// never used to act, and the capability check still applies.
+	// phpcs:disable WordPress.Security.NonceVerification.Recommended
 	if ( ! isset( $_GET['action_bar_checked'] ) || ! current_user_can( 'update_plugins' ) ) {
 		return;
 	}
 
 	$status = sanitize_key( wp_unslash( $_GET['action_bar_checked'] ) );
+	// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
 	if ( 'available' === $status ) {
 		$release = get_latest_release();
 
-		/* translators: %s: new version number. */
+		/* translators: %s: version number of the new release. */
 		$message = sprintf( __( 'A new version of Action Bar for HivePress (%s) is available.', 'action-bar-for-hivepress' ), $release ? $release['version'] : '' );
 		$class   = 'notice-success';
 	} elseif ( 'none' === $status ) {
 		$message = __( 'Action Bar for HivePress is up to date.', 'action-bar-for-hivepress' );
 		$class   = 'notice-success';
+	} elseif ( 'norelease' === $status ) {
+		$message = __( 'Action Bar for HivePress has no releases published yet, so there is nothing to update to. This is normal for a new install and nothing is wrong.', 'action-bar-for-hivepress' );
+		$class   = 'notice-info';
 	} elseif ( 'error' === $status ) {
 		$message = __( 'Could not reach GitHub to check for updates. Please try again later.', 'action-bar-for-hivepress' );
 		$class   = 'notice-error';
