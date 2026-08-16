@@ -65,7 +65,6 @@ final class Hpab_Action_Bar extends Component {
 	 * @return array<int, array<string, mixed>>
 	 */
 	public function get_item_defaults( $bar ) {
-
 		/*
 		 * These labels are plain __() rather than esc_html__() on purpose. The array is handed to the
 		 * repeater field as its `default`, so the first save writes these exact strings into the option,
@@ -857,7 +856,7 @@ final class Hpab_Action_Bar extends Component {
 	 * @return bool
 	 */
 	protected function is_action_bar_visible() {
-		$visible = $this->is_setting_enabled( 'enable_mobile', true ) || $this->is_setting_enabled( 'enable_tablet' );
+		$visible = $this->is_setting_enabled( 'enable_mobile', true ) || $this->is_setting_enabled( 'enable_tablet' ) || $this->is_setting_enabled( 'enable_desktop' );
 
 		// Check hidden pages.
 		if ( $visible ) {
@@ -956,9 +955,13 @@ final class Hpab_Action_Bar extends Component {
 				 * the root font size is the default 16px; a theme that changes it would otherwise leave
 				 * the columns reflowing at one width and the bar appearing at another.
 				 */
-				'mobile_max' => '47.99em',
-				'tablet_min' => '48em',
-				'tablet_max' => '64em',
+				'mobile_max'  => '47.99em',
+				'tablet_min'  => '48em',
+				'tablet_max'  => '64em',
+
+				// Desktop starts just past where tablet stops, so the two never overlap and a width
+				// cannot match both queries at once.
+				'desktop_min' => '64.01em',
 			]
 		);
 
@@ -971,6 +974,21 @@ final class Hpab_Action_Bar extends Component {
 
 		if ( $this->is_setting_enabled( 'enable_tablet' ) ) {
 			$styles .= '@media (min-width:' . $this->get_css_length( hp\get_array_value( $breakpoints, 'tablet_min' ), '48em' ) . ') and (max-width:' . $this->get_css_length( hp\get_array_value( $breakpoints, 'tablet_max' ), '64em' ) . '){' . $display . '}';
+		}
+
+		if ( $this->is_setting_enabled( 'enable_desktop' ) ) {
+			/*
+			 * On a wide screen the items must stop stretching. Left as they are, `flex: 1 1 0` divides
+			 * the full width between them, so three items on a 1920px monitor sit 640px apart with the
+			 * outer two pinned to the far corners: measured, and it reads as broken rather than
+			 * deliberate. Sizing them to their content and centring the row gives the compact dock a
+			 * desktop visitor expects. Written at two-class specificity so it cannot depend on source
+			 * order against the stylesheet, and emitted here rather than in the CSS file so it always
+			 * uses the same breakpoint as the display rule above, even when that is filtered.
+			 */
+			$desktop = $display . '.hp-action-bar{justify-content:center;}.hp-action-bar .hp-action-bar__item{flex:0 1 auto;padding-left:2rem;padding-right:2rem;}';
+
+			$styles .= '@media (min-width:' . $this->get_css_length( hp\get_array_value( $breakpoints, 'desktop_min' ), '64.01em' ) . '){' . $desktop . '}';
 		}
 
 		return $styles;

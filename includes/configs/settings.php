@@ -159,7 +159,7 @@ return [
 			[
 				'display'    => [
 					'title'       => esc_html__( 'Display', 'action-bar-for-hivepress' ),
-					'description' => esc_html__( 'The action bar is a fixed strip of buttons pinned to the bottom of the screen, giving your website an app-like feel on phones and tablets. It appears based on how wide the browser window is rather than what device someone is using: small screens are up to 767px wide and medium screens are 768px to 1024px. Wider than that and the bar never appears, and if you untick both boxes below it never appears at all.', 'action-bar-for-hivepress' ),
+					'description' => esc_html__( 'The action bar is a fixed strip of buttons pinned to the bottom of the screen, giving your website an app-like feel. It appears based on how wide the browser window is rather than what device someone is using: small screens are up to 767px wide, medium screens are 768px to 1024px, and large screens are anything wider. Tick the sizes you want it on, and if you untick all three it never appears at all.', 'action-bar-for-hivepress' ),
 					'_order'      => 10,
 
 					'fields'      => [
@@ -176,6 +176,14 @@ return [
 							'caption' => esc_html__( 'Show the action bar on screens 768px to 1024px wide', 'action-bar-for-hivepress' ),
 							'type'    => 'checkbox',
 							'_order'  => 20,
+						],
+
+						'action_bar_enable_desktop'    => [
+							'label'       => esc_html__( 'Large screens', 'action-bar-for-hivepress' ),
+							'caption'     => esc_html__( 'Show the action bar on screens wider than 1024px', 'action-bar-for-hivepress' ),
+							'description' => esc_html__( 'Adds the bar on laptops and desktop computers as well. Most sites leave this off, because visitors on a large screen already have your main menu and the bar takes up room at the bottom of every page. It is worth turning on if your site is meant to feel like an app on every screen. The buttons spread out to fill the width, so three or four look better than five.', 'action-bar-for-hivepress' ),
+							'type'        => 'checkbox',
+							'_order'      => 22,
 						],
 
 						'action_bar_height'            => [

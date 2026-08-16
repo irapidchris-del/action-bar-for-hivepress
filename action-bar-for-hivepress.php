@@ -2,8 +2,8 @@
 /**
  * Plugin Name: Action Bar for HivePress
  * Plugin URI: https://github.com/irapidchris-del/action-bar-for-hivepress
- * Description: Adds a customisable, app-style bottom navigation bar to HivePress websites on mobile and tablet devices.
- * Version: 1.2.0
+ * Description: Adds a customisable, app-style bottom navigation bar to HivePress websites, on any screen size you choose.
+ * Version: 1.3.0
  * Author: ChrisB
  * Author URI: https://community.hivepress.io/u/chrisb/summary
  * Text Domain: action-bar-for-hivepress
@@ -21,7 +21,7 @@
 // Exit if accessed directly.
 defined( 'ABSPATH' ) || exit;
 
-define( 'HPAB_VERSION', '1.2.0' );
+define( 'HPAB_VERSION', '1.3.0' );
 
 // Set up updates from GitHub releases.
 require_once __DIR__ . '/includes/updater.php';
@@ -115,10 +115,16 @@ function hpab_get_support_url() {
 }
 
 /**
- * Adds a quiet "Buy me a coffee" link to this plugin's row meta.
+ * Adds a quiet "Donate" link to this plugin's row meta.
  *
  * WordPress fires plugin_row_meta for EVERY plugin on the screen and joins the items with a pipe,
  * so without the basename test the link would appear on every row on the site.
+ *
+ * The markup is copied verbatim from the house spec in `releasing.md` rather than composed here:
+ * every plugin's row has to look identical, and sessions have drifted before. The label is exactly
+ * "Donate", which is also the wording WordPress uses in the details popup, and the icon is a
+ * Dashicon rather than Font Awesome because Dashicons is the admin's own font and is always loaded
+ * there. WordPress joins row-meta items with " | " itself, so this returns a bare anchor.
  *
  * @param array<string> $meta Row meta links.
  * @param string        $plugin_file Plugin file the row belongs to.
@@ -126,7 +132,10 @@ function hpab_get_support_url() {
  */
 function hpab_add_row_meta( $meta, $plugin_file ) {
 	if ( plugin_basename( __FILE__ ) === $plugin_file ) {
-		$meta[] = '<a href="' . esc_url( hpab_get_support_url() ) . '" target="_blank" rel="noopener noreferrer">' . esc_html__( 'Buy me a coffee', 'action-bar-for-hivepress' ) . '</a>';
+		$meta[] = '<a href="' . esc_url( hpab_get_support_url() ) . '" target="_blank" rel="noopener noreferrer">'
+			. '<span class="dashicons dashicons-coffee" style="font-size:14px;line-height:1.3;"></span> '
+			. esc_html__( 'Donate', 'action-bar-for-hivepress' )
+			. '</a>';
 	}
 
 	return $meta;

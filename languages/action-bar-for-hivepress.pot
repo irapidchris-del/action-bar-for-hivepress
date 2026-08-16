@@ -2,14 +2,14 @@
 # This file is distributed under the GPLv2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Action Bar for HivePress 1.2.0\n"
+"Project-Id-Version: Action Bar for HivePress 1.3.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/action-bar-for-hivepress\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-08-13T10:24:58+00:00\n"
+"POT-Creation-Date: 2026-08-16T13:08:25+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: action-bar-for-hivepress\n"
@@ -26,7 +26,7 @@ msgstr ""
 
 #. Description of the plugin
 #: action-bar-for-hivepress.php
-msgid "Adds a customisable, app-style bottom navigation bar to HivePress websites on mobile and tablet devices."
+msgid "Adds a customisable, app-style bottom navigation bar to HivePress websites, on any screen size you choose."
 msgstr ""
 
 #. Author of the plugin
@@ -47,155 +47,155 @@ msgstr ""
 msgid "Action Bar for HivePress requires the HivePress plugin to be installed and activated."
 msgstr ""
 
-#: action-bar-for-hivepress.php:129
-msgid "Buy me a coffee"
+#: action-bar-for-hivepress.php:137
+msgid "Donate"
 msgstr ""
 
-#: action-bar-for-hivepress.php:173
+#: action-bar-for-hivepress.php:182
 msgid "If this plugin saved you time or money, consider "
 msgstr ""
 
-#: action-bar-for-hivepress.php:180
+#: action-bar-for-hivepress.php:189
 msgid "buying me a coffee"
 msgstr ""
 
-#: action-bar-for-hivepress.php:183
+#: action-bar-for-hivepress.php:192
 msgid ". Sharing these tools for free takes a lot of time and resources, and your support helps me keep doing it for the community. Thank you!"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:81
-#: includes/components/class-hpab-action-bar.php:102
+#: includes/components/class-hpab-action-bar.php:80
+#: includes/components/class-hpab-action-bar.php:101
 msgid "Home"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:87
+#: includes/components/class-hpab-action-bar.php:86
 msgid "Browse"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:93
-#: includes/components/class-hpab-action-bar.php:115
+#: includes/components/class-hpab-action-bar.php:92
+#: includes/components/class-hpab-action-bar.php:114
 msgid "Account"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:108
-#: includes/components/class-hpab-action-bar.php:133
+#: includes/components/class-hpab-action-bar.php:107
+#: includes/components/class-hpab-action-bar.php:132
 msgid "Add listing"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:131
+#: includes/components/class-hpab-action-bar.php:130
 msgid "Homepage"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:132
+#: includes/components/class-hpab-action-bar.php:131
 msgid "Listings"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:134
+#: includes/components/class-hpab-action-bar.php:133
 msgid "Vendors"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:135
+#: includes/components/class-hpab-action-bar.php:134
 msgid "Account or login"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:136
+#: includes/components/class-hpab-action-bar.php:135
 msgid "Messages"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:137
+#: includes/components/class-hpab-action-bar.php:136
 msgid "Favourites"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:138
+#: includes/components/class-hpab-action-bar.php:137
 msgid "Custom URL"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:143
+#: includes/components/class-hpab-action-bar.php:142
 msgid "Placed orders"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:144
+#: includes/components/class-hpab-action-bar.php:143
 msgid "Cart"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:184
+#: includes/components/class-hpab-action-bar.php:183
 msgid "All notifications"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:185
+#: includes/components/class-hpab-action-bar.php:184
 msgid "Unread messages"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:351
+#: includes/components/class-hpab-action-bar.php:350
 msgid "Requests"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:352
+#: includes/components/class-hpab-action-bar.php:351
 msgid "Post a request"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:353
+#: includes/components/class-hpab-action-bar.php:352
 msgid "Select plan"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:354
+#: includes/components/class-hpab-action-bar.php:353
 msgid "Become a vendor"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:355
+#: includes/components/class-hpab-action-bar.php:354
 msgid "My listings"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:356
+#: includes/components/class-hpab-action-bar.php:355
 msgid "My requests"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:357
+#: includes/components/class-hpab-action-bar.php:356
 msgid "Offers"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:358
+#: includes/components/class-hpab-action-bar.php:357
 msgid "Bookings"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:359
+#: includes/components/class-hpab-action-bar.php:358
 msgid "Searches"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:360
+#: includes/components/class-hpab-action-bar.php:359
 msgid "Memberships"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:361
+#: includes/components/class-hpab-action-bar.php:360
 msgid "Dashboard"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:362
+#: includes/components/class-hpab-action-bar.php:361
 msgid "Calendar"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:363
+#: includes/components/class-hpab-action-bar.php:362
 msgid "Received orders"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:364
+#: includes/components/class-hpab-action-bar.php:363
 msgid "Payouts"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:365
+#: includes/components/class-hpab-action-bar.php:364
 msgid "Sign out"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:1126
+#: includes/components/class-hpab-action-bar.php:1144
 msgid "Mobile navigation"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:1150
+#: includes/components/class-hpab-action-bar.php:1168
 msgid "Menu item"
 msgstr ""
 
 #. translators: 1: item name, 2: number of unread items.
-#: includes/components/class-hpab-action-bar.php:1159
+#: includes/components/class-hpab-action-bar.php:1177
 #, php-format
 msgctxt "action bar item"
 msgid "%1$s, %2$s unread"
@@ -338,7 +338,7 @@ msgid "Display"
 msgstr ""
 
 #: includes/configs/settings.php:162
-msgid "The action bar is a fixed strip of buttons pinned to the bottom of the screen, giving your website an app-like feel on phones and tablets. It appears based on how wide the browser window is rather than what device someone is using: small screens are up to 767px wide and medium screens are 768px to 1024px. Wider than that and the bar never appears, and if you untick both boxes below it never appears at all."
+msgid "The action bar is a fixed strip of buttons pinned to the bottom of the screen, giving your website an app-like feel. It appears based on how wide the browser window is rather than what device someone is using: small screens are up to 767px wide, medium screens are 768px to 1024px, and large screens are anything wider. Tick the sizes you want it on, and if you untick all three it never appears at all."
 msgstr ""
 
 #: includes/configs/settings.php:167
@@ -358,190 +358,202 @@ msgid "Show the action bar on screens 768px to 1024px wide"
 msgstr ""
 
 #: includes/configs/settings.php:182
-msgid "Bar height (px)"
+msgid "Large screens"
 msgstr ""
 
 #: includes/configs/settings.php:183
+msgid "Show the action bar on screens wider than 1024px"
+msgstr ""
+
+#: includes/configs/settings.php:184
+msgid "Adds the bar on laptops and desktop computers as well. Most sites leave this off, because visitors on a large screen already have your main menu and the bar takes up room at the bottom of every page. It is worth turning on if your site is meant to feel like an app on every screen. The buttons spread out to fill the width, so three or four look better than five."
+msgstr ""
+
+#: includes/configs/settings.php:190
+msgid "Bar height (px)"
+msgstr ""
+
+#: includes/configs/settings.php:191
 msgid "How tall the bar is, in pixels. This is a minimum rather than a fixed height: if your labels are large the bar grows to fit them. Between 44 and 120; 56 suits most sites. On iPhones without a home button, extra space is added below this automatically."
 msgstr ""
 
-#: includes/configs/settings.php:192
+#: includes/configs/settings.php:200
 msgid "Label position"
 msgstr ""
 
-#: includes/configs/settings.php:193
+#: includes/configs/settings.php:201
 msgid "Choose whether item labels sit under the icons or above them. With labels above, an item using the Prominent style keeps its coloured circle but no longer sits raised above the bar."
 msgstr ""
 
-#: includes/configs/settings.php:197
+#: includes/configs/settings.php:205
 msgid "Below icons"
 msgstr ""
 
-#: includes/configs/settings.php:198
+#: includes/configs/settings.php:206
 msgid "Above icons"
 msgstr ""
 
-#: includes/configs/settings.php:206
+#: includes/configs/settings.php:214
 msgid "Label size (px)"
 msgstr ""
 
-#: includes/configs/settings.php:207
+#: includes/configs/settings.php:215
 msgid "How big the text under each icon is. Between 9 and 16; 11 suits most sites. Larger text makes the bar taller."
 msgstr ""
 
-#: includes/configs/settings.php:216
+#: includes/configs/settings.php:224
 msgid "Label weight"
 msgstr ""
 
-#: includes/configs/settings.php:217
+#: includes/configs/settings.php:225
 msgid "How thick the label text looks. Medium is a good middle ground; Bold can be hard to read at small sizes."
 msgstr ""
 
-#: includes/configs/settings.php:221
+#: includes/configs/settings.php:229
 msgid "Normal"
 msgstr ""
 
-#: includes/configs/settings.php:222
+#: includes/configs/settings.php:230
 msgid "Medium"
 msgstr ""
 
-#: includes/configs/settings.php:223
+#: includes/configs/settings.php:231
 msgid "Semibold"
 msgstr ""
 
-#: includes/configs/settings.php:224
+#: includes/configs/settings.php:232
 msgid "Bold"
 msgstr ""
 
-#: includes/configs/settings.php:232
+#: includes/configs/settings.php:240
 msgid "Notification badge"
 msgstr ""
 
-#: includes/configs/settings.php:233
+#: includes/configs/settings.php:241
 msgid "Allow the notification badge on items"
 msgstr ""
 
-#: includes/configs/settings.php:234
+#: includes/configs/settings.php:242
 msgid "Each item has its own Badge dropdown. All notifications shows HivePress's combined unread count, the same number as the one beside your name in the site header, which the Messages, Bookings and Marketplace extensions add to. With none of those three installed it stays at zero. Unread messages counts messages only, and appears in the dropdown only when the Messages extension is active with \"Store messages in the database\" ticked under HivePress, Settings, Messages. Untick this box to hide every badge at once."
 msgstr ""
 
-#: includes/configs/settings.php:241
+#: includes/configs/settings.php:249
 msgid "Vendor bar"
 msgstr ""
 
-#: includes/configs/settings.php:242
+#: includes/configs/settings.php:250
 msgid "Show different items to vendors"
 msgstr ""
 
-#: includes/configs/settings.php:243
+#: includes/configs/settings.php:251
 msgid "If enabled, users with a published vendor profile see the Vendor Bar items instead of the User Bar items. Tick to reveal the Vendor Bar section below."
 msgstr ""
 
-#: includes/configs/settings.php:249
+#: includes/configs/settings.php:257
 msgid "Room for the home bar"
 msgstr ""
 
-#: includes/configs/settings.php:250
+#: includes/configs/settings.php:258
 msgid "Leave space below the bar on iPhones without a home button"
 msgstr ""
 
-#: includes/configs/settings.php:251
+#: includes/configs/settings.php:259
 msgid "On iPhones without a home button there is a thin bar at the very bottom of the screen that can overlap your buttons. Ticking this asks the browser to report how much room to leave, and the action bar then sits above it. It is safe to leave ticked whatever your theme does, and it has no effect on other phones."
 msgstr ""
 
-#: includes/configs/settings.php:257
+#: includes/configs/settings.php:265
 msgid "Glass effect"
 msgstr ""
 
-#: includes/configs/settings.php:258
+#: includes/configs/settings.php:266
 msgid "Blur the page showing through the bar"
 msgstr ""
 
-#: includes/configs/settings.php:259
+#: includes/configs/settings.php:267
 msgid "Makes the bar semi-transparent and blurs whatever scrolls behind it, the frosted look used by phone apps. Pick a light bar colour for a light site and a dark one for a dark site, then check that your icons and labels are still easy to read against your busiest page. Older browsers that cannot blur keep the solid bar instead, and visitors who have asked their device to reduce transparency also see the solid bar."
 msgstr ""
 
-#: includes/configs/settings.php:265
+#: includes/configs/settings.php:273
 msgid "Glass opacity (%)"
 msgstr ""
 
-#: includes/configs/settings.php:266
+#: includes/configs/settings.php:274
 msgid "How solid the bar colour stays over the blur. Lower shows more of the page, higher keeps labels easier to read. Between 10 and 100; 72 suits most sites, and at 100 the bar is solid so the effect no longer shows."
 msgstr ""
 
-#: includes/configs/settings.php:276
+#: includes/configs/settings.php:284
 msgid "Glass blur (px)"
 msgstr ""
 
-#: includes/configs/settings.php:277
+#: includes/configs/settings.php:285
 msgid "How strongly the page behind the bar is blurred. Between 0 and 40; 20 gives the frosted look. At 0 the page stays sharp behind the tint, though colours showing through still look slightly richer."
 msgstr ""
 
-#: includes/configs/settings.php:287
+#: includes/configs/settings.php:295
 msgid "Glass top edge"
 msgstr ""
 
-#: includes/configs/settings.php:288
+#: includes/configs/settings.php:296
 msgid "Add a soft light along the top edge"
 msgstr ""
 
-#: includes/configs/settings.php:289
+#: includes/configs/settings.php:297
 msgid "Draws a faint white highlight across the very top of the bar, which is what makes frosted glass read as glass rather than as a flat tint. It shows up best on a dark or mid-toned bar; on a near-white bar it will not be visible either way."
 msgstr ""
 
-#: includes/configs/settings.php:299
+#: includes/configs/settings.php:307
 msgid "Visibility"
 msgstr ""
 
-#: includes/configs/settings.php:300
+#: includes/configs/settings.php:308
 msgid "Choose where the action bar stays hidden, for example pages that need the visitor's full attention, or the steps where someone is paying."
 msgstr ""
 
-#: includes/configs/settings.php:305
+#: includes/configs/settings.php:313
 msgid "Hide on pages"
 msgstr ""
 
-#: includes/configs/settings.php:306
+#: includes/configs/settings.php:314
 msgid "The bar is hidden on the pages you pick here. This list covers WordPress pages only, so it cannot be used to hide the bar on listings, vendor profiles or search results."
 msgstr ""
 
-#: includes/configs/settings.php:315
+#: includes/configs/settings.php:323
 msgid "Checkout pages"
 msgstr ""
 
-#: includes/configs/settings.php:316
+#: includes/configs/settings.php:324
 msgid "Hide the action bar on the WooCommerce cart and checkout pages"
 msgstr ""
 
-#: includes/configs/settings.php:317
+#: includes/configs/settings.php:325
 msgid "This only has an effect if WooCommerce is installed. Payment or booking pages provided by other extensions are not covered, so hide those with Hide on pages above."
 msgstr ""
 
-#: includes/configs/settings.php:326
+#: includes/configs/settings.php:334
 msgid "Colours"
 msgstr ""
 
-#: includes/configs/settings.php:327
+#: includes/configs/settings.php:335
 msgid "Customise the action bar colours. Use the colour wheel, or type a hex code such as #f5f5f5. Short codes like #fff are expanded for you, and the # is added if you leave it off. Clear a field and save to put that colour back to its default."
 msgstr ""
 
-#: includes/configs/settings.php:343
+#: includes/configs/settings.php:351
 msgid "Removing the Plugin"
 msgstr ""
 
-#: includes/configs/settings.php:344
+#: includes/configs/settings.php:352
 msgid "Your bar items and settings are kept if you delete this plugin, so you can reinstall it and carry on where you left off. WordPress shows its own warning on the delete screen saying the data goes too, but that warning is the same for every plugin and does not apply here unless you tick the box below. Switching the plugin off never removes anything."
 msgstr ""
 
-#: includes/configs/settings.php:349
+#: includes/configs/settings.php:357
 msgid "Delete all data"
 msgstr ""
 
-#: includes/configs/settings.php:350
+#: includes/configs/settings.php:358
 msgid "Delete everything when this plugin is deleted"
 msgstr ""
 
-#: includes/configs/settings.php:351
+#: includes/configs/settings.php:359
 msgid "Leave this unticked unless you are certain. With it ticked, deleting the plugin also removes every item you have added to the User Bar and the Vendor Bar, your colours, and every other setting on this page. WordPress will still ask you to confirm the deletion itself, but that confirmation says nothing about this box, so the removal happens with no second chance. It cannot be undone, so write down anything you want to keep first. Deleting the plugin with this unticked keeps all of it."
 msgstr ""
 

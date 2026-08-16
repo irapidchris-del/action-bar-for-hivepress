@@ -4,15 +4,15 @@ Tags: hivepress, mobile, navigation, bottom bar, app
 Requires at least: 5.8
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.2.0
+Stable tag: 1.3.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Adds a customisable, app-style bottom navigation bar to HivePress websites on mobile and tablet devices.
+Adds a customisable, app-style bottom navigation bar to HivePress websites, on any screen size you choose.
 
 == Description ==
 
-Action Bar for HivePress gives your marketplace a more app-like feel on smaller screens by adding a fixed bottom navigation bar.
+Action Bar for HivePress gives your marketplace a more app-like feel by adding a fixed bottom navigation bar.
 
 Features:
 
@@ -23,7 +23,7 @@ Features:
 * Full colour controls with a neutral light-grey palette out of the box, including bar, icon, label, active, prominent, and badge colours, each with a colour wheel and a typable hex box.
 * A notification badge you can switch on per item, with a choice of counter for each: the unread message count, or the combined HivePress notification count that messages, bookings, and orders feed.
 * Adjustable bar height between 44 and 120 pixels.
-* Individual on and off toggles for mobile and tablet devices.
+* Individual on and off toggles for small, medium and large screens, so you can run the bar on phones only, or right across desktop as well. On large screens the buttons gather into a centred dock rather than stretching across the window.
 * Visibility controls to hide the bar on selected pages and on the WooCommerce cart and checkout.
 * Labels can be positioned above or below the icons.
 * An optional frosted glass effect, with adjustable opacity, blur strength and a soft top edge, that blurs the page scrolling behind the bar.
@@ -70,13 +70,22 @@ For signed-in users it links directly to the account settings page, and for sign
 
 = Which breakpoints are used? =
 
-The bar switches on how wide the browser window is, not on what device someone is using. By default that is 47.99em and below for small screens, and 48em to 64em for medium ones, which works out as roughly 767px and 768px to 1024px on a site using the standard 16px base font size. They are set in em so they follow your theme's base font size and stay in step with HivePress's own grid. Both can be changed with the `hivepress/v1/action_bar/breakpoints` filter.
+The bar switches on how wide the browser window is, not on what device someone is using. By default that is 47.99em and below for small screens, 48em to 64em for medium ones, and 64.01em and above for large ones, which works out as roughly up to 767px, 768px to 1024px, and 1025px and wider on a site using the standard 16px base font size. They are set in em so they follow your theme's base font size and stay in step with HivePress's own grid. All three can be changed with the `hivepress/v1/action_bar/breakpoints` filter, using the keys `mobile_max`, `tablet_min`, `tablet_max` and `desktop_min`.
+
+= Can I show the bar on desktop too? =
+
+Yes. Tick "Large screens" in the Display section and the bar appears on laptops and desktop computers as well. Most sites leave this off, because visitors on a big screen already have your main menu and the bar takes up room at the bottom of every page, but it is worth turning on if you want the site to feel like an app everywhere. On large screens the buttons gather into a centred dock instead of stretching the full width, which is what they do on phones.
 
 = How are updates delivered? =
 
 The plugin includes an update checker that watches the official GitHub repository for new releases. When a newer version is published, WordPress shows the update on the Plugins and Dashboard, Updates screens, and you can install it with the usual one-click update. You can force an immediate check with the Check for updates link on the Plugins screen. No account, licence key, or extra configuration is required.
 
 == Changelog ==
+
+= 1.3.0 =
+* The action bar can now be shown on desktop as well. Tick the new "Large screens" box in the Display section, alongside the existing small and medium screen toggles. It is off by default, so nothing changes unless you turn it on. Suggested by the community.
+* On large screens the buttons gather into a centred dock rather than stretching the full width of the window, which looked stranded on a wide monitor.
+* The support link on the Plugins screen is now labelled "Donate" with a small coffee cup icon, matching the wording WordPress itself uses.
 
 = 1.2.0 =
 * New frosted glass effect. Switch it on in the Display section to make the bar semi-transparent and blur whatever scrolls behind it, with adjustable opacity, blur strength and an optional soft light along the top edge.
