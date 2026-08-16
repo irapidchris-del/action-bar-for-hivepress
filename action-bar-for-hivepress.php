@@ -3,7 +3,7 @@
  * Plugin Name: Action Bar for HivePress
  * Plugin URI: https://github.com/irapidchris-del/action-bar-for-hivepress
  * Description: Adds a customisable, app-style bottom navigation bar to HivePress websites, on any screen size you choose.
- * Version: 1.3.0
+ * Version: 1.3.1
  * Author: ChrisB
  * Author URI: https://community.hivepress.io/u/chrisb/summary
  * Text Domain: action-bar-for-hivepress
@@ -21,7 +21,7 @@
 // Exit if accessed directly.
 defined( 'ABSPATH' ) || exit;
 
-define( 'HPAB_VERSION', '1.3.0' );
+define( 'HPAB_VERSION', '1.3.1' );
 
 // Set up updates from GitHub releases.
 require_once __DIR__ . '/includes/updater.php';
@@ -133,7 +133,7 @@ function hpab_get_support_url() {
 function hpab_add_row_meta( $meta, $plugin_file ) {
 	if ( plugin_basename( __FILE__ ) === $plugin_file ) {
 		$meta[] = '<a href="' . esc_url( hpab_get_support_url() ) . '" target="_blank" rel="noopener noreferrer">'
-			. '<span class="dashicons dashicons-coffee" style="font-size:14px;line-height:1.3;"></span> '
+			. '<span class="dashicons dashicons-star-filled" style="font-size:14px;line-height:1.3;"></span> '
 			. esc_html__( 'Donate', 'action-bar-for-hivepress' )
 			. '</a>';
 	}

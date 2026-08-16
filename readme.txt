@@ -4,7 +4,7 @@ Tags: hivepress, mobile, navigation, bottom bar, app
 Requires at least: 5.8
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.3.0
+Stable tag: 1.3.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -81,6 +81,9 @@ Yes. Tick "Large screens" in the Display section and the bar appears on laptops 
 The plugin includes an update checker that watches the official GitHub repository for new releases. When a newer version is published, WordPress shows the update on the Plugins and Dashboard, Updates screens, and you can install it with the usual one-click update. You can force an immediate check with the Check for updates link on the Plugins screen. No account, licence key, or extra configuration is required.
 
 == Changelog ==
+
+= 1.3.1 =
+* The Donate link on the Plugins screen now uses a star icon instead of a coffee cup, which reads more clearly at that size.
 
 = 1.3.0 =
 * The action bar can now be shown on desktop as well. Tick the new "Large screens" box in the Display section, alongside the existing small and medium screen toggles. It is off by default, so nothing changes unless you turn it on. Suggested by the community.
