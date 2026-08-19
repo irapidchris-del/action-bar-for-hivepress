@@ -574,3 +574,11 @@ msgstr ""
 #: includes/updater.php:404
 msgid "Could not rename the update directory."
 msgstr ""
+
+#: includes/updater.php:682
+msgid "No releases have been published for Action Bar for HivePress yet, so there is nothing to update to. This is normal for a brand new copy and does not mean anything is wrong."
+msgstr ""
+
+#: includes/updater.php:685
+msgid "GitHub limits how many update checks one server may make each hour, and this server has reached that limit. Nothing is wrong with the plugin or your site, and checking will work again within the hour."
+msgstr ""
