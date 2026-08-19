@@ -1,15 +1,15 @@
-# Copyright (C) 2026 ChrisB
+# Copyright (C) 2026 ChrisB @ HivePress Community
 # This file is distributed under the GPLv2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Action Bar for HivePress 1.3.1\n"
+"Project-Id-Version: Action Bar for HivePress 1.3.2\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/action-bar-for-hivepress\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-08-16T13:56:36+00:00\n"
+"POT-Creation-Date: 2026-08-19T11:53:01+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: action-bar-for-hivepress\n"
@@ -31,7 +31,7 @@ msgstr ""
 
 #. Author of the plugin
 #: action-bar-for-hivepress.php
-msgid "ChrisB"
+msgid "ChrisB @ HivePress Community"
 msgstr ""
 
 #. Author URI of the plugin
@@ -49,18 +49,6 @@ msgstr ""
 
 #: action-bar-for-hivepress.php:137
 msgid "Donate"
-msgstr ""
-
-#: action-bar-for-hivepress.php:182
-msgid "If this plugin saved you time or money, consider "
-msgstr ""
-
-#: action-bar-for-hivepress.php:189
-msgid "buying me a coffee"
-msgstr ""
-
-#: action-bar-for-hivepress.php:192
-msgid ". Sharing these tools for free takes a lot of time and resources, and your support helps me keep doing it for the community. Thank you!"
 msgstr ""
 
 #: includes/components/class-hpab-action-bar.php:80

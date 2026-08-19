@@ -3,8 +3,8 @@
  * Plugin Name: Action Bar for HivePress
  * Plugin URI: https://github.com/irapidchris-del/action-bar-for-hivepress
  * Description: Adds a customisable, app-style bottom navigation bar to HivePress websites, on any screen size you choose.
- * Version: 1.3.1
- * Author: ChrisB
+ * Version: 1.3.2
+ * Author: ChrisB @ HivePress Community
  * Author URI: https://community.hivepress.io/u/chrisb/summary
  * Text Domain: action-bar-for-hivepress
  * Domain Path: /languages/
@@ -21,7 +21,7 @@
 // Exit if accessed directly.
 defined( 'ABSPATH' ) || exit;
 
-define( 'HPAB_VERSION', '1.3.1' );
+define( 'HPAB_VERSION', '1.3.2' );
 
 // Set up updates from GitHub releases.
 require_once __DIR__ . '/includes/updater.php';
@@ -106,7 +106,7 @@ add_action(
 /**
  * The author's support page.
  *
- * One place, so the settings tab, the Plugins row and the View details popup can never drift apart.
+ * One place, so the Plugins row and the View details popup can never drift apart.
  *
  * @return string
  */
@@ -142,59 +142,3 @@ function hpab_add_row_meta( $meta, $plugin_file ) {
 }
 
 add_filter( 'plugin_row_meta', 'hpab_add_row_meta', 10, 2 );
-
-/**
- * Prints the support line under the settings form.
- *
- * A HivePress settings section carrying only a description would be the tidier home for this, but
- * Admin::register_settings skips any section with no fields (class-admin.php:288), so a
- * description-only section renders nothing at all. Appending to the form from admin_footer is the
- * supported way, and inventing a stored option purely to make a section appear is not.
- *
- * @return void
- */
-function hpab_print_support_link() {
-
-	// phpcs:disable WordPress.Security.NonceVerification.Recommended -- read-only screen check that changes nothing; the capability test below is the gate.
-	$page = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : '';
-	$tab  = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : '';
-	// phpcs:enable WordPress.Security.NonceVerification.Recommended
-
-	if ( 'hp_settings' !== $page || 'action_bar' !== $tab || ! current_user_can( 'manage_options' ) ) {
-		return;
-	}
-	?>
-	<script>
-	( function() {
-		var form = document.querySelector( 'form[action*="options.php"]' );
-
-		if ( ! form ) {
-			return;
-		}
-
-		var p = document.createElement( 'p' );
-
-		p.className = 'description';
-		p.style.marginTop = '1.5rem';
-
-		// Built as text plus one anchor, never innerHTML: the wording is translatable and a
-		// translation is not trusted markup.
-		p.appendChild( document.createTextNode( <?php echo wp_json_encode( __( 'If this plugin saved you time or money, consider ', 'action-bar-for-hivepress' ) ); ?> ) );
-
-		var a = document.createElement( 'a' );
-
-		a.href = <?php echo wp_json_encode( esc_url( hpab_get_support_url() ) ); ?>;
-		a.target = '_blank';
-		a.rel = 'noopener noreferrer';
-		a.appendChild( document.createTextNode( <?php echo wp_json_encode( __( 'buying me a coffee', 'action-bar-for-hivepress' ) ); ?> ) );
-
-		p.appendChild( a );
-		p.appendChild( document.createTextNode( <?php echo wp_json_encode( __( '. Sharing these tools for free takes a lot of time and resources, and your support helps me keep doing it for the community. Thank you!', 'action-bar-for-hivepress' ) ); ?> ) );
-
-		form.appendChild( p );
-	}() );
-	</script>
-	<?php
-}
-
-add_action( 'admin_footer', 'hpab_print_support_link' );
