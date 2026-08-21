@@ -165,7 +165,28 @@ final class Hpab_Action_Bar extends Component {
 			unset( $options['messages'] );
 		}
 
+		// Same reasoning for unread notifications: without the plugin that counts them the option
+		// would sit on the screen showing nothing for ever.
+		if ( ! $this->get_notification_component() ) {
+			unset( $options['notifications'] );
+		}
+
 		return $options;
+	}
+
+	/**
+	 * Gets the Notifications for HivePress component, when it is there.
+	 *
+	 * Assigned and then tested rather than checked with isset(): HivePress's Core defines no
+	 * __isset(), so isset( hivepress()->x ) is always false even for a component that exists and
+	 * works, and a guard written that way disables the feature on every site.
+	 *
+	 * @return object|null
+	 */
+	protected function get_notification_component() {
+		$component = hivepress()->hpnf_notification;
+
+		return $component ? $component : null;
 	}
 
 	/**
@@ -180,8 +201,13 @@ final class Hpab_Action_Bar extends Component {
 	 */
 	public function get_badge_sources() {
 		return [
-			'notices'  => esc_html__( 'All notifications', 'action-bar-for-hivepress' ),
-			'messages' => esc_html__( 'Unread messages', 'action-bar-for-hivepress' ),
+			// "Account activity" rather than the old "All notifications": once the real unread
+			// notification count is on the list below, two options both called notifications is a
+			// choice nobody can make correctly. This one has never counted notifications -- it is
+			// HivePress's own combined counter, which Messages, Bookings and Marketplace add into.
+			'notices'       => esc_html__( 'Account activity (HivePress)', 'action-bar-for-hivepress' ),
+			'messages'      => esc_html__( 'Unread messages', 'action-bar-for-hivepress' ),
+			'notifications' => esc_html__( 'Unread notifications', 'action-bar-for-hivepress' ),
 		];
 	}
 
@@ -673,6 +699,13 @@ final class Hpab_Action_Bar extends Component {
 
 				if ( 'messages' === $badge ) {
 					$badge_count = absint( $request->get_context( 'message_unread_count' ) );
+				} elseif ( 'notifications' === $badge ) {
+					$component = $this->get_notification_component();
+
+					// Falls back to zero rather than to the combined counter when the plugin is
+					// gone: a badge that silently starts counting something else is worse than a
+					// badge that stops.
+					$badge_count = $component ? absint( $component->get_unread_count( get_current_user_id() ) ) : 0;
 				} else {
 					$badge_count = absint( $request->get_context( 'notice_count' ) );
 				}
@@ -913,7 +946,16 @@ final class Hpab_Action_Bar extends Component {
 			$label_weight = 500;
 		}
 
-		$styles = '.hp-action-bar{';
+		/*
+		 * The height goes on :root as well as on the bar itself. Scoped only to .hp-action-bar it is
+		 * unreadable from anywhere else, so anything that needs to sit above the bar - a cookie
+		 * notice, a chat launcher, the pop-ups from Notifications for HivePress - has to measure the
+		 * element in JavaScript instead of reading one value in CSS. Emitting it here costs one
+		 * declaration and makes "clear the bar" a one-line rule for everybody.
+		 */
+		$styles = ':root{--hp-action-bar-height:' . $height . 'px;}';
+
+		$styles .= '.hp-action-bar{';
 
 		$styles .= '--hp-action-bar-height:' . $height . 'px;';
 
@@ -1178,8 +1220,16 @@ final class Hpab_Action_Bar extends Component {
 				}
 			}
 
+			/*
+			 * The badge source is written onto the item so a script can find the badges it is
+			 * entitled to update. Notifications for HivePress keeps its count live as it polls, and
+			 * without this it would have to guess which item to write to - and would sooner or later
+			 * overwrite an unread-messages badge with a notification count.
+			 */
+			$badge_attribute = $item['badge'] ? ' data-badge="' . esc_attr( $item['badge'] ) . '"' : '';
+
 			// Render item.
-			$output .= '<a href="' . esc_url( $item['url'] ) . '" class="' . esc_attr( implode( ' ', $item_classes ) ) . '" aria-label="' . esc_attr( $aria_label ) . '">';
+			$output .= '<a href="' . esc_url( $item['url'] ) . '" class="' . esc_attr( implode( ' ', $item_classes ) ) . '"' . $badge_attribute . ' aria-label="' . esc_attr( $aria_label ) . '">';
 
 			$output .= '<span class="hp-action-bar__icon"><i class="' . esc_attr( $item['icon'] ) . '" aria-hidden="true"></i>';
 

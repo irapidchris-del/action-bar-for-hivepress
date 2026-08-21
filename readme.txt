@@ -4,7 +4,7 @@ Tags: hivepress, mobile, navigation, bottom bar, app
 Requires at least: 5.8
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.3.3
+Stable tag: 1.4.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -81,6 +81,33 @@ Yes. Tick "Large screens" in the Display section and the bar appears on laptops 
 The plugin includes an update checker that watches the official GitHub repository for new releases. When a newer version is published, WordPress shows the update on the Plugins and Dashboard, Updates screens, and you can install it with the usual one-click update. You can force an immediate check with the Check for updates link on the Plugins screen. No account, licence key, or extra configuration is required.
 
 == Changelog ==
+
+= 1.4.0 =
+* New - "Unread notifications" as a badge counter, showing the real unread count from Notifications
+  for HivePress. Together with the Notifications page, which the bar already offers as a link, this
+  is what lets you put the notification bell on the bar.
+* The existing "All notifications" counter is now called "Account activity (HivePress)". It has
+  never counted notifications from the Notifications plugin: it is HivePress's own combined counter,
+  which Messages, Bookings and Marketplace add into. Nothing about what it counts has changed, and
+  any bar item already using it keeps working exactly as before.
+* The new counter is only offered where Notifications for HivePress is active, and a bar item set to
+  it shows nothing rather than quietly counting something else if that plugin is later removed.
+* The bar's height is now published as a `--hp-action-bar-height` CSS variable on the page root, not
+  just on the bar itself, so anything that needs to sit above the bar can read one value instead of
+  measuring the element. Notifications for HivePress 1.2.0 uses it to keep its pop-ups clear of the
+  bar on phones.
+* Each bar item now carries its badge source as a `data-badge` attribute, so a plugin that owns a
+  counter can keep it up to date without reloading, and without any risk of writing its number into
+  somebody else's badge.
+* Fixed - "View details" is back on the Plugins screen. WordPress only offers that link for a
+  plugin that has told it about itself, and this one stayed quiet whenever there was nothing to
+  update to, which is almost always. The details popup, its changelog and the donate link inside
+  it were all unreachable from the Plugins screen as a result.
+* Fixed - checking for updates no longer holds up an admin page. The check ran while WordPress was
+  building the Plugins screen, so on a site with several of these extensions one page load made one
+  request to GitHub after another and could sit there for many seconds, once, before behaving
+  normally again for hours. The check now runs in the background moments later. Pressing Check for
+  updates still asks GitHub straight away, because you are waiting for that answer.
 
 = 1.3.3 =
 * Checking for updates no longer reports "Could not reach GitHub" when nothing is wrong. GitHub allows a server only a limited number of anonymous update checks each hour, shared by every plugin on the site and, on shared hosting, by every other site on the same server. Running out is ordinary, but it was reported as though the site could not reach GitHub at all. Update checks now read the release from github.com, which sets no such limit, so the message no longer appears. If the limit is ever reached by some other route, the notice now says so plainly instead of blaming your connection.
