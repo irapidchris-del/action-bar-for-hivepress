@@ -3,7 +3,7 @@
  * Plugin Name: Action Bar for HivePress
  * Plugin URI: https://github.com/irapidchris-del/action-bar-for-hivepress
  * Description: Adds a customisable, app-style bottom navigation bar to HivePress websites, on any screen size you choose.
- * Version: 1.4.5
+ * Version: 1.4.6
  * Author: ChrisB @ HivePress Community
  * Author URI: https://community.hivepress.io/u/chrisb/summary
  * Text Domain: action-bar-for-hivepress
@@ -21,7 +21,7 @@
 // Exit if accessed directly.
 defined( 'ABSPATH' ) || exit;
 
-define( 'HPAB_VERSION', '1.4.5' );
+define( 'HPAB_VERSION', '1.4.6' );
 
 // Set up updates from GitHub releases.
 require_once __DIR__ . '/includes/updater.php';
@@ -62,6 +62,17 @@ function hpab_register_extension( $extensions ) {
 
 				break;
 			}
+		}
+
+		// Set it even when nothing was found. Core's own probe (class-core.php:245-256) only runs
+		// while this key is unset, and it concatenates EVERY entry as a string, so on a site with
+		// no premium extension the array entry below would make it warn "Array to string
+		// conversion" on every single request. A path that does not exist is harmless: core's
+		// string branch drops it at its own file_exists() guard (:277), which is the same outcome
+		// as the probe finding nothing, minus the warning. Only ever reached on a renamed folder,
+		// where the array entry is the only way this plugin loads at all.
+		if ( ! isset( $extensions['updates'] ) ) {
+			$extensions['updates'] = __DIR__ . $path;
 		}
 	}
 

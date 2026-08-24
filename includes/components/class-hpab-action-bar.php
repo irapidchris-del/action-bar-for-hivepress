@@ -1303,8 +1303,17 @@ final class Hpab_Action_Bar extends Component {
 		 * notice, a chat launcher, the pop-ups from Notifications for HivePress - has to measure the
 		 * element in JavaScript instead of reading one value in CSS. Emitting it here costs one
 		 * declaration and makes "clear the bar" a one-line rule for everybody.
+		 *
+		 * --hp-action-bar-offset is the height ONLY where the bar is actually on screen, and 0
+		 * everywhere else. The height alone is not enough to clear the bar with, because the bar is
+		 * displayed per breakpoint (mobile only by default) while the body class is present at every
+		 * width: a neighbour reading only the height pushes its own pop-ups up by 56px on a desktop
+		 * that has no bar. Read this one, with the height as a nested fallback for an older copy of
+		 * this plugin that does not publish it:
+		 *
+		 *   bottom: calc(1rem + var(--hp-action-bar-offset, var(--hp-action-bar-height, 56px)));
 		 */
-		$styles = ':root{--hp-action-bar-height:' . $height . 'px;}';
+		$styles = ':root{--hp-action-bar-height:' . $height . 'px;--hp-action-bar-offset:0px;}';
 
 		$styles .= '.hp-action-bar{';
 
@@ -1358,8 +1367,9 @@ final class Hpab_Action_Bar extends Component {
 			]
 		);
 
-		// Set display styles.
-		$display = '.hp-action-bar{display:flex;}body.hp-action-bar-visible{padding-bottom:calc(' . ( $height + 12 ) . 'px + env(safe-area-inset-bottom, 0px));}';
+		// Set display styles. The offset is published in the same breakpoints that display the bar,
+		// so it answers "is the bar in the way here?" rather than "is the bar installed?".
+		$display = '.hp-action-bar{display:flex;}:root{--hp-action-bar-offset:calc(' . $height . 'px + env(safe-area-inset-bottom, 0px));}body.hp-action-bar-visible{padding-bottom:calc(' . ( $height + 12 ) . 'px + env(safe-area-inset-bottom, 0px));}';
 
 		if ( $this->is_setting_enabled( 'enable_mobile', true ) ) {
 			$styles .= '@media (max-width:' . $this->get_css_length( hp\get_array_value( $breakpoints, 'mobile_max' ), '47.99em' ) . '){' . $display . '}';
@@ -1435,9 +1445,9 @@ final class Hpab_Action_Bar extends Component {
 		// Enqueue scripts.
 		wp_enqueue_script(
 			'hivepress-action-bar-frontend',
-			$this->get_extension_url() . '/assets/js/frontend.min.js',
+			$this->get_extension_url() . '/assets/js/frontend.js',
 			[],
-			$this->get_asset_version( 'assets/js/frontend.min.js' ),
+			$this->get_asset_version( 'assets/js/frontend.js' ),
 			true
 		);
 

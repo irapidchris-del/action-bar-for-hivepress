@@ -4,7 +4,7 @@ Tags: hivepress, mobile, navigation, bottom bar, app
 Requires at least: 5.8
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.4.5
+Stable tag: 1.4.6
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -81,6 +81,23 @@ Yes. Tick "Large screens" in the Display section and the bar appears on laptops 
 The plugin includes an update checker that watches the official GitHub repository for new releases. When a newer version is published, WordPress shows the update on the Plugins and Dashboard, Updates screens, and you can install it with the usual one-click update. You can force an immediate check with the Check for updates link on the Plugins screen. No account, licence key, or extra configuration is required.
 
 == Changelog ==
+
+= 1.4.6 =
+* Fixed: no PHP warning on a renamed install folder. If the plugin folder had been renamed, which
+  is what downloading the source as a zip produces, HivePress raised "Array to string conversion"
+  once per request on sites with no paid HivePress extension.
+* Fixed: the bar no longer highlights the wrong item when the address carries a query string. On
+  Plain permalinks every page has one, so using the search box lit Home and left Browse dark, and
+  screen readers were told Home was the current page. The most specific matching item now wins, so
+  a plain address still highlights Home as before.
+* Fixed: other plugins can now place their own pop-ups above the bar correctly. The bar publishes
+  its height as `--hp-action-bar-offset`, which is set only at the screen widths where the bar is
+  actually on screen, so nothing has to guess the breakpoints. Notifications for HivePress and
+  Social Proof for HivePress both use it.
+* Fixed: the bar's front-end script now ships as readable source rather than a minified file, so
+  the behaviour above can be read and checked.
+* Fixed: deleting the plugin now also clears the update check's own leftovers and cancels its
+  background update check.
 
 = 1.4.5 =
 * Fixed: the Notification badge section on the settings screen still named the counters the way
