@@ -136,7 +136,16 @@ foreach ( [
 			'label'      => esc_html__( 'Items', 'action-bar-for-hivepress' ),
 			'caption'    => esc_html__( 'Add item', 'action-bar-for-hivepress' ),
 			'type'       => 'repeater',
-			'fields'     => $action_bar_item_fields,
+
+			/*
+			 * Widened per bar with the values this bar already stores, so a choice whose source is
+			 * temporarily away - a deactivated extension's page, an unpublished page, a beta-era
+			 * custom icon - still renders as the selected option and round-trips through the save,
+			 * instead of falling back to the placeholder and being silently erased. Without this,
+			 * the dropdowns built above only offer what exists right now, and one Save while an
+			 * extension was switched off wiped the stored choice for good.
+			 */
+			'fields'     => $action_bar_component->add_stored_item_options( $action_bar_item_fields, $action_bar_name ),
 
 			'attributes' => [
 				'class' => [ 'hp-action-bar-items' ],
@@ -236,10 +245,19 @@ return [
 							'_order'      => 34,
 						],
 
+						// The three counter names in this description are quoted word for word from
+						// get_badge_sources(), because the Badge dropdown it explains is built from that list.
+						// The two drifted apart once already: 1.4.0 renamed "All notifications" to "Account
+						// activity (HivePress)" and added "Unread notifications", but this paragraph was left
+						// describing the old pair until 1.4.5, so the screen contradicted the control sitting
+						// directly beneath it. Rename or add a counter there and this paragraph must change too.
+						// The conditions each sentence gives are the gates in get_badge_options(), which are the
+						// only thing deciding whether an option is offered: until 1.4.5 this paragraph claimed the
+						// message counter was hidden without message storage, when storage only makes it read zero.
 						'action_bar_enable_badge'      => [
 							'label'       => esc_html__( 'Notification badge', 'action-bar-for-hivepress' ),
 							'caption'     => esc_html__( 'Allow the notification badge on items', 'action-bar-for-hivepress' ),
-							'description' => esc_html__( 'Each item has its own Badge dropdown. All notifications shows HivePress\'s combined unread count, the same number as the one beside your name in the site header, which the Messages, Bookings and Marketplace extensions add to. With none of those three installed it stays at zero. Unread messages counts messages only, and appears in the dropdown only when the Messages extension is active with "Store messages in the database" ticked under HivePress, Settings, Messages. Untick this box to hide every badge at once.', 'action-bar-for-hivepress' ),
+							'description' => esc_html__( 'Each item has its own Badge dropdown. Account activity (HivePress) shows HivePress\'s own combined unread count, the same number as the one beside your name in the site header, which the Messages, Bookings and Marketplace extensions add to. With none of those three installed it stays at zero. Unread messages counts messages only, and appears in the dropdown whenever the Messages extension is active. It stays at zero unless "Store messages in the database" is ticked under HivePress, Settings, Messages, because with that box unticked messages are emailed rather than stored, so there is nothing to count. Unread notifications counts only unread notifications from Notifications for HivePress, and appears in the dropdown only when that plugin is active. Untick this box to hide every badge at once.', 'action-bar-for-hivepress' ),
 							'type'        => 'checkbox',
 							'default'     => true,
 							'_order'      => 40,

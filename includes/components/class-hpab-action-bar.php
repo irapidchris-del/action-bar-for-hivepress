@@ -141,6 +141,20 @@ final class Hpab_Action_Bar extends Component {
 		if ( function_exists( 'wc_get_page_permalink' ) ) {
 			$options['wc_orders'] = esc_html__( 'Placed orders', 'action-bar-for-hivepress' );
 			$options['wc_cart']   = esc_html__( 'Cart', 'action-bar-for-hivepress' );
+
+			/*
+			 * Then the rest of the account area. Subscriptions, downloads, saved cards and anything
+			 * another plugin adds are all account endpoints, and an owner building a bar had no way
+			 * to point at them - only Orders and Cart were offered.
+			 *
+			 * Read from the registered endpoints rather than from wc_get_account_menu_items(),
+			 * because that list is filtered and plugins commonly add their item only for somebody
+			 * who has something to see: asked in wp-admin on behalf of an administrator, it leaves
+			 * those items out entirely.
+			 */
+			foreach ( $this->get_wc_account_endpoints() as $endpoint => $label ) {
+				$options[ 'wcep_' . $endpoint ] = $label;
+			}
 		}
 
 		return $options;
@@ -153,6 +167,10 @@ final class Hpab_Action_Bar extends Component {
 	 * `message_unread_count` request context, and the combined count in
 	 * `notice_count`, which Messages, Bookings and Marketplace all add into.
 	 * The combined count already includes unread messages.
+	 *
+	 * The third counter this returns is not one of those: unread notifications come from the
+	 * separate Notifications for HivePress plugin. So this returns up to three options, not two,
+	 * and get_badge_sources() below is the full list.
 	 *
 	 * @return array<string, string>
 	 */
@@ -368,6 +386,71 @@ final class Hpab_Action_Bar extends Component {
 	 *
 	 * @return array<string, string>
 	 */
+	/**
+	 * Gets the WooCommerce account endpoints an owner can point a bar item at.
+	 *
+	 * Anything that is a page somebody can sit on. The endpoints behind a single order, a password
+	 * reset or an action on a saved card are not, so they are named and left out.
+	 *
+	 * @return array Endpoint slugs mapped to a readable label.
+	 */
+	protected function get_wc_account_endpoints() {
+		if ( ! function_exists( 'WC' ) || ! WC()->query || ! method_exists( WC()->query, 'get_query_vars' ) ) {
+			return [];
+		}
+
+		/**
+		 * Filters the account endpoints never offered as bar items.
+		 *
+		 * @hook hpab/account_endpoint_exclusions
+		 * @param {array} $excluded Endpoint slugs.
+		 * @return {array} Endpoint slugs.
+		 */
+		$excluded = (array) apply_filters(
+			'hpab/account_endpoint_exclusions',
+			[
+				'order-pay',
+				'order-received',
+				'view-order',
+				'lost-password',
+				'add-payment-method',
+				'delete-payment-method',
+				'set-default-payment-method',
+				'view-subscription',
+				'subscription-payment-method',
+
+				// Already offered above under their own names.
+				'orders',
+				'customer-logout',
+			]
+		);
+
+		// The menu is only consulted for its wording, which reads better than a slug where it has it.
+		$labels = function_exists( 'wc_get_account_menu_items' ) ? (array) wc_get_account_menu_items() : [];
+
+		$endpoints = [];
+
+		foreach ( array_keys( (array) WC()->query->get_query_vars() ) as $endpoint ) {
+			$endpoint = (string) $endpoint;
+
+			if ( ! $endpoint || in_array( $endpoint, $excluded, true ) ) {
+				continue;
+			}
+
+			$label = isset( $labels[ $endpoint ] ) ? wp_strip_all_tags( (string) $labels[ $endpoint ] ) : ucwords( str_replace( [ '-', '_' ], ' ', $endpoint ) );
+
+			/* translators: %s: menu item label. */
+			$endpoints[ $endpoint ] = sprintf( esc_html__( '%s (WooCommerce)', 'action-bar-for-hivepress' ), $label );
+		}
+
+		return $endpoints;
+	}
+
+	/**
+	 * Gets the route link options for the item dropdown.
+	 *
+	 * @return array<string, string>
+	 */
 	public function get_route_link_options() {
 		$options = [];
 
@@ -418,6 +501,122 @@ final class Hpab_Action_Bar extends Component {
 			}
 		}
 
+		/*
+		 * Then the account pages that the menu above cannot see.
+		 *
+		 * Reading the account menu only finds an extension's page if that extension registers its
+		 * menu item in the admin, and several do not: this plugin's own Notifications extension adds
+		 * its item inside `if ( ! is_admin() )`, which is a perfectly reasonable thing for a
+		 * front-end-only menu to do, and the effect was that the settings dropdown offered every
+		 * account page except Notifications. Routes carry no such guard - a controller registers them
+		 * everywhere - so scanning them finds the pages the menu misses, whoever wrote the extension.
+		 *
+		 * Do not "simplify" this back to the menu alone. The menu is still read first because an
+		 * extension may give its item a nicer label than its route title, and this fills the gaps.
+		 */
+		foreach ( $this->get_account_route_options() as $key => $label ) {
+			if ( ! isset( $options[ $key ] ) ) {
+				$options[ $key ] = $label;
+			}
+		}
+
+		return $options;
+	}
+
+	/**
+	 * Gets the link options for account pages, read from the routes themselves.
+	 *
+	 * Routes are assembled exactly as the core router assembles them, because the router keeps its
+	 * own copy behind a protected method. Building them again is cheap - controllers return static
+	 * configuration arrays - and re-applying the documented filter keeps any route an extension
+	 * renames or removes in step with what the site actually serves.
+	 *
+	 * @return array<string, string>
+	 */
+	protected function get_account_route_options() {
+		$routes = [];
+
+		/*
+		 * Core::get_controllers() is served by Core::__call(), which builds and returns the object
+		 * list for any get_<directory>() name. PHPStan cannot see through that, hence the ignore -
+		 * which has to be the LAST line before the call, so keep this explanation above it.
+		 */
+		// @phpstan-ignore-next-line
+		foreach ( hivepress()->get_controllers() as $controller ) {
+			$routes = hp\merge_arrays( $routes, $controller->get_routes() );
+		}
+
+		/** This filter is documented in HivePress core, includes/components/class-router.php. */
+		$routes = apply_filters( 'hivepress/v1/routes', $routes );
+
+		/*
+		 * Two kinds of route are skipped.
+		 *
+		 * The first are pages the settings screen already offers under a plainer name, which would
+		 * otherwise appear twice.
+		 *
+		 * The second are the one-shot pages a visitor reaches by clicking a link in an email -
+		 * resetting a password, confirming an address. They are built on the account page and so look
+		 * exactly like account pages to this scan, but "Email Verified" is not somewhere anybody
+		 * navigates to, and offering it as a menu destination would produce a permanently broken item.
+		 */
+		$covered = [
+			'user_account_page',
+			'user_edit_settings_page',
+			'user_login_page',
+			'messages_thread_page',
+			'listings_favorite_page',
+			'user_password_reset_page',
+			'user_email_verify_page',
+		];
+
+		/**
+		 * Filters the account routes left out of the item link dropdown.
+		 *
+		 * @hook hpab/account_route_exclusions
+		 * @param {array} $routes Route names.
+		 * @return {array} Route names.
+		 */
+		$covered = (array) apply_filters( 'hpab/account_route_exclusions', $covered );
+
+		$options = [];
+
+		foreach ( $routes as $name => $route ) {
+			if ( ! is_array( $route ) || in_array( $name, $covered, true ) ) {
+				continue;
+			}
+
+			// Only the account pages themselves. A deeper page, such as notification settings, is
+			// based on its own parent rather than on the account page, and is not a menu destination.
+			if ( 'user_account_page' !== hp\get_array_value( $route, 'base' ) ) {
+				continue;
+			}
+
+			// Endpoints and form handlers are not pages anybody can link a menu item to.
+			if ( hp\get_array_value( $route, 'rest' ) || 'GET' !== strtoupper( (string) ( hp\get_array_value( $route, 'method' ) ? $route['method'] : 'GET' ) ) ) {
+				continue;
+			}
+
+			// A path with a parameter in it needs a specific record, which a fixed menu item has not got.
+			if ( false !== strpos( (string) hp\get_array_value( $route, 'path' ), '(?P<' ) ) {
+				continue;
+			}
+
+			$title = hp\get_array_value( $route, 'title' );
+
+			/*
+			 * Callable titles are left alone on purpose. They are written for the front end and read
+			 * the current request - one of them fetching the listing being viewed is what made the
+			 * account-menu call above need its try/catch. There is nothing to show in the admin, so
+			 * the option is skipped rather than risking a fatal on the settings screen.
+			 */
+			if ( ! is_string( $title ) || ! $title ) {
+				continue;
+			}
+
+			$options[ 'route_' . $name ] = $title;
+		}
+
 		return $options;
 	}
 
@@ -444,10 +643,156 @@ final class Hpab_Action_Bar extends Component {
 		);
 
 		foreach ( $pages as $page ) {
-			$options[ 'page_' . $page->ID ] = $page->post_title;
+			/*
+			 * A page with no title would otherwise be a blank line in the dropdown that an admin can
+			 * select but cannot identify - a real site had one, and picking it silently produced a
+			 * menu item pointing at /8332-2/. WordPress falls back to the auto-generated slug for the
+			 * URL, so show that same slug here and the two at least agree.
+			 */
+			$title = trim( (string) $page->post_title );
+
+			if ( ! $title ) {
+				/* translators: %s: page slug. */
+				$title = sprintf( esc_html__( '(no title) - /%s/', 'action-bar-for-hivepress' ), $page->post_name );
+			}
+
+			$options[ 'page_' . $page->ID ] = $title;
 		}
 
 		return $options;
+	}
+
+	/**
+	 * Adds the stored item values back into the settings dropdown options.
+	 *
+	 * The link, icon and badge dropdowns are built from what exists right now: WooCommerce
+	 * destinations only while WooCommerce is active, extension pages only while their extension is
+	 * active, pages only while they are published. The front end deliberately preserves a stored
+	 * value whose source has gone away (see get_badge_sources()), but a select can only round-trip
+	 * a value it renders as an option: with the option missing, the browser falls back to the
+	 * placeholder, the next Save posts an empty string, and the stored choice is erased for good -
+	 * deactivating Bookings for an afternoon was enough to silently lose every Bookings item on the
+	 * next save of this tab. So each bar's dropdowns are widened with the values that bar already
+	 * stores, labelled as currently unavailable, and the choice survives the save exactly as the
+	 * section description promises. This runs when the settings config is built, which HivePress
+	 * does on the save request as well as the render, so validation accepts the value too. Widened
+	 * per bar rather than once for both, so one bar's leftover is never offered as a fresh choice
+	 * on the other.
+	 *
+	 * @param array<string, array<string, mixed>> $fields Repeater field arguments keyed by field name.
+	 * @param string                              $bar Bar name.
+	 * @return array<string, array<string, mixed>>
+	 */
+	public function add_stored_item_options( $fields, $bar ) {
+		$rows = array_filter( (array) get_option( 'hp_action_bar_' . $bar . '_items', [] ), 'is_array' );
+
+		foreach ( $rows as $row ) {
+
+			// Keep the stored link selectable.
+			$link = hp\get_array_value( $row, 'link' );
+
+			if ( is_string( $link ) && $link && ! isset( $fields['link']['options'][ $link ] ) ) {
+				$label = $this->get_unavailable_link_label( $link );
+
+				if ( $label ) {
+					/* translators: %s: option name. */
+					$fields['link']['options'][ $link ] = sprintf( esc_html__( '%s (currently unavailable)', 'action-bar-for-hivepress' ), $label );
+				}
+			}
+
+			// Keep the stored badge counter selectable. Only counters the plugin understands are
+			// preserved: get_bar_items() rewrites anything else to a named counter on display, so an
+			// unrecognised leftover has nothing to come back for.
+			$badge = hp\get_array_value( $row, 'badge' );
+
+			if ( is_string( $badge ) && $badge && ! isset( $fields['badge']['options'][ $badge ] ) ) {
+				$source = hp\get_array_value( $this->get_badge_sources(), $badge );
+
+				if ( $source ) {
+					/* translators: %s: option name. */
+					$fields['badge']['options'][ $badge ] = sprintf( esc_html__( '%s (currently unavailable)', 'action-bar-for-hivepress' ), $source );
+				}
+			}
+
+			// Keep the stored icon selectable. Icons from the beta's free-text box, such as
+			// "far fa-heart", are not in the bundled list, and a slug can drop out of that list when
+			// the bundled set changes; both still render on the front end, so both must survive a save.
+			$icon = hp\get_array_value( $row, 'icon' );
+
+			if ( is_string( $icon ) && $icon ) {
+				/*
+				 * The icon options ship as the name of a HivePress options preset, which core only
+				 * resolves into a list when the field is built. Appending needs the real list, so it
+				 * is resolved here the same way core resolves it - but assigned back only when this
+				 * icon is actually missing, and then together with the select2 icon preview
+				 * attribute that the preset name would otherwise have switched on.
+				 */
+				$icon_options = is_array( $fields['icon']['options'] ) ? $fields['icon']['options'] : (array) hivepress()->get_config( (string) $fields['icon']['options'] );
+
+				if ( ! isset( $icon_options[ $icon ] ) ) {
+					/* translators: %s: icon name. */
+					$icon_options[ $icon ] = sprintf( esc_html__( '%s (custom)', 'action-bar-for-hivepress' ), $icon );
+
+					$fields['icon']['options'] = $icon_options;
+
+					$fields['icon']['attributes']['data-template'] = 'icon';
+				}
+			}
+		}
+
+		return $fields;
+	}
+
+	/**
+	 * Builds a readable label for a stored link whose destination is unavailable.
+	 *
+	 * Only destinations the front end knows how to resolve are named here - the same set
+	 * get_bar_items() accepts - so a corrupted value cannot re-enter the dropdown through this path.
+	 *
+	 * @param string $link Stored link value.
+	 * @return string Empty string when the value is not one the plugin can preserve.
+	 */
+	protected function get_unavailable_link_label( $link ) {
+
+		// A page keeps its title through draft and trash, so name it while it can still come back.
+		if ( 0 === strpos( $link, 'page_' ) ) {
+			$page_id = absint( substr( $link, 5 ) );
+
+			$page = $page_id ? get_post( $page_id ) : null;
+
+			$title = $page ? trim( (string) $page->post_title ) : '';
+
+			if ( ! $title ) {
+				/* translators: %s: page ID. */
+				$title = sprintf( esc_html__( 'Page #%s', 'action-bar-for-hivepress' ), $page_id );
+			}
+
+			return $title;
+		}
+
+		// The two named WooCommerce destinations keep the labels they had while WooCommerce was active.
+		if ( 'wc_orders' === $link ) {
+			return esc_html__( 'Placed orders', 'action-bar-for-hivepress' );
+		}
+
+		if ( 'wc_cart' === $link ) {
+			return esc_html__( 'Cart', 'action-bar-for-hivepress' );
+		}
+
+		// Routes and account endpoints have no readable name while their extension is away, so the
+		// slug is dressed up instead: "route_bookings_view_page" reads as "Bookings View Page".
+		$prefixes = [
+			'route_' => 6,
+			'wcep_'  => 5,
+		];
+
+		foreach ( $prefixes as $prefix => $length ) {
+			if ( 0 === strpos( $link, $prefix ) ) {
+				return ucwords( str_replace( [ '-', '_' ], ' ', substr( $link, $length ) ) );
+			}
+		}
+
+		return '';
 	}
 
 	/**
@@ -532,7 +877,13 @@ final class Hpab_Action_Bar extends Component {
 				break;
 
 			default:
-				if ( 0 === strpos( $link, 'route_' ) ) {
+				if ( 0 === strpos( $link, 'wcep_' ) ) {
+
+					// Any other WooCommerce account endpoint, stored as wcep_{endpoint}.
+					if ( function_exists( 'wc_get_account_endpoint_url' ) ) {
+						$url = (string) wc_get_account_endpoint_url( substr( $link, 5 ) );
+					}
+				} elseif ( 0 === strpos( $link, 'route_' ) ) {
 					$url = $this->get_route_url( substr( $link, 6 ) );
 				} elseif ( 0 === strpos( $link, 'page_' ) ) {
 					$page_id = absint( substr( $link, 5 ) );
@@ -644,7 +995,7 @@ final class Hpab_Action_Bar extends Component {
 			// Get item link.
 			$link = hp\get_array_value( $row, 'link' );
 
-			if ( ! $link || ( ! isset( $this->get_link_options()[ $link ] ) && 0 !== strpos( (string) $link, 'page_' ) && 0 !== strpos( (string) $link, 'route_' ) ) ) {
+			if ( ! $link || ( ! isset( $this->get_link_options()[ $link ] ) && 0 !== strpos( (string) $link, 'page_' ) && 0 !== strpos( (string) $link, 'route_' ) && 0 !== strpos( (string) $link, 'wcep_' ) ) ) {
 				continue;
 			}
 

@@ -4,7 +4,7 @@ Tags: hivepress, mobile, navigation, bottom bar, app
 Requires at least: 5.8
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.4.0
+Stable tag: 1.4.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -21,7 +21,7 @@ Features:
 * Optional prominent style per item, lifting it into a raised circle, ideal for one main action such as Add listing.
 * A separate Vendor Bar shown to users with a published vendor profile instead of the standard User Bar.
 * Full colour controls with a neutral light-grey palette out of the box, including bar, icon, label, active, prominent, and badge colours, each with a colour wheel and a typable hex box.
-* A notification badge you can switch on per item, with a choice of counter for each: the unread message count, or the combined HivePress notification count that messages, bookings, and orders feed.
+* A notification badge you can switch on per item, with a choice of counter for each: Account activity (HivePress), the combined count that messages, bookings, and orders feed; Unread messages; or Unread notifications from Notifications for HivePress.
 * Adjustable bar height between 44 and 120 pixels.
 * Individual on and off toggles for small, medium and large screens, so you can run the bar on phones only, or right across desktop as well. On large screens the buttons gather into a centred dock rather than stretching across the window.
 * Visibility controls to hide the bar on selected pages and on the WooCommerce cart and checkout.
@@ -50,7 +50,7 @@ Each item has the same icon dropdown HivePress uses for its own attribute icons,
 
 = How does the notification badge work? =
 
-HivePress keeps two unread counters, and each item's Badge dropdown chooses which one to show. All notifications is the combined count from HivePress's own header, which extensions such as Messages, Bookings, and Marketplace add to (unread messages, unpaid bookings, booking requests, and pending orders). Unread messages is the narrower messages-only count, matching the badge on the account menu's Messages item; it needs the Messages extension with message storage enabled. Since the combined count already includes unread messages, a Messages item usually reads best with Unread messages while an Account item shows All notifications. The count is rendered fresh on every page view for signed-in users, so it clears as soon as the messages are read or the bookings are handled. If your caching plugin serves cached pages to signed-in users, exclude signed-in visitors from the cache so the count stays personal and current.
+Each item's Badge dropdown chooses which unread counter appears on that item, and there are three to choose from. Account activity (HivePress) is the combined count from HivePress's own header, which extensions such as Messages, Bookings, and Marketplace add to (unread messages, unpaid bookings, booking requests, and pending orders); it does not include notifications from Notifications for HivePress. Unread messages is the narrower messages-only count, matching the badge on the account menu's Messages item; it is offered whenever the Messages extension is active, and reads zero unless "Store messages in the database" is ticked under HivePress, Settings, Messages. Unread notifications is the unread count from Notifications for HivePress, which is what puts a working notification bell on the bar; it is offered only while that plugin is active, and an item set to it shows nothing rather than quietly counting something else if that plugin is later removed. Since the combined count already includes unread messages, a Messages item usually reads best with Unread messages, a Notifications item with Unread notifications, and an Account item with Account activity (HivePress). The count is rendered fresh on every page view for signed-in users, so it clears as soon as the messages are read or the bookings are handled. If your caching plugin serves cached pages to signed-in users, exclude signed-in visitors from the cache so the count stays personal and current.
 
 = How do I get the frosted glass look? =
 
@@ -81,6 +81,43 @@ Yes. Tick "Large screens" in the Display section and the bar appears on laptops 
 The plugin includes an update checker that watches the official GitHub repository for new releases. When a newer version is published, WordPress shows the update on the Plugins and Dashboard, Updates screens, and you can install it with the usual one-click update. You can force an immediate check with the Check for updates link on the Plugins screen. No account, licence key, or extra configuration is required.
 
 == Changelog ==
+
+= 1.4.5 =
+* Fixed: the Notification badge section on the settings screen still named the counters the way
+  they were named before 1.4.0, so its explanation disagreed with the Badge dropdown sitting
+  directly beneath it. It called "Account activity (HivePress)" by its old name, "All
+  notifications", and said nothing at all about "Unread notifications", which that same release
+  added. The wording now matches the three choices actually offered and says when each one
+  appears. The feature list and the badge question in this readme have been corrected the same way.
+* Fixed: the same explanation said the "Unread messages" counter is offered only when "Store
+  messages in the database" is ticked under HivePress, Settings, Messages. It is offered
+  whenever the Messages extension is active; that setting decides whether the number is ever
+  anything but zero, not whether the counter is on the list. Corrected in both places.
+
+= 1.4.4 =
+* Fixed: saving the settings tab erased an item's destination, badge or custom icon whenever its
+  source was temporarily unavailable - a page moved to draft, a page belonging to a deactivated
+  extension, a badge counter whose extension was switched off, or an icon saved in the beta's
+  free-text box. Such values now stay selected in the dropdown, marked "(currently unavailable)",
+  and carry on working when their source returns, as the section description always promised.
+
+= 1.4.3 =
+* Maintenance: regenerated the translation template so the 1.4.2 "(no title)" page label is
+  translatable; no code changes.
+
+= 1.4.2 =
+* Added: Notifications, and any other account page an extension adds, now appear in the item link
+  dropdown. The list was built from the account menu, which some extensions only register on the
+  front end; it now reads the routes as well, so nothing is missed.
+* Fixed: a published page with no title showed as a blank, unidentifiable choice in the link
+  dropdown. It now shows as "(no title)" with the slug the link would point at.
+
+= 1.4.1 =
+* **Added - the rest of the WooCommerce account area** to the list of things a bar item can point
+  at. Only Placed orders and Cart were offered before; Subscriptions, Downloads, Addresses, Payment
+  methods and Account details are all there now, along with any account page another plugin adds.
+  They are read from the registered endpoints rather than from the account menu, because that menu
+  is built for whoever is looking and leaves out anything they personally have none of.
 
 = 1.4.0 =
 * New - "Unread notifications" as a badge counter, showing the real unread count from Notifications
