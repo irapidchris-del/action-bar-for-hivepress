@@ -191,4 +191,105 @@
 		best.classList.add('hp-action-bar__item--active');
 		best.setAttribute('aria-current', 'page');
 	}
+
+	/* ---- sign-in pop-up ---------------------------------------------------- */
+
+	/*
+	 * Items set to "Sign in pop-up" carry the real login page in their href, so
+	 * they work with no scripting at all. When HivePress's footer modal and
+	 * fancybox are both present, the click is upgraded to open the same
+	 * #user_login_modal that core's own "Sign In" menu link opens, bound the
+	 * same way core binds it (assets/js/common.js, the modal component). The
+	 * feature detection runs per click rather than once, because core renders
+	 * the modal in the footer and this script must not depend on load order.
+	 */
+	Array.prototype.forEach.call(bar.querySelectorAll('.hp-action-bar__item[data-hpab-auth-modal]'), function (item) {
+		item.addEventListener('click', function (event) {
+			if (document.getElementById('user_login_modal') && window.jQuery && window.jQuery.fancybox) {
+				event.preventDefault();
+
+				window.jQuery.fancybox.close();
+				window.jQuery.fancybox.open({
+					src: '#user_login_modal',
+					touch: false,
+				});
+			}
+		});
+	});
+
+	/* ---- notifications bell ------------------------------------------------ */
+
+	/*
+	 * The bar renders its own complete bell markup (see render_bell_item() in
+	 * the PHP) and the Notifications for HivePress script initialises every
+	 * bell instance on the page, this one included, so opening, loading and
+	 * the live count all belong to that script. The stylesheet anchors the
+	 * bar bell's panel ABOVE the bell, centred on it; the only job left here
+	 * is keeping that centred panel on screen when the bell sits near a
+	 * viewport edge. The shift is measured after the notifications script's
+	 * own click handler has shown the panel - it was bound first, so it runs
+	 * first on the same click - and republished on resize while open.
+	 */
+	(function () {
+		var wrap = bar.querySelector('.hp-action-bar__bell .hp-notification-bell');
+
+		if (!wrap) {
+			return;
+		}
+
+		var toggle = wrap.querySelector('.hp-notification-bell__toggle'),
+			panel = wrap.querySelector('.hp-notification-bell__panel');
+
+		if (!toggle || !panel) {
+			return;
+		}
+
+		var GUTTER = 8;
+
+		function clamp() {
+			if (panel.hidden) {
+				return;
+			}
+
+			// Measure where the centred panel would sit, from the anchor
+			// rather than from the panel's own rect, so a shift applied on an
+			// earlier open never feeds back into this measurement.
+			panel.style.setProperty('--hpab-panel-shift', '0px');
+
+			var width = panel.offsetWidth;
+
+			if (!width) {
+				return;
+			}
+
+			var anchor = toggle.getBoundingClientRect(),
+				center = anchor.left + anchor.width / 2,
+				left = center - width / 2,
+				right = center + width / 2,
+				shift = 0;
+
+			if (left < GUTTER) {
+				shift = GUTTER - left;
+			} else if (right > window.innerWidth - GUTTER) {
+				shift = window.innerWidth - GUTTER - right;
+			}
+
+			if (shift) {
+				panel.style.setProperty('--hpab-panel-shift', Math.round(shift) + 'px');
+			}
+		}
+
+		toggle.addEventListener('click', function () {
+			// After the notifications script's handler on this same click has
+			// toggled the panel; a timeout also covers the case where that
+			// script was registered after this one.
+			window.setTimeout(clamp, 0);
+		});
+
+		['resize', 'orientationchange'].forEach(function (name) {
+			window.addEventListener(name, function () {
+				window.setTimeout(clamp, 0);
+			});
+		});
+	})();
 })();
