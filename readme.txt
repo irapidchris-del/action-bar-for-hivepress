@@ -17,12 +17,13 @@ Action Bar for HivePress gives your marketplace a more app-like feel by adding a
 Features:
 
 * Up to five items per bar, each with a Font Awesome icon, an optional label, and a link. Drag to reorder them.
-* Link choices for the homepage, listings, listing submission, vendors, account or login, messages, favourites, any HivePress account or extension page, any published WordPress page, the WooCommerce cart and orders (when WooCommerce is installed), or any custom URL.
+* Link choices for the homepage, listings, listing submission, vendors, account or login, messages, favourites, the signed-in user's own public profile, a sign-in pop-up for logged-out visitors, the Notifications for HivePress bell, any HivePress account or extension page, any published WordPress page, the WooCommerce cart and account area (when WooCommerce is installed), or any custom URL.
 * Optional prominent style per item, lifting it into a raised circle, ideal for one main action such as Add listing.
 * A separate Vendor Bar shown to users with a published vendor profile instead of the standard User Bar.
-* Full colour controls with a neutral light-grey palette out of the box, including bar, icon, label, active, prominent, and badge colours, each with a colour wheel and a typable hex box.
+* A separate Logged-Out Bar, switched on with its own toggle, so visitors who are not signed in can be shown a different set of items.
+* Full colour controls with a neutral light-grey palette out of the box, including bar, icon, label, active, prominent, and badge colours, plus an optional rounded backdrop behind every icon, each with a colour wheel and a typable hex box.
 * A notification badge you can switch on per item, with a choice of counter for each: Account activity (HivePress), the combined count that messages, bookings, and orders feed; Unread messages; or Unread notifications from Notifications for HivePress.
-* Adjustable bar height between 44 and 120 pixels.
+* Adjustable bar height between 44 and 120 pixels, adjustable icon size, an icon weight that thickens the glyphs, and a separate corner radius for each corner of the bar.
 * Individual on and off toggles for mobile, tablet and desktop screens, so you can run the bar on phones only, or right across desktop as well. On large screens the buttons gather into a centred dock rather than stretching across the window.
 * Visibility controls to hide the bar on selected pages and on the WooCommerce cart and checkout.
 * Labels can be positioned above or below the icons.
@@ -46,7 +47,7 @@ Once installed, the plugin checks for new versions automatically and updates thr
 
 = Which icons can I use? =
 
-Each item has the same icon dropdown HivePress uses for its own attribute icons, showing around a thousand Font Awesome 5 solid icons as live previews that you can search by name. If you need a newer Font Awesome 6 or 7 name, or a brand icon, set it with the `hivepress/v1/action_bar/items` filter, where you can supply full class names like `fab fa-whatsapp` or `fa-solid fa-plane-up`. The plugin includes the solid and brand fonts, so those two styles are the ones that render; the regular, light, thin and duotone styles are not included. Note that a theme or plugin which replaces or subsets Font Awesome can remove glyphs, so check your chosen icons still appear after such a change.
+Each item has an icon dropdown with live previews that you can search by name. It lists the thousand or so Font Awesome 5 solid icons HivePress uses for its own attribute icons, the names added in Font Awesome 6 and 7, and a set of brand icons such as Stripe, PayPal and WhatsApp, which are marked "(brand)" so you can tell them apart. The plugin ships the solid, regular and brand fonts, so those three styles render; the light, thin and duotone styles belong to Font Awesome Pro and are not included. To set a full class name yourself, such as `far fa-heart`, use the `hivepress/v1/action_bar/items` filter. Note that a theme or plugin which replaces or subsets Font Awesome can remove glyphs, so check your chosen icons still appear after such a change.
 
 = How does the notification badge work? =
 
@@ -74,7 +75,7 @@ The bar switches on how wide the browser window is, not on what device someone i
 
 = Can I show the bar on desktop too? =
 
-Yes. Tick "Large screens" in the Display section and the bar appears on laptops and desktop computers as well. Most sites leave this off, because visitors on a big screen already have your main menu and the bar takes up room at the bottom of every page, but it is worth turning on if you want the site to feel like an app everywhere. On large screens the buttons gather into a centred dock instead of stretching the full width, which is what they do on phones.
+Yes. Tick "Desktop" in the Display section and the bar appears on laptops and desktop computers as well. Most sites leave this off, because visitors on a big screen already have your main menu and the bar takes up room at the bottom of every page, but it is worth turning on if you want the site to feel like an app everywhere. On large screens the buttons gather into a centred dock instead of stretching the full width, which is what they do on phones.
 
 = How are updates delivered? =
 
@@ -144,7 +145,8 @@ The plugin includes an update checker that watches the official GitHub repositor
 * Added: Font Awesome 6 and 7 icon names, including brand icons such as Stripe and PayPal, with
   the full Font Awesome stylesheet loaded once and shared with this author's other plugins.
 * Added: quick links at the top of the settings tab that jump to each section, with dividers
-  between sections and shorter, easier-to-scan descriptions.
+  between sections. The descriptions have been shortened, and the section descriptions and
+  tooltips now wrap at a readable width instead of stretching across the window.
 * Changed: the screen size options are named Mobile, Tablet and Desktop again.
 * Changed: the counter Badge dropdown only offers counters whose plugin is active, judged at the
   moment the screen is built, and stored choices still survive a temporary deactivation.
