@@ -11,16 +11,16 @@ use HivePress\Helpers as hp;
 defined( 'ABSPATH' ) || exit;
 
 // Get the action bar component.
-/** @var \HivePress\Components\Hpab_Action_Bar $action_bar_component */
-$action_bar_component = hivepress()->hpab_action_bar;
+/** @var \HivePress\Components\Hpab_Action_Bar $hpab_component */
+$hpab_component = hivepress()->hpab_action_bar;
 
 // Set colour fields.
-$action_bar_color_fields = [];
+$hpab_color_fields = [];
 
-$action_bar_color_order = 10;
+$hpab_color_order = 10;
 
 // The colour field only exists in HivePress 1.7.26 and later, so fall back to a plain hex box on older cores.
-$action_bar_color_type = class_exists( '\HivePress\Fields\Color' ) ? 'color' : 'text';
+$hpab_color_type = class_exists( '\HivePress\Fields\Color' ) ? 'color' : 'text';
 
 /*
  * Descriptions here and below are deliberately short: one or two sentences with only what an admin
@@ -37,42 +37,42 @@ foreach ( [
 	'prominent_icon'       => [ esc_html__( 'Prominent icon colour', 'action-bar-for-hivepress' ), '#ffffff', esc_html__( 'The icon inside the Prominent circle. Pick a strong contrast with its background.', 'action-bar-for-hivepress' ) ],
 	'badge_background'     => [ esc_html__( 'Badge background', 'action-bar-for-hivepress' ), '#d63638', esc_html__( 'The unread counter bubble, shown only when the count is above zero.', 'action-bar-for-hivepress' ) ],
 	'badge_text'           => [ esc_html__( 'Badge text colour', 'action-bar-for-hivepress' ), '#ffffff', esc_html__( 'The number inside the bubble.', 'action-bar-for-hivepress' ) ],
-] as $action_bar_color_name => $action_bar_color_args ) {
-	$action_bar_color_field = [
-		'label'      => $action_bar_color_args[0],
-		'type'       => $action_bar_color_type,
+] as $hpab_color_name => $hpab_color_args ) {
+	$hpab_color_field = [
+		'label'      => $hpab_color_args[0],
+		'type'       => $hpab_color_type,
 		'max_length' => 7,
 
 		'attributes' => [
 			'class' => [ 'hp-action-bar-color-picker' ],
 		],
 
-		'_order'     => $action_bar_color_order,
+		'_order'     => $hpab_color_order,
 	];
 
 	// A colour with no default, such as the icon background, must not seed the picker: an empty
 	// value means "off" rather than "back to a colour".
-	if ( '' !== $action_bar_color_args[1] ) {
-		$action_bar_color_field['default'] = $action_bar_color_args[1];
+	if ( '' !== $hpab_color_args[1] ) {
+		$hpab_color_field['default'] = $hpab_color_args[1];
 
-		$action_bar_color_field['attributes']['data-default-color'] = $action_bar_color_args[1];
+		$hpab_color_field['attributes']['data-default-color'] = $hpab_color_args[1];
 	}
 
-	if ( isset( $action_bar_color_args[2] ) ) {
-		$action_bar_color_field['description'] = $action_bar_color_args[2];
+	if ( isset( $hpab_color_args[2] ) ) {
+		$hpab_color_field['description'] = $hpab_color_args[2];
 	}
 
-	$action_bar_color_fields[ 'action_bar_color_' . $action_bar_color_name ] = $action_bar_color_field;
+	$hpab_color_fields[ 'action_bar_color_' . $hpab_color_name ] = $hpab_color_field;
 
-	$action_bar_color_order += 10;
+	$hpab_color_order += 10;
 }
 
 // Set item fields.
-$action_bar_item_fields = [
+$hpab_item_fields = [
 	'link'  => [
 		'placeholder' => esc_html__( 'Link', 'action-bar-for-hivepress' ),
 		'type'        => 'select',
-		'options'     => $action_bar_component->get_link_options() + $action_bar_component->get_route_link_options() + $action_bar_component->get_page_options(),
+		'options'     => $hpab_component->get_link_options() + $hpab_component->get_route_link_options() + $hpab_component->get_page_options(),
 		'_order'      => 10,
 	],
 
@@ -84,7 +84,7 @@ $action_bar_item_fields = [
 	'icon'  => [
 		'placeholder' => esc_html__( 'Icon', 'action-bar-for-hivepress' ),
 		'type'        => 'select',
-		'options'     => $action_bar_component->get_icon_options(),
+		'options'     => $hpab_component->get_icon_options(),
 
 		'attributes'  => [
 			'data-template' => 'icon',
@@ -131,13 +131,13 @@ $action_bar_item_fields = [
 	'badge' => [
 		'placeholder' => esc_html__( 'No badge', 'action-bar-for-hivepress' ),
 		'type'        => 'select',
-		'options'     => $action_bar_component->get_badge_options(),
+		'options'     => $hpab_component->get_badge_options(),
 		'_order'      => 70,
 	],
 ];
 
 // Set item sections.
-$action_bar_item_sections = [];
+$hpab_item_sections = [];
 
 foreach ( [
 	'guest'  => [
@@ -157,9 +157,9 @@ foreach ( [
 		'description' => esc_html__( 'Up to 5 items shown to users with a published vendor profile when the vendor bar is enabled. If every row here is empty or broken, vendors see the User Bar items instead.', 'action-bar-for-hivepress' ),
 		'_order'      => 50,
 	],
-] as $action_bar_name => $action_bar_section ) {
-	$action_bar_section['fields'] = [
-		'action_bar_' . $action_bar_name . '_items' => [
+] as $hpab_name => $hpab_section ) {
+	$hpab_section['fields'] = [
+		'action_bar_' . $hpab_name . '_items' => [
 			'label'      => esc_html__( 'Items', 'action-bar-for-hivepress' ),
 			'caption'    => esc_html__( 'Add item', 'action-bar-for-hivepress' ),
 			'type'       => 'repeater',
@@ -172,18 +172,18 @@ foreach ( [
 			 * the dropdowns built above only offer what exists right now, and one Save while an
 			 * extension was switched off wiped the stored choice for good.
 			 */
-			'fields'     => $action_bar_component->add_stored_item_options( $action_bar_item_fields, $action_bar_name ),
+			'fields'     => $hpab_component->add_stored_item_options( $hpab_item_fields, $hpab_name ),
 
 			'attributes' => [
 				'class' => [ 'hp-action-bar-items' ],
 			],
 
-			'default'    => $action_bar_component->get_item_defaults( $action_bar_name ),
+			'default'    => $hpab_component->get_item_defaults( $hpab_name ),
 			'_order'     => 10,
 		],
 	];
 
-	$action_bar_item_sections[ $action_bar_name . '_items' ] = $action_bar_section;
+	$hpab_item_sections[ $hpab_name . '_items' ] = $hpab_section;
 }
 
 return [
@@ -431,10 +431,10 @@ return [
 					'title'       => esc_html__( 'Colours', 'action-bar-for-hivepress' ),
 					'description' => esc_html__( 'Use the colour wheel or type a hex code such as #f5f5f5. Clear a field and save to restore its default.', 'action-bar-for-hivepress' ),
 					'_order'      => 30,
-					'fields'      => $action_bar_color_fields,
+					'fields'      => $hpab_color_fields,
 				],
 			],
-			$action_bar_item_sections,
+			$hpab_item_sections,
 			[
 
 				/*

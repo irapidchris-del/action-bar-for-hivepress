@@ -145,8 +145,9 @@ The plugin includes an update checker that watches the official GitHub repositor
 * Added: Font Awesome 6 and 7 icon names, including brand icons such as Stripe and PayPal, with
   the full Font Awesome stylesheet loaded once and shared with this author's other plugins.
 * Added: quick links at the top of the settings tab that jump to each section, with dividers
-  between sections. The descriptions have been shortened, and the section descriptions and
-  tooltips now wrap at a readable width instead of stretching across the window.
+  between sections. The descriptions have been shortened, the section descriptions now wrap at a
+  readable width instead of stretching across the window, and the hover tooltips are wider so
+  their text no longer breaks into ragged slivers.
 * Changed: the screen size options are named Mobile, Tablet and Desktop again.
 * Changed: the counter Badge dropdown only offers counters whose plugin is active, judged at the
   moment the screen is built, and stored choices still survive a temporary deactivation.
