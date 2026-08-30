@@ -96,6 +96,12 @@ if ( $hpab_delete_all ) {
 	// colour, one per bar of repeater items. This runs once, while the plugin is being deleted, so
 	// there is nothing worth caching.
 	//
+	// The prefix sweep is also why no version ever has to enumerate keys here: everything 1.5.0
+	// added (the guest bar toggle and items, icon size and weight, the four corner radii, the icon
+	// background colour) and everything it retired (hp_action_bar_enable_badge, deleted by the
+	// admin-side migration but still swept up here on a site that never ran it) all start with
+	// "hp_action_bar". A new option that does not carry that prefix would be the bug.
+	//
 	// The "delete all data" option itself is excluded here and removed at the very end. If this run
 	// fails part-way through, the flag is still set, so a second attempt finishes the job. Sweeping it
 	// away first would silently flip the site back to "retain" with half the settings already gone.

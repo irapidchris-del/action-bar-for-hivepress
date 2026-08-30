@@ -2,9 +2,9 @@
 Contributors: chrisb
 Tags: hivepress, mobile, navigation, bottom bar, app
 Requires at least: 5.8
-Tested up to: 7.0
+Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.4.6
+Stable tag: 1.5.6
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -23,7 +23,7 @@ Features:
 * Full colour controls with a neutral light-grey palette out of the box, including bar, icon, label, active, prominent, and badge colours, each with a colour wheel and a typable hex box.
 * A notification badge you can switch on per item, with a choice of counter for each: Account activity (HivePress), the combined count that messages, bookings, and orders feed; Unread messages; or Unread notifications from Notifications for HivePress.
 * Adjustable bar height between 44 and 120 pixels.
-* Individual on and off toggles for small, medium and large screens, so you can run the bar on phones only, or right across desktop as well. On large screens the buttons gather into a centred dock rather than stretching across the window.
+* Individual on and off toggles for mobile, tablet and desktop screens, so you can run the bar on phones only, or right across desktop as well. On large screens the buttons gather into a centred dock rather than stretching across the window.
 * Visibility controls to hide the bar on selected pages and on the WooCommerce cart and checkout.
 * Labels can be positioned above or below the icons.
 * An optional frosted glass effect, with adjustable opacity, blur strength and a soft top edge, that blurs the page scrolling behind the bar.
@@ -46,7 +46,7 @@ Once installed, the plugin checks for new versions automatically and updates thr
 
 = Which icons can I use? =
 
-Each item has the same icon dropdown HivePress uses for its own attribute icons, showing around a thousand Font Awesome 5 solid icons as live previews that you can search by name. If you need an icon from another Font Awesome style or version (such as a brand or regular icon), set it with the `hivepress/v1/action_bar/items` filter, where you can supply full class names like `fab fa-whatsapp` or `far fa-heart`. Note that a theme or plugin which replaces or subsets Font Awesome can remove glyphs, so check your chosen icons still appear after such a change.
+Each item has the same icon dropdown HivePress uses for its own attribute icons, showing around a thousand Font Awesome 5 solid icons as live previews that you can search by name. If you need a newer Font Awesome 6 or 7 name, or a brand icon, set it with the `hivepress/v1/action_bar/items` filter, where you can supply full class names like `fab fa-whatsapp` or `fa-solid fa-plane-up`. The plugin includes the solid and brand fonts, so those two styles are the ones that render; the regular, light, thin and duotone styles are not included. Note that a theme or plugin which replaces or subsets Font Awesome can remove glyphs, so check your chosen icons still appear after such a change.
 
 = How does the notification badge work? =
 
@@ -81,6 +81,75 @@ Yes. Tick "Large screens" in the Display section and the bar appears on laptops 
 The plugin includes an update checker that watches the official GitHub repository for new releases. When a newer version is published, WordPress shows the update on the Plugins and Dashboard, Updates screens, and you can install it with the usual one-click update. You can force an immediate check with the Check for updates link on the Plugins screen. No account, licence key, or extra configuration is required.
 
 == Changelog ==
+
+= 1.5.6 =
+* Housekeeping only: nothing on your settings screen has moved, changed or
+  behaves differently. The settings-screen code this extension shares with the
+  others in the family was reformatted to match them line for line, so that a
+  fix made to one of them can be checked against all of them in one go.
+
+= 1.5.5 =
+* The settings tab now carries the same controls as the other extensions in this family: the quick
+  links stay in view as you scroll and say "Jump to a section:", a Save Changes tab sits on the
+  right edge of the screen wherever you are on the page (a bar across the bottom on a phone), and a
+  back-to-top button appears once you have scrolled down. Whichever of these extensions you have
+  installed, you see one set of controls, in the same places.
+* Fixed: if another extension in this family also added quick links to a settings tab, you could
+  have ended up with two rows of them stacked on top of each other. The extensions can now see each
+  other's controls and only one set is drawn, whichever extension gets there first.
+* Fixed: the section headings keep the ids WordPress already gives them, so a link or a bookmark
+  pointing at a section carries on working.
+* The quick links are also drawn correctly now when you reach the settings from the HivePress menu
+  without picking a tab first.
+
+= 1.5.4 =
+* Changed: a code comment that described a different function had been left stranded above
+  one that documents itself, so a developer reading the file saw the wrong description.
+  Comments only. Nothing about how the plugin works has changed.
+
+= 1.5.3 =
+* Changed: outline icon styles now render as outlines. An icon set to an outline style
+  previously appeared filled in, because only the solid style was included with the plugin and
+  your browser quietly used that instead.
+
+= 1.5.2 =
+* Changed: the icon library is now included with the plugin instead of being loaded from a
+  third-party server, which is faster and keeps every request on your own site. Your icons and
+  settings are unaffected.
+
+= 1.5.1 =
+* Fixed: the notifications panel opened from the bar's bell now floats directly above the bell,
+  centred on it, instead of appearing at the far right of the screen. Near a screen edge it
+  shifts just enough to stay fully on screen.
+* Fixed: the bar's bell and the header bell now work side by side. The bar renders its own
+  complete bell, and Notifications for HivePress runs every bell on the page, so enabling the
+  header bell no longer leaves one of the two dead. Needs Notifications for HivePress with
+  multi-bell support; on an older copy of that plugin the header bell keeps working and the bar's
+  bell acts as a plain link to the notifications page.
+* Fixed: on the settings screen, the Address and Label boxes on each bar item row are now the
+  same length.
+
+= 1.5.0 =
+* Added: a third bar for logged-out visitors, switched on with its own toggle, alongside the User
+  and Vendor bars. Until it is enabled, logged-out visitors keep seeing the User Bar as before.
+* Added: a Sign in pop-up link choice that opens HivePress's own login window for logged-out
+  visitors, falling back to the login page when the pop-up is unavailable.
+* Added: a My profile link choice pointing at the signed-in user's public vendor page, or their
+  HivePress user profile when profile display is enabled.
+* Added: the Notifications for HivePress bell can now sit on the bar itself, opening its dropdown
+  panel above the bar. Offered while that plugin is active; the header bell is reused when it is
+  switched on, so both never fight over one panel.
+* Added: icon size, icon weight, an optional icon background colour, and separate corner radius
+  controls for each corner of the bar.
+* Added: Font Awesome 6 and 7 icon names, including brand icons such as Stripe and PayPal, with
+  the full Font Awesome stylesheet loaded once and shared with this author's other plugins.
+* Added: quick links at the top of the settings tab that jump to each section, with dividers
+  between sections and shorter, easier-to-scan descriptions.
+* Changed: the screen size options are named Mobile, Tablet and Desktop again.
+* Changed: the counter Badge dropdown only offers counters whose plugin is active, judged at the
+  moment the screen is built, and stored choices still survive a temporary deactivation.
+* Removed: the separate Notification badge checkbox, which duplicated the per-item Badge dropdown.
+  A site that had unticked it keeps its intent: the migration clears every stored badge choice.
 
 = 1.4.6 =
 * Fixed: no PHP warning on a renamed install folder. If the plugin folder had been renamed, which

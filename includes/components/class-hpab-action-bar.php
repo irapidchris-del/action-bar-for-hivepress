@@ -73,6 +73,26 @@ final class Hpab_Action_Bar extends Component {
 		 * ampersand would show its entity on screen for good. Escape late, once, at output.
 		 */
 		$defaults = [
+			'guest'  => [
+				[
+					'link'  => 'home',
+					'icon'  => 'home',
+					'label' => __( 'Home', 'action-bar-for-hivepress' ),
+				],
+
+				[
+					'link'  => 'listings',
+					'icon'  => 'search',
+					'label' => __( 'Browse', 'action-bar-for-hivepress' ),
+				],
+
+				[
+					'link'  => 'auth_modal',
+					'icon'  => 'sign-in-alt',
+					'label' => __( 'Sign in', 'action-bar-for-hivepress' ),
+				],
+			],
+
 			'user'   => [
 				[
 					'link'  => 'home',
@@ -132,10 +152,25 @@ final class Hpab_Action_Bar extends Component {
 			'listing_submit' => esc_html__( 'Add listing', 'action-bar-for-hivepress' ),
 			'vendors'        => esc_html__( 'Vendors', 'action-bar-for-hivepress' ),
 			'account'        => esc_html__( 'Account or login', 'action-bar-for-hivepress' ),
+
+			// The logged-in user's public profile: their vendor page when they have one, otherwise
+			// the core /user/ page when profile display is enabled. Logged-out visitors never see it.
+			'my_profile'     => esc_html__( 'My profile', 'action-bar-for-hivepress' ),
+
+			// Opens HivePress's own sign-in pop-up for logged-out visitors instead of leaving the
+			// page. Hidden from logged-in users, who have nothing to sign in to.
+			'auth_modal'     => esc_html__( 'Sign in pop-up', 'action-bar-for-hivepress' ),
 			'messages'       => esc_html__( 'Messages', 'action-bar-for-hivepress' ),
 			'favorites'      => esc_html__( 'Favourites', 'action-bar-for-hivepress' ),
 			'custom'         => esc_html__( 'Custom URL', 'action-bar-for-hivepress' ),
 		];
+
+		// The Notifications for HivePress bell, offered only while that plugin is active so the
+		// choice can never be a dead button. A stored value survives deactivation through
+		// add_stored_item_options(), it just is not offered fresh.
+		if ( $this->get_notification_component() ) {
+			$options['notification_bell'] = esc_html__( 'Notifications bell', 'action-bar-for-hivepress' );
+		}
 
 		// Add the WooCommerce options.
 		if ( function_exists( 'wc_get_page_permalink' ) ) {
@@ -176,6 +211,17 @@ final class Hpab_Action_Bar extends Component {
 	 */
 	public function get_badge_options() {
 		$options = $this->get_badge_sources();
+
+		/*
+		 * Only offer the combined counter while at least one extension that feeds it is active.
+		 * Messages, Bookings and Marketplace are the three that add into notice_count, so with all
+		 * of them away the option would sit on the screen showing zero for ever. Evaluated here at
+		 * runtime, every time the settings config is built, so activation order never matters and
+		 * nothing about extension state is ever stored.
+		 */
+		if ( ! hivepress()->get_version( 'messages' ) && ! hivepress()->get_version( 'bookings' ) && ! hivepress()->get_version( 'marketplace' ) ) {
+			unset( $options['notices'] );
+		}
 
 		// Only offer the message counter when Messages is active, because nothing else sets that context
 		// and the option would otherwise be a choice that silently shows nothing.
@@ -227,6 +273,183 @@ final class Hpab_Action_Bar extends Component {
 			'messages'      => esc_html__( 'Unread messages', 'action-bar-for-hivepress' ),
 			'notifications' => esc_html__( 'Unread notifications', 'action-bar-for-hivepress' ),
 		];
+	}
+
+	/**
+	 * Gets the Font Awesome brand icon names the plugin understands.
+	 *
+	 * Brand glyphs live in the separate "brands" family, so they need `fab` rather than the `fas`
+	 * class every other icon gets - `fas fa-stripe` renders an empty box. get_bar_items() consults
+	 * this list to emit the right family, and get_icon_options() uses it to label the choices.
+	 * Keys are bare Font Awesome names, valid in versions 5 through 7.
+	 *
+	 * @return array<int, string>
+	 */
+	public function get_brand_icons() {
+		return [
+			'airbnb',
+			'amazon',
+			'android',
+			'app-store',
+			'apple',
+			'apple-pay',
+			'behance',
+			'bitcoin',
+			'bluesky',
+			'btc',
+			'cc-amex',
+			'cc-apple-pay',
+			'cc-diners-club',
+			'cc-discover',
+			'cc-jcb',
+			'cc-mastercard',
+			'cc-paypal',
+			'cc-stripe',
+			'cc-visa',
+			'discord',
+			'dribbble',
+			'ebay',
+			'ethereum',
+			'etsy',
+			'facebook',
+			'facebook-f',
+			'facebook-messenger',
+			'github',
+			'google',
+			'google-pay',
+			'google-play',
+			'instagram',
+			'kickstarter',
+			'linkedin',
+			'linkedin-in',
+			'mastodon',
+			'medium',
+			'microsoft',
+			'patreon',
+			'paypal',
+			'pinterest',
+			'reddit',
+			'shopify',
+			'skype',
+			'slack',
+			'snapchat',
+			'soundcloud',
+			'spotify',
+			'stripe',
+			'stripe-s',
+			'telegram',
+			'threads',
+			'tiktok',
+			'tumblr',
+			'twitch',
+			'twitter',
+			'viber',
+			'vimeo',
+			'whatsapp',
+			'windows',
+			'wordpress',
+			'x-twitter',
+			'youtube',
+		];
+	}
+
+	/**
+	 * Gets the icon choices for the item dropdowns.
+	 *
+	 * HivePress's bundled "icons" list is the Font Awesome 5 solid set, so on its own it offers
+	 * neither the names version 6 and 7 introduced nor any brand icon at all. Both are appended
+	 * here. The additions render only when the site loads a Font Awesome build that has them:
+	 * HivePress itself ships the version 5 solid font only, so version 6/7 names and every brand
+	 * glyph need the newer font, which many themes and page builders already load. Brand entries
+	 * are labelled so an admin can tell them apart, and the whole list is re-sorted so additions
+	 * sit alphabetically among the originals rather than in a clump at the end.
+	 *
+	 * @return array<string, string>
+	 */
+	public function get_icon_options() {
+		$options = (array) hivepress()->get_config( 'icons' );
+
+		// Names added in Font Awesome 6 and 7 (solid family). Bare names, like the bundled list.
+		$additions = [
+			'arrow-right-from-bracket',
+			'arrow-right-to-bracket',
+			'arrow-up-right-from-square',
+			'bag-shopping',
+			'basket-shopping',
+			'bars-staggered',
+			'bell-concierge',
+			'bolt-lightning',
+			'book-open-reader',
+			'box-archive',
+			'burger',
+			'cake-candles',
+			'calendar-days',
+			'cart-shopping',
+			'chart-column',
+			'chart-simple',
+			'circle-check',
+			'circle-dollar-to-slot',
+			'circle-info',
+			'circle-question',
+			'circle-user',
+			'circle-xmark',
+			'clock-rotate-left',
+			'comment-sms',
+			'envelope-circle-check',
+			'face-smile',
+			'gauge',
+			'gauge-high',
+			'gear',
+			'gears',
+			'hand-holding-dollar',
+			'hands-clapping',
+			'heart-circle-check',
+			'house',
+			'house-chimney',
+			'image-portrait',
+			'list-check',
+			'location-dot',
+			'magnifying-glass',
+			'magnifying-glass-location',
+			'map-location-dot',
+			'message',
+			'mobile-screen',
+			'money-bill-transfer',
+			'money-check-dollar',
+			'pen-to-square',
+			'rectangle-list',
+			'right-from-bracket',
+			'right-to-bracket',
+			'shield-halved',
+			'shop',
+			'sliders',
+			'square-plus',
+			'star-half-stroke',
+			'table-cells',
+			'ticket-simple',
+			'truck-fast',
+			'user-gear',
+			'user-large',
+			'users-gear',
+			'wand-magic-sparkles',
+		];
+
+		foreach ( $additions as $name ) {
+			if ( ! isset( $options[ $name ] ) ) {
+				$options[ $name ] = $name;
+			}
+		}
+
+		foreach ( $this->get_brand_icons() as $name ) {
+			if ( ! isset( $options[ $name ] ) ) {
+				/* translators: %s: icon name. */
+				$options[ $name ] = sprintf( esc_html__( '%s (brand)', 'action-bar-for-hivepress' ), $name );
+			}
+		}
+
+		ksort( $options );
+
+		return $options;
 	}
 
 	/**
@@ -381,11 +604,6 @@ final class Hpab_Action_Bar extends Component {
 		return $is_vendor;
 	}
 
-	/**
-	 * Gets the route link options.
-	 *
-	 * @return array<string, string>
-	 */
 	/**
 	 * Gets the WooCommerce account endpoints an owner can point a bar item at.
 	 *
@@ -770,6 +988,12 @@ final class Hpab_Action_Bar extends Component {
 			return $title;
 		}
 
+		// The bell keeps its name while Notifications for HivePress is away, so the stored choice
+		// survives a temporary deactivation of that plugin exactly as the section promises.
+		if ( 'notification_bell' === $link ) {
+			return esc_html__( 'Notifications bell', 'action-bar-for-hivepress' );
+		}
+
 		// The two named WooCommerce destinations keep the labels they had while WooCommerce was active.
 		if ( 'wc_orders' === $link ) {
 			return esc_html__( 'Placed orders', 'action-bar-for-hivepress' );
@@ -847,6 +1071,54 @@ final class Hpab_Action_Bar extends Component {
 
 				break;
 
+			case 'my_profile':
+				if ( is_user_logged_in() ) {
+
+					// The vendor page when the user has one, because that is the profile their
+					// customers see. Vendor IDs are post IDs, so the permalink is the page.
+					$vendor_id = 0;
+
+					if ( class_exists( '\HivePress\Models\Vendor' ) ) {
+						$vendor_id = (int) \HivePress\Models\Vendor::query()->filter(
+							[
+								'status' => 'publish',
+								'user'   => get_current_user_id(),
+							]
+						)->get_first_id();
+					}
+
+					if ( $vendor_id ) {
+						$url = (string) get_permalink( $vendor_id );
+					} elseif ( get_option( 'hp_user_enable_display' ) ) {
+
+						// Core's public /user/ page, which exists only while profile display is
+						// switched on under HivePress, Settings, Users. With it off the item is
+						// dropped rather than pointing somewhere that redirects away.
+						$url = (string) hivepress()->router->get_url( 'user_view_page', [ 'username' => wp_get_current_user()->user_login ] );
+					}
+				}
+
+				break;
+
+			case 'auth_modal':
+				// The real login page, so the item works with scripting off or on a theme with no
+				// footer modals. The frontend script upgrades the click to open HivePress's own
+				// #user_login_modal pop-up, the same way core's "Sign In" menu link does. Logged-in
+				// users get no URL, which drops the item from their bar.
+				if ( ! is_user_logged_in() ) {
+					$url = $this->get_route_url( 'user_login_page' );
+				}
+
+				break;
+
+			case 'notification_bell':
+				// The bell needs its plugin and a signed-in user; without either the item is dropped.
+				if ( is_user_logged_in() && $this->get_notification_component() ) {
+					$url = $this->get_route_url( 'notifications_view_page' );
+				}
+
+				break;
+
 			case 'messages':
 				$url = $this->get_route_url( 'messages_thread_page' );
 
@@ -909,18 +1181,25 @@ final class Hpab_Action_Bar extends Component {
 			return $this->items;
 		}
 
-		// Get bar name.
+		// Get bar name. Logged-out visitors get their own bar only once it is switched on, so a site
+		// that never touches the new setting behaves exactly as before: everyone sees the User Bar
+		// unless they are a vendor with the vendor bar enabled.
 		$bar = 'user';
 
-		if ( $this->is_setting_enabled( 'enable_vendor_bar' ) && $this->is_vendor() ) {
+		if ( ! is_user_logged_in() ) {
+			if ( $this->is_setting_enabled( 'enable_guest_bar' ) ) {
+				$bar = 'guest';
+			}
+		} elseif ( $this->is_setting_enabled( 'enable_vendor_bar' ) && $this->is_vendor() ) {
 			$bar = 'vendor';
 		}
 
 		$items = $this->get_bar_items( $bar );
 
-		// Removing every vendor row stores an empty option rather than no option, which would otherwise leave
-		// vendors with no navigation at all, so an empty vendor bar falls back to the items everyone else sees.
-		if ( ! $items && 'vendor' === $bar ) {
+		// Removing every row from a special bar stores an empty option rather than no option, which would
+		// otherwise leave those visitors with no navigation at all, so an empty vendor or logged-out bar
+		// falls back to the items everyone else sees.
+		if ( ! $items && 'user' !== $bar ) {
 			$bar = 'user';
 
 			$items = $this->get_bar_items( $bar );
@@ -953,6 +1232,7 @@ final class Hpab_Action_Bar extends Component {
 					'style'       => 'default',
 					'badge'       => false,
 					'badge_count' => 0,
+					'bell'        => false,
 				],
 				$item
 			);
@@ -985,6 +1265,8 @@ final class Hpab_Action_Bar extends Component {
 
 		$items = [];
 
+		$found_bell = false;
+
 		foreach ( $rows as $row ) {
 
 			// Keep at most five valid items.
@@ -1011,8 +1293,21 @@ final class Hpab_Action_Bar extends Component {
 
 			$icon = strtolower( trim( (string) preg_replace( '/[^a-zA-Z0-9\- ]/', '', $icon ) ) );
 
+			// The bell item follows the bell's own icon setting when no icon is picked on the row,
+			// so the bar and the header show the same bell without configuring it twice.
+			if ( ! $icon && 'notification_bell' === $link ) {
+				$component = $this->get_notification_component();
+
+				if ( $component && method_exists( $component, 'get_bell_icon' ) ) {
+					$icon = strtolower( trim( (string) preg_replace( '/[^a-zA-Z0-9\- ]/', '', (string) $component->get_bell_icon() ) ) );
+				}
+			}
+
 			if ( $icon && false === strpos( $icon, ' ' ) ) {
-				$icon = 'fas fa-' . $icon;
+
+				// Brand glyphs live in Font Awesome's separate brands family: `fas fa-stripe` is an
+				// empty box, `fab fa-stripe` is the logo. Everything else keeps the solid family.
+				$icon = ( in_array( $icon, $this->get_brand_icons(), true ) ? 'fab fa-' : 'fas fa-' ) . $icon;
 			}
 
 			if ( ! $icon ) {
@@ -1029,6 +1324,14 @@ final class Hpab_Action_Bar extends Component {
 				$style = 'default';
 			}
 
+			// Only one bell renders however many rows ask for it: the notifications script manages a
+			// single panel, and two would fight over it.
+			$bell = 'notification_bell' === $link;
+
+			if ( $bell && $found_bell ) {
+				continue;
+			}
+
 			// Get item badge source.
 			$badge = hp\get_array_value( $row, 'badge' );
 
@@ -1038,7 +1341,19 @@ final class Hpab_Action_Bar extends Component {
 				$badge = 'messages' === $link ? 'messages' : 'notices';
 			}
 
+			/*
+			 * Safety net for sites that unticked the old "Notification badge" box and have not run
+			 * the 1.5.0 migration yet, which happens on the next wp-admin visit. The migration
+			 * clears the per-item badges and deletes the option, after which this reads its default
+			 * of true and never fires again.
+			 */
 			if ( ! $this->is_setting_enabled( 'enable_badge', true ) ) {
+				$badge = '';
+			}
+
+			// The bell carries its own live count, so a second counter on the same button would
+			// show the same number twice or, worse, two different numbers.
+			if ( $bell ) {
 				$badge = '';
 			}
 
@@ -1062,6 +1377,10 @@ final class Hpab_Action_Bar extends Component {
 				}
 			}
 
+			if ( $bell ) {
+				$found_bell = true;
+			}
+
 			$items[] = [
 				'link'        => $link,
 				'url'         => $url,
@@ -1071,6 +1390,7 @@ final class Hpab_Action_Bar extends Component {
 				'badge'       => $badge,
 
 				'badge_count' => $badge_count,
+				'bell'        => $bell,
 			];
 		}
 
@@ -1085,22 +1405,72 @@ final class Hpab_Action_Bar extends Component {
 	public function maybe_migrate_items() {
 
 		// The flag is versioned: absent runs everything, '1' re-runs only the row normalisation added in
-		// 1.1.0 (boolean badge ticks become a named counter), '2' is current.
+		// 1.1.0 (boolean badge ticks become a named counter), '2' re-runs only the badge-checkbox
+		// retirement added in 1.5.0, '3' is current.
 		$migrated = (string) get_option( 'hp_action_bar_migrated' );
 
-		if ( '2' === $migrated ) {
+		if ( '3' === $migrated ) {
 			return;
 		}
 
-		foreach ( [ 'user', 'vendor' ] as $bar ) {
-			if ( ! $migrated && is_null( get_option( 'hp_action_bar_' . $bar . '_items', null ) ) ) {
-				$this->migrate_legacy_items( $bar );
-			}
+		if ( '2' !== $migrated ) {
+			foreach ( [ 'user', 'vendor' ] as $bar ) {
+				if ( ! $migrated && is_null( get_option( 'hp_action_bar_' . $bar . '_items', null ) ) ) {
+					$this->migrate_legacy_items( $bar );
+				}
 
-			$this->normalize_items( $bar );
+				$this->normalize_items( $bar );
+			}
 		}
 
-		update_option( 'hp_action_bar_migrated', '2' );
+		$this->migrate_badge_setting();
+
+		update_option( 'hp_action_bar_migrated', '3' );
+	}
+
+	/**
+	 * Retires the old "Notification badge" checkbox (1.5.0).
+	 *
+	 * The checkbox duplicated the per-item Badge dropdown: with badges chosen per item, a second
+	 * switch that silences all of them at once is just a way for the two controls to disagree. An
+	 * admin who had unticked it meant "no badges anywhere", so that intent is preserved by clearing
+	 * the badge choice on every stored row - set to an empty string rather than unset, because
+	 * normalize_items() treats a missing badge key on account and message items as pre-1.1.0 data
+	 * and would quietly put the badge back. A ticked or never-saved box needs no rewrite: the
+	 * dropdowns already say what shows. The option is deleted either way.
+	 *
+	 * @return void
+	 */
+	protected function migrate_badge_setting() {
+		$value = get_option( 'hp_action_bar_enable_badge', null );
+
+		if ( ! is_null( $value ) && ! $value ) {
+			foreach ( [ 'guest', 'user', 'vendor' ] as $bar ) {
+				$rows = get_option( 'hp_action_bar_' . $bar . '_items', null );
+
+				if ( ! is_array( $rows ) ) {
+					continue;
+				}
+
+				$changed = false;
+
+				foreach ( $rows as $index => $row ) {
+					if ( is_array( $row ) && hp\get_array_value( $row, 'badge' ) ) {
+						$row['badge'] = '';
+
+						$rows[ $index ] = $row;
+
+						$changed = true;
+					}
+				}
+
+				if ( $changed ) {
+					update_option( 'hp_action_bar_' . $bar . '_items', $rows );
+				}
+			}
+		}
+
+		delete_option( 'hp_action_bar_enable_badge' );
 	}
 
 	/**
@@ -1289,6 +1659,7 @@ final class Hpab_Action_Bar extends Component {
 		// Get dimensions.
 		$height     = $this->get_number_setting( 'height', 56, 44, 120 );
 		$label_size = $this->get_number_setting( 'label_size', 11, 9, 16 );
+		$icon_size  = $this->get_number_setting( 'icon_size', 20, 14, 32 );
 
 		// Get label weight. This one is a select rather than a range, so an unrecognised value resets.
 		$label_weight = absint( get_option( 'hp_action_bar_label_weight' ) );
@@ -1321,8 +1692,62 @@ final class Hpab_Action_Bar extends Component {
 
 		$styles .= '--hp-action-bar-label-size:' . $label_size . 'px;--hp-action-bar-label-weight:' . $label_weight . ';';
 
+		$styles .= '--hp-action-bar-icon-size:' . $icon_size . 'px;';
+
 		foreach ( $colors as $name => $color ) {
 			$styles .= '--hp-action-bar-' . $name . ':' . $color . ';';
+		}
+
+		/*
+		 * The optional icon backdrop. No default: left unset, icons sit straight on the bar as they
+		 * always have, so the variable is only emitted for a saved, valid colour. The stylesheet
+		 * falls back to transparent.
+		 */
+		$icon_background = sanitize_hex_color( (string) get_option( 'hp_action_bar_color_icon_background' ) );
+
+		if ( $icon_background ) {
+			$styles .= '--hp-action-bar-icon-background:' . $icon_background . ';';
+		}
+
+		/*
+		 * Icon weight. Font Awesome's free solid face has one weight, so "bolder" glyphs are drawn
+		 * by stroking the glyph outline in its own colour: currentColor keeps the stroke in step
+		 * with the icon and active colours, and paint-order keeps the fill on top so the shape
+		 * never hollows out. Emitted only off the default, leaving untouched sites byte-identical.
+		 */
+		$icon_weight = (string) get_option( 'hp_action_bar_icon_weight', 'normal' );
+
+		$icon_strokes = [
+			'semibold' => '0.3px',
+			'bold'     => '0.5px',
+		];
+
+		if ( isset( $icon_strokes[ $icon_weight ] ) ) {
+			$styles .= '--hp-action-bar-icon-stroke:' . $icon_strokes[ $icon_weight ] . ';';
+		}
+
+		/*
+		 * Corner radii, one per corner rather than a single linked value, so a bar can be rounded
+		 * only where it meets the page. Emitted in CSS's own order (top-left, top-right,
+		 * bottom-right, bottom-left) and only when a corner is actually rounded.
+		 */
+		$radii = [
+			$this->get_number_setting( 'radius_top_left', 0, 0, 40 ),
+			$this->get_number_setting( 'radius_top_right', 0, 0, 40 ),
+			$this->get_number_setting( 'radius_bottom_right', 0, 0, 40 ),
+			$this->get_number_setting( 'radius_bottom_left', 0, 0, 40 ),
+		];
+
+		if ( array_sum( $radii ) > 0 ) {
+			$styles .= 'border-radius:' . implode(
+				' ',
+				array_map(
+					function( $radius ) {
+						return $radius . 'px';
+					},
+					$radii
+				)
+			) . ';';
 		}
 
 		// Set the glass values. The translucent background is emitted as its own property rather than
@@ -1389,7 +1814,7 @@ final class Hpab_Action_Bar extends Component {
 			 * order against the stylesheet, and emitted here rather than in the CSS file so it always
 			 * uses the same breakpoint as the display rule above, even when that is filtered.
 			 */
-			$desktop = $display . '.hp-action-bar{justify-content:center;}.hp-action-bar .hp-action-bar__item{flex:0 1 auto;padding-left:2rem;padding-right:2rem;}';
+			$desktop = $display . '.hp-action-bar{justify-content:center;}.hp-action-bar .hp-action-bar__item,.hp-action-bar .hp-action-bar__bell{flex:0 1 auto;padding-left:2rem;padding-right:2rem;}.hp-action-bar .hp-action-bar__bell .hp-action-bar__item{padding-left:0;padding-right:0;}';
 
 			$styles .= '@media (min-width:' . $this->get_css_length( hp\get_array_value( $breakpoints, 'desktop_min' ), '64.01em' ) . '){' . $desktop . '}';
 		}
@@ -1423,6 +1848,58 @@ final class Hpab_Action_Bar extends Component {
 	}
 
 	/**
+	 * Enqueues the full Font Awesome stylesheet under the shared handle.
+	 *
+	 * HivePress bundles only the Font Awesome 5 solid face, so the version 6/7 names and every
+	 * brand icon this plugin offers would render as empty boxes without a fuller build. The handle
+	 * is shared across this author's plugins on purpose: each registers it only if no sibling has
+	 * already, so one copy loads however many of them are active and whatever order they load in.
+	 *
+	 * @return void
+	 */
+	protected function enqueue_font_awesome() {
+		if ( ! wp_style_is( 'freestylr-fontawesome', 'registered' ) ) {
+			/*
+			 * Font Awesome 7.1.0 Free is BUNDLED, in assets/vendor/fontawesome/. Never point this
+			 * at cdnjs or any other CDN. A comment here used to claim the CDN copy was house
+			 * convention and told future sessions not to "fix" it by bundling; that was wrong.
+			 * A convenience CDN copy of a library is the exact case the offloaded-assets rule
+			 * exists to catch (resources/security-standards.md, "Offloaded assets" - a remote
+			 * asset is only acceptable when it is a service's own required SDK from that
+			 * service's own domain), Plugin Check reported EnqueuedResourceOffloading on every
+			 * plugin that did it, and Chris ruled on 2026-08-30 that the files ship with the
+			 * plugin. It is also faster: cache partitioning (Chrome 86+, Firefox, Safari) means
+			 * a CDN copy is a cold download for every site anyway, plus a DNS lookup and TLS
+			 * handshake to a third origin.
+			 *
+			 * Layout matters. assets/vendor/fontawesome/css/all.min.css sits beside
+			 * assets/vendor/fontawesome/webfonts/, so the stock "../webfonts/" paths inside the
+			 * upstream CSS resolve unchanged. Three faces ship - fa-solid-900.woff2,
+			 * fa-brands-400.woff2 and fa-regular-400.woff2 - and only the v4-compatibility
+			 * @font-face block was removed from the CSS, so nothing can request a file that is
+			 * not there. The regular face is NOT optional, and it costs ~19 KB: with no
+			 * weight-400 face declared the browser silently substitutes the weight-900 solid
+			 * one, so a far / fa-regular name draws a FILLED glyph instead of an outline. That
+			 * shipped between 2026-08-29 and 2026-08-30 and read as somebody picking the wrong
+			 * icon rather than as a missing font, which is why it survived a whole day.
+			 *
+			 * Pinned to 7.1.0, and every plugin sharing this handle must pin the identical
+			 * version, because only the first registration of a shared handle wins.
+			 * Full rule: resources/hivepress-ui.md, "FA6/7 and brand icons: bundle them, never
+			 * load a CDN copy (2026-08-30)".
+			 */
+			wp_register_style(
+				'freestylr-fontawesome',
+				$this->get_extension_url() . '/assets/vendor/fontawesome/css/all.min.css',
+				[],
+				'7.1.0'
+			);
+		}
+
+		wp_enqueue_style( 'freestylr-fontawesome' );
+	}
+
+	/**
 	 * Enqueues the frontend assets.
 	 *
 	 * @return void
@@ -1431,6 +1908,9 @@ final class Hpab_Action_Bar extends Component {
 		if ( ! $this->is_action_bar_visible() || ! $this->get_items() ) {
 			return;
 		}
+
+		// The bar always renders configurable icons, so the full icon set loads with it.
+		$this->enqueue_font_awesome();
 
 		// Enqueue styles.
 		wp_enqueue_style(
@@ -1461,25 +1941,71 @@ final class Hpab_Action_Bar extends Component {
 	}
 
 	/**
+	 * Whether the settings tab currently being rendered carries this plugin's own fields.
+	 *
+	 * Answered from the fields HivePress has actually registered for this request, never from
+	 * $_GET['tab']. The address cannot be trusted: get_settings_tab() falls back to the FIRST tab
+	 * whenever "tab" is absent (reference/hivepress/includes/components/class-admin.php:607-622),
+	 * and the bare admin.php?page=hp_settings link in the HivePress menu is exactly that case, so
+	 * reading the address would miss this plugin's own tab on any site where it sorts first - which
+	 * is what the 'action_bar' === $tab test this replaced in 1.5.5 did.
+	 *
+	 * register_settings() builds the sections and fields for one tab only and calls
+	 * add_settings_field() with the prefixed option name (class-admin.php:287-325), so
+	 * $wp_settings_fields['hp_settings'] holds hp_action_bar_* keys on this plugin's tab and on no
+	 * other. It is the server-side twin of the [name^="hp_action_bar_"] gate the script uses.
+	 *
+	 * Timing is the only thing to get right. HivePress registers on admin_init priority 10, and
+	 * this runs from admin_enqueue_scripts, which wp-admin fires later, from admin-header.php.
+	 * Called any earlier it would return false and this tab would silently lose its assets, so
+	 * re-test the tab if the hook is ever moved.
+	 *
+	 * Full rule: resources/hivepress-settings.md, "The tab IS knowable server-side: ask the
+	 * registered fields" (2026-08-30).
+	 *
+	 * @return bool
+	 */
+	protected function is_settings_tab() {
+		if ( ! isset( $GLOBALS['wp_settings_fields']['hp_settings'] ) || ! is_array( $GLOBALS['wp_settings_fields']['hp_settings'] ) ) {
+			return false;
+		}
+
+		foreach ( $GLOBALS['wp_settings_fields']['hp_settings'] as $hpab_section ) {
+			foreach ( array_keys( (array) $hpab_section ) as $hpab_field ) {
+				if ( 0 === strpos( (string) $hpab_field, 'hp_action_bar_' ) ) {
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
+	/**
 	 * Enqueues the backend assets.
 	 *
 	 * @return void
 	 */
 	public function enqueue_backend_assets() {
 
-		// No nonce applies here: these two values only decide whether this screen is the one that needs
-		// our assets, they are never used to write anything, and both are run through sanitize_key().
-		// phpcs:disable WordPress.Security.NonceVerification.Recommended
+		// No nonce applies here: this value only decides whether this screen is the one that needs
+		// our assets, it is never used to write anything, and it is run through sanitize_key().
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$page = sanitize_key( wp_unslash( (string) hp\get_array_value( $_GET, 'page' ) ) );
-		$tab  = sanitize_key( wp_unslash( (string) hp\get_array_value( $_GET, 'tab' ) ) );
-		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
-		if ( 'hp_settings' !== $page || 'action_bar' !== $tab ) {
+		if ( 'hp_settings' !== $page ) {
 			return;
 		}
 
-		// Enqueue styles.
+		if ( ! $this->is_settings_tab() ) {
+			return;
+		}
+
+		// Enqueue styles. The full Font Awesome build makes the icon dropdown previews match what
+		// the front end will draw, version 6/7 names and brands included.
 		wp_enqueue_style( 'wp-color-picker' );
+
+		$this->enqueue_font_awesome();
 
 		wp_enqueue_style(
 			'hivepress-action-bar-backend',
@@ -1496,6 +2022,28 @@ final class Hpab_Action_Bar extends Component {
 			$this->get_asset_version( 'assets/js/backend.min.js' ),
 			true
 		);
+
+		/*
+		 * The shared chrome's wording.
+		 *
+		 * These three strings are deliberately identical in every sibling plugin: an owner moving
+		 * between two of these tabs must find the same controls saying the same things
+		 * (resources/hivepress-settings.md, "The settings anchor nav"). Until 1.5.5 the nav had no
+		 * visible label at all, only a hardcoded English "Sections" aria-label that no translator
+		 * could reach. The colon in the first one is part of the wording: it reads as a lead-in to
+		 * the links that follow it, not as a heading over them.
+		 */
+		wp_localize_script(
+			'hivepress-action-bar-backend',
+			'hpabBackendData',
+			[
+				'labels' => [
+					'jumpTo'    => esc_html__( 'Jump to a section:', 'action-bar-for-hivepress' ),
+					'save'      => esc_html__( 'Save Changes', 'action-bar-for-hivepress' ),
+					'backToTop' => esc_html__( 'Back to top', 'action-bar-for-hivepress' ),
+				],
+			]
+		);
 	}
 
 	/**
@@ -1510,6 +2058,78 @@ final class Hpab_Action_Bar extends Component {
 		}
 
 		return $classes;
+	}
+
+	/**
+	 * Renders the notifications bell as an action bar item.
+	 *
+	 * The markup deliberately mirrors what Notifications for HivePress renders in the site header -
+	 * the same wrapper, toggle, panel and body classes and the same data-component hooks - so that
+	 * plugin's own script runs the bell: it binds the toggle, fetches and draws the dropdown,
+	 * keeps the count live and closes on outside clicks, and none of that logic is duplicated
+	 * here. This plugin's stylesheet then restyles the toggle as a bar item and opens the panel
+	 * ABOVE the bar, anchored to the bell, since a dropdown from a bar glued to the bottom of the
+	 * screen would open off-screen.
+	 *
+	 * The full wrapper is rendered whether or not the header bell is switched on. Notifications
+	 * for HivePress initialises every bell instance on the page (each with its own panel, all
+	 * sharing one unread count), so the header bell and this one work side by side; 1.5.0's
+	 * adopt-the-header-bell dance existed only because that script used to bind a single
+	 * instance, and it went with that limitation. Without scripting the toggle is a plain link
+	 * to the notifications page.
+	 *
+	 * @param array<string, mixed> $item Item arguments.
+	 * @return string
+	 */
+	protected function render_bell_item( $item ) {
+		$component = $this->get_notification_component();
+
+		if ( ! $component ) {
+			return '';
+		}
+
+		// Get the unread count, drawn in the same <small> element the header bell uses so the
+		// notifications script updates this one too as it polls.
+		$count = absint( $component->get_unread_count( get_current_user_id() ) );
+
+		$aria_label = $item['label'] ? $item['label'] : esc_attr__( 'Notifications', 'action-bar-for-hivepress' );
+
+		if ( $count ) {
+			/* translators: 1: item name, 2: number of unread items. */
+			$aria_label = sprintf( _x( '%1$s, %2$s unread', 'action bar item', 'action-bar-for-hivepress' ), $aria_label, number_format_i18n( $count ) );
+		}
+
+		$inner = '<span class="hp-action-bar__icon"><i class="' . esc_attr( $item['icon'] ) . '" aria-hidden="true"></i></span>';
+
+		if ( $count ) {
+			$inner .= '<small>' . esc_html( number_format_i18n( $count ) ) . '</small>';
+		}
+
+		if ( $item['label'] ) {
+			$inner .= '<span class="hp-action-bar__label">' . esc_html( $item['label'] ) . '</span>';
+		}
+
+		$item_classes = 'hp-action-bar__item hp-action-bar__item--' . $item['style'];
+
+		$output = '<div class="hp-action-bar__bell">';
+
+		$output .= '<div class="hp-notification-bell" data-component="notification-bell">';
+
+		$output .= '<a href="' . esc_url( $item['url'] ) . '" class="' . esc_attr( $item_classes ) . ' hp-notification-bell__toggle" aria-haspopup="true" aria-expanded="false" aria-label="' . esc_attr( $aria_label ) . '">' . $inner . '</a>';
+
+		// The panel matches the header bell's own byte for byte below the wrapper, filled in on
+		// first open by the notifications script.
+		$output .= '<div class="hp-notification-bell__panel" hidden>';
+		$output .= '<div class="hp-notification-bell__header"><span>' . esc_html__( 'Notifications', 'action-bar-for-hivepress' ) . '</span>';
+		$output .= '<a href="' . esc_url( $item['url'] ) . '">' . esc_html__( 'See all', 'action-bar-for-hivepress' ) . '</a></div>';
+		$output .= '<div class="hp-notification-bell__body" data-component="notification-bell-body"><div class="hp-notification-bell__loading">' . esc_html__( 'Loading…', 'action-bar-for-hivepress' ) . '</div></div>';
+		$output .= '</div>';
+
+		$output .= '</div>';
+
+		$output .= '</div>';
+
+		return $output;
 	}
 
 	/**
@@ -1547,6 +2167,13 @@ final class Hpab_Action_Bar extends Component {
 		$output = '<nav class="' . esc_attr( implode( ' ', $classes ) ) . '" aria-label="' . esc_attr__( 'Mobile navigation', 'action-bar-for-hivepress' ) . '">';
 
 		foreach ( $items as $item ) {
+
+			// The notifications bell is its own control rather than a plain link.
+			if ( ! empty( $item['bell'] ) ) {
+				$output .= $this->render_bell_item( $item );
+
+				continue;
+			}
 
 			// Set item classes.
 			$item_classes = [ 'hp-action-bar__item', 'hp-action-bar__item--' . $item['style'] ];
@@ -1589,8 +2216,13 @@ final class Hpab_Action_Bar extends Component {
 			 */
 			$badge_attribute = $item['badge'] ? ' data-badge="' . esc_attr( $item['badge'] ) . '"' : '';
 
+			// Mark the sign-in item so the frontend script can upgrade its click to HivePress's own
+			// login pop-up. The href stays the real login page, which is what a visitor without
+			// scripting, or on a theme that renders no footer modals, falls back to.
+			$modal_attribute = 'auth_modal' === $item['link'] ? ' data-hpab-auth-modal' : '';
+
 			// Render item.
-			$output .= '<a href="' . esc_url( $item['url'] ) . '" class="' . esc_attr( implode( ' ', $item_classes ) ) . '"' . $badge_attribute . ' aria-label="' . esc_attr( $aria_label ) . '">';
+			$output .= '<a href="' . esc_url( $item['url'] ) . '" class="' . esc_attr( implode( ' ', $item_classes ) ) . '"' . $badge_attribute . $modal_attribute . ' aria-label="' . esc_attr( $aria_label ) . '">';
 
 			$output .= '<span class="hp-action-bar__icon"><i class="' . esc_attr( $item['icon'] ) . '" aria-hidden="true"></i>';
 
