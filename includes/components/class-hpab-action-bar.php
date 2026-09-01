@@ -367,6 +367,17 @@ final class Hpab_Action_Bar extends Component {
 	 * @return array<string, string>
 	 */
 	public function get_icon_options() {
+		// Every Font Awesome 7.1.0 Free icon, brands included, from the shared
+		// FAFH library rather than core's list plus the two arrays below.
+		// \FAFH::choices() is already sorted by label, and its keys are canonical
+		// FA7 names, so a value saved under an older FA5 name still resolves
+		// when it is rendered.
+		if ( class_exists( 'FAFH' ) ) {
+			return \FAFH::choices();
+		}
+
+		// Fallback for a site where the library failed to load: exactly the
+		// pre-FAFH list, rather than silently losing the brand and FA6/7 names.
 		$options = (array) hivepress()->get_config( 'icons' );
 
 		// Names added in Font Awesome 6 and 7 (solid family). Bare names, like the bundled list.
@@ -1848,55 +1859,58 @@ final class Hpab_Action_Bar extends Component {
 	}
 
 	/**
-	 * Enqueues the full Font Awesome stylesheet under the shared handle.
+	 * Builds the markup for one action-bar icon.
 	 *
-	 * HivePress bundles only the Font Awesome 5 solid face, so the version 6/7 names and every
-	 * brand icon this plugin offers would render as empty boxes without a fuller build. The handle
-	 * is shared across this author's plugins on purpose: each registers it only if no sibling has
-	 * already, so one copy loads however many of them are active and whatever order they load in.
+	 * Prefers FAFH's inline SVG: a few hundred bytes instead of a ~234 KB
+	 * stylesheet and webfont, and no `fas`/`fa-solid` class for the Font
+	 * Awesome 5 that HivePress core enqueues to match and draw a second time
+	 * through ::before. Falls back to the class markup if the library is
+	 * missing, so a broken include degrades to the previous behaviour.
+	 *
+	 * @param string $icon Stored icon value, a full class string such as
+	 *                     "fas fa-bell" or "fab fa-stripe".
+	 * @return string
+	 */
+	protected function render_icon( $icon ) {
+		$icon = (string) $icon;
+
+		if ( '' === $icon ) {
+			return '';
+		}
+
+		if ( class_exists( 'FAFH' ) ) {
+			// \FAFH::svg() parses the class string itself, in both the version-5
+			// and version-6/7 spellings, so the stored value needs no migration.
+			$svg = \FAFH::svg( $icon );
+
+			if ( $svg ) {
+				return '<i class="fafh-icon" aria-hidden="true">' . $svg . '</i>';
+			}
+		}
+
+		$this->enqueue_font_awesome();
+
+		return '<i class="' . esc_attr( $icon ) . '" aria-hidden="true"></i>';
+	}
+
+	/**
+	 * Enqueues the Font Awesome webfont, for wp-admin icon pickers.
+	 *
+	 * Delegates to FAFH, which owns the bundled copy. The front end does NOT want
+	 * this: render_icon() draws inline SVG there, which is the whole point of the
+	 * library. The body below is only the fallback for a site where FAFH failed to
+	 * load, and it keeps the shared handle so one copy still serves every sibling.
 	 *
 	 * @return void
 	 */
 	protected function enqueue_font_awesome() {
-		if ( ! wp_style_is( 'freestylr-fontawesome', 'registered' ) ) {
-			/*
-			 * Font Awesome 7.1.0 Free is BUNDLED, in assets/vendor/fontawesome/. Never point this
-			 * at cdnjs or any other CDN. A comment here used to claim the CDN copy was house
-			 * convention and told future sessions not to "fix" it by bundling; that was wrong.
-			 * A convenience CDN copy of a library is the exact case the offloaded-assets rule
-			 * exists to catch (resources/security-standards.md, "Offloaded assets" - a remote
-			 * asset is only acceptable when it is a service's own required SDK from that
-			 * service's own domain), Plugin Check reported EnqueuedResourceOffloading on every
-			 * plugin that did it, and Chris ruled on 2026-08-30 that the files ship with the
-			 * plugin. It is also faster: cache partitioning (Chrome 86+, Firefox, Safari) means
-			 * a CDN copy is a cold download for every site anyway, plus a DNS lookup and TLS
-			 * handshake to a third origin.
-			 *
-			 * Layout matters. assets/vendor/fontawesome/css/all.min.css sits beside
-			 * assets/vendor/fontawesome/webfonts/, so the stock "../webfonts/" paths inside the
-			 * upstream CSS resolve unchanged. Three faces ship - fa-solid-900.woff2,
-			 * fa-brands-400.woff2 and fa-regular-400.woff2 - and only the v4-compatibility
-			 * @font-face block was removed from the CSS, so nothing can request a file that is
-			 * not there. The regular face is NOT optional, and it costs ~19 KB: with no
-			 * weight-400 face declared the browser silently substitutes the weight-900 solid
-			 * one, so a far / fa-regular name draws a FILLED glyph instead of an outline. That
-			 * shipped between 2026-08-29 and 2026-08-30 and read as somebody picking the wrong
-			 * icon rather than as a missing font, which is why it survived a whole day.
-			 *
-			 * Pinned to 7.1.0, and every plugin sharing this handle must pin the identical
-			 * version, because only the first registration of a shared handle wins.
-			 * Full rule: resources/hivepress-ui.md, "FA6/7 and brand icons: bundle them, never
-			 * load a CDN copy (2026-08-30)".
-			 */
-			wp_register_style(
-				'freestylr-fontawesome',
-				$this->get_extension_url() . '/assets/vendor/fontawesome/css/all.min.css',
-				[],
-				'7.1.0'
-			);
+		// The webfont now lives inside FAFH and is only wanted in wp-admin, for
+		// the picker previews; the front end draws inline SVG. FAFH also loads
+		// the sheet that makes brand icons preview correctly, which core cannot
+		// do on its own (its option template hardcodes the solid family).
+		if ( class_exists( 'FAFH' ) ) {
+			\FAFH::enqueue_admin();
 		}
-
-		wp_enqueue_style( 'freestylr-fontawesome' );
 	}
 
 	/**
@@ -2099,7 +2113,7 @@ final class Hpab_Action_Bar extends Component {
 			$aria_label = sprintf( _x( '%1$s, %2$s unread', 'action bar item', 'action-bar-for-hivepress' ), $aria_label, number_format_i18n( $count ) );
 		}
 
-		$inner = '<span class="hp-action-bar__icon"><i class="' . esc_attr( $item['icon'] ) . '" aria-hidden="true"></i></span>';
+		$inner = '<span class="hp-action-bar__icon">' . $this->render_icon( $item['icon'] ) . '</span>';
 
 		if ( $count ) {
 			$inner .= '<small>' . esc_html( number_format_i18n( $count ) ) . '</small>';
@@ -2224,7 +2238,7 @@ final class Hpab_Action_Bar extends Component {
 			// Render item.
 			$output .= '<a href="' . esc_url( $item['url'] ) . '" class="' . esc_attr( implode( ' ', $item_classes ) ) . '"' . $badge_attribute . $modal_attribute . ' aria-label="' . esc_attr( $aria_label ) . '">';
 
-			$output .= '<span class="hp-action-bar__icon"><i class="' . esc_attr( $item['icon'] ) . '" aria-hidden="true"></i>';
+			$output .= '<span class="hp-action-bar__icon">' . $this->render_icon( $item['icon'] );
 
 			if ( $item['badge'] ) {
 				$badge_count = absint( hp\get_array_value( $item, 'badge_count' ) );

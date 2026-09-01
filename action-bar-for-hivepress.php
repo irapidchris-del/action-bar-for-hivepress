@@ -3,7 +3,7 @@
  * Plugin Name: Action Bar for HivePress
  * Plugin URI: https://github.com/irapidchris-del/action-bar-for-hivepress
  * Description: Adds a customisable, app-style bottom navigation bar to HivePress websites, on any screen size you choose.
- * Version: 1.5.6
+ * Version: 1.5.12
  * Author: ChrisB @ HivePress Community
  * Author URI: https://community.hivepress.io/u/chrisb/summary
  * Text Domain: action-bar-for-hivepress
@@ -21,7 +21,24 @@
 // Exit if accessed directly.
 defined( 'ABSPATH' ) || exit;
 
-define( 'HPAB_VERSION', '1.5.6' );
+define( 'HPAB_VERSION', '1.5.12' );
+
+/*
+ * FAFH (Font Awesome For HivePress) -- the shared icon library, BUNDLED in
+ * includes/fafh/ rather than installed separately, so this plugin still works
+ * on its own. Sibling plugins each register their copy and the highest version
+ * runs; see includes/fafh/class-fafh-loader.php.
+ *
+ * It gives the picker every Font Awesome 7.1.0 Free icon (1,918, brands
+ * included) and draws the chosen one as inline SVG, so the front end loads no
+ * icon stylesheet and no webfont. The plugin's own assets/vendor/fontawesome/
+ * copy was deleted when this landed; the webfont now lives inside the library
+ * and is enqueued in wp-admin only, for the picker previews.
+ *
+ * Never edit includes/fafh/ in place. Edit tools/fafh/ and run
+ * tools\sync-fafh.ps1, which keeps every copy byte-identical.
+ */
+require_once __DIR__ . '/includes/fafh/bootstrap.php';
 
 // Set up updates from GitHub releases.
 require_once __DIR__ . '/includes/updater.php';

@@ -4,7 +4,7 @@ Tags: hivepress, mobile, navigation, bottom bar, app
 Requires at least: 5.8
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.5.6
+Stable tag: 1.5.12
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -82,6 +82,17 @@ Yes. Tick "Desktop" in the Display section and the bar appears on laptops and de
 The plugin includes an update checker that watches the official GitHub repository for new releases. When a newer version is published, WordPress shows the update on the Plugins and Dashboard, Updates screens, and you can install it with the usual one-click update. You can force an immediate check with the Check for updates link on the Plugins screen. No account, licence key, or extra configuration is required.
 
 == Changelog ==
+
+= 1.5.12 =
+* Changed: icons are now drawn directly into the page instead of being loaded as a font. A
+  visitor's browser no longer downloads roughly 230 KB of stylesheet and font files just to show
+  a few small pictures, and the icons can no longer clash with the icon font HivePress loads
+  itself. Your colour and size settings work exactly as before.
+* Added: every icon in the free Font Awesome 7 set is now available, brand icons included, which
+  is around 800 more than before. Type a few letters to find one rather than scrolling a long
+  list, and each result still shows you the icon itself.
+* Changed: the settings screen loads a great deal faster, because the icon choices are fetched as
+  you search instead of every one of them being written into the page.
 
 = 1.5.6 =
 * Housekeeping only: nothing on your settings screen has moved, changed or

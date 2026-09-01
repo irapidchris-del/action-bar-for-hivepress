@@ -77,14 +77,28 @@ $hpab_item_fields = [
 	],
 
 	/*
-	 * A plain array of options rather than the "icons" preset, so Font Awesome 6/7 names and brand
-	 * icons can be offered alongside HivePress's bundled list. The preset would have switched the
-	 * select2 icon preview on by itself; with an array that attribute has to be set by hand.
+	 * Options load over AJAX from FAFH rather than being printed, so all 1,918
+	 * Font Awesome 7.1.0 Free icons are reachable by typing without the field
+	 * carrying 1,918 <option> elements. Printing them inline is what turned
+	 * these settings forms into megabytes of HTML.
+	 *
+	 * FAFH::filter_field_options() puts the SAVED icon back, so the control
+	 * still shows what is currently chosen rather than an empty box -- without
+	 * it, opening the screen would look like the setting had been lost, and
+	 * saving the form would then actually lose it.
+	 *
+	 * Without the library, fall back to the printed list: there is no source to
+	 * search, so the options have to be present.
+	 *
+	 * The "icons" preset is still not used. It resolves to core's FA5-era list
+	 * with no way in. The preset would have switched the select2 icon preview on
+	 * by itself; set by hand here, it is what makes each result draw a glyph.
 	 */
 	'icon'  => [
 		'placeholder' => esc_html__( 'Icon', 'action-bar-for-hivepress' ),
 		'type'        => 'select',
-		'options'     => $hpab_component->get_icon_options(),
+		'options'     => class_exists( 'FAFH' ) ? 'icons' : $hpab_component->get_icon_options(),
+		'source'      => class_exists( 'FAFH' ) ? FAFH::picker_source() : null,
 
 		'attributes'  => [
 			'data-template' => 'icon',
