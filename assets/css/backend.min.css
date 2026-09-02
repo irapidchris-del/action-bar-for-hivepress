@@ -585,6 +585,222 @@
 	min-height: var(--hp-action-bar-height, 56px);
 }
 
+/* The device: laid out at the chosen viewport's real width and, only where the stage is narrower
+ * than that, scaled down to fit by admin-preview.js - from the top-left so the scaled box stays
+ * inside the stage. */
+.hpab-preview__device {
+	transform-origin: top left;
+}
+
+.hpab-preview__device[hidden] {
+	display: none;
+}
+
+/* Desktop: the same rules get_inline_styles() emits above 1024px. */
+.hpab-preview__stage .hp-action-bar.hpab-preview__bar--desktop {
+	justify-content: center;
+}
+
+.hpab-preview__stage .hp-action-bar.hpab-preview__bar--desktop .hp-action-bar__item,
+.hpab-preview__stage .hp-action-bar.hpab-preview__bar--desktop .hp-action-bar__bell {
+	flex: 0 1 auto;
+	padding-left: 2rem;
+	padding-right: 2rem;
+}
+
+.hpab-preview__stage .hp-action-bar.hpab-preview__bar--desktop .hp-action-bar__bell .hp-action-bar__item {
+	padding-left: 0;
+	padding-right: 0;
+}
+
+/* Said in place of the bar when it is switched off for the viewport being previewed. */
+.hpab-preview__note {
+	margin: 0;
+	padding: 18px 14px 20px;
+	color: #646970;
+	font-size: 12px;
+	line-height: 1.5;
+	text-align: center;
+}
+
+.hpab-preview__note[hidden] {
+	display: none;
+}
+
+/* The size switch above the side panel: the phone is what the panel shows, the other two open
+ * the dialog. Plain buttons in WordPress's own colours. */
+.hpab-preview__modes {
+	display: flex;
+	margin: 0 0 12px;
+	border: 1px solid #c3c4c7;
+	border-radius: 4px;
+	overflow: hidden;
+}
+
+.hpab-preview__mode {
+	flex: 1 1 0;
+	margin: 0;
+	padding: 6px 8px;
+	border: 0;
+	border-right: 1px solid #c3c4c7;
+	background: #fff;
+	color: #2c3338;
+	font-size: 12px;
+	line-height: 1.4;
+	text-align: center;
+	cursor: pointer;
+}
+
+.hpab-preview__mode:last-child {
+	border-right: 0;
+}
+
+.hpab-preview__mode:hover,
+.hpab-preview__mode:focus-visible {
+	background: #f6f7f7;
+}
+
+.hpab-preview__mode--current {
+	background: #2271b1;
+	color: #fff;
+	cursor: default;
+}
+
+.hpab-preview__mode--current:hover {
+	background: #2271b1;
+}
+
+/* --------------------------------------------------------------------------
+ * The tablet / desktop dialog
+ *
+ * Email Studio's preview panel (admin.css, .hpes-panel__*), renamed, so the two plugins' previews
+ * open, size and close the same way. The dialog's width follows the device being shown, so a
+ * tablet is shown at 768px and a desktop at 1280px wherever the window allows it.
+ * ----------------------------------------------------------------------- */
+
+.hpab-dialog[hidden] {
+	display: none;
+}
+
+.hpab-dialog__backdrop {
+	position: fixed;
+	inset: 0;
+	z-index: 100000;
+	background: rgba(0, 0, 0, .5);
+}
+
+.hpab-dialog__dialog {
+	position: fixed;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	z-index: 100001;
+	display: flex;
+	flex-direction: column;
+	width: 840px;
+	max-width: 100%;
+	background: #f6f7f7;
+	box-shadow: -8px 0 24px rgba(0, 0, 0, .15);
+}
+
+.hpab-dialog__dialog[data-device="desktop"] {
+	width: 1360px;
+}
+
+.hpab-dialog__head {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 12px;
+	padding: 16px 20px;
+	background: #fff;
+	border-bottom: 1px solid #dcdcde;
+}
+
+.hpab-dialog__title {
+	margin: 0;
+	font-size: 16px;
+}
+
+.hpab-dialog__subtitle {
+	margin: 2px 0 0;
+	color: #646970;
+	font-size: 13px;
+}
+
+.hpab-dialog__group {
+	display: inline-flex;
+	flex: 0 0 auto;
+}
+
+.hpab-dialog__group .button {
+	margin: 0;
+	border-radius: 0;
+}
+
+.hpab-dialog__group .button:first-child {
+	border-radius: 3px 0 0 3px;
+}
+
+.hpab-dialog__group .button:last-child {
+	border-radius: 0 3px 3px 0;
+}
+
+.hpab-dialog__group .button.is-active {
+	background: #f0f6fc;
+	border-color: #2271b1;
+	color: #0a4b78;
+}
+
+.hpab-dialog__close {
+	flex: 0 0 auto;
+	width: 32px;
+	height: 32px;
+	padding: 0;
+	border: 0;
+	background: transparent;
+	color: #646970;
+	cursor: pointer;
+}
+
+.hpab-dialog__close:hover,
+.hpab-dialog__close:focus-visible {
+	color: #1d2327;
+}
+
+.hpab-dialog__stage {
+	flex: 1 1 auto;
+	min-height: 0;
+	overflow: auto;
+	padding: 16px 20px 24px;
+}
+
+.hpab-dialog__panel + .hpab-dialog__panel {
+	margin-top: 18px;
+}
+
+.hpab-dialog__panel[hidden] {
+	display: none;
+}
+
+.hpab-dialog__panel-title {
+	margin: 0 0 8px;
+	font-size: 13px;
+	font-weight: 600;
+	color: #1d2327;
+}
+
+body.hpab-dialog-open {
+	overflow: hidden;
+}
+
+@media screen and (max-width: 782px) {
+	.hpab-dialog__dialog,
+	.hpab-dialog__dialog[data-device="desktop"] {
+		width: 100%;
+	}
+}
+
 .hpab-preview__stage .hp-action-bar__item {
 	cursor: default;
 }
@@ -597,10 +813,21 @@
 	margin: 10px 0 0;
 }
 
+/* The resize handle: an 8px strip on the panel's left edge, only meaningful when the panel is a
+ * column beside the settings, so it exists only in that layout. */
+.hpab-preview__resizer {
+	display: none;
+}
+
 @media screen and (min-width: 1200px) {
+	/*
+	 * The panel's width is a variable on the form, set by admin-preview.js when the handle is
+	 * dragged and remembered per browser. The settings column's padding follows it, so the two
+	 * never overlap however wide the panel is pulled. 320px is the default and the fallback.
+	 */
 	form.hp-form--table:has(> .hpab-preview) {
 		position: relative;
-		padding-right: 396px;
+		padding-right: calc(var(--hpab-preview-width, 320px) + 76px);
 	}
 
 	form.hp-form--table:has(> .hpab-preview) > .hpab-preview {
@@ -608,9 +835,52 @@
 		top: 0;
 		right: 44px;
 		bottom: 0;
-		width: 320px;
+		width: var(--hpab-preview-width, 320px);
 		margin-top: 0;
 		margin-bottom: 0;
+	}
+
+	.hpab-preview__resizer {
+		display: block;
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		left: -6px;
+		width: 12px;
+		cursor: col-resize;
+		touch-action: none;
+		z-index: 2;
+	}
+
+	/* A grip, drawn only while the pointer is over the edge or the handle has focus. */
+	.hpab-preview__resizer::before {
+		content: "";
+		position: absolute;
+		top: 50%;
+		left: 4px;
+		width: 4px;
+		height: 36px;
+		margin-top: -18px;
+		border-radius: 2px;
+		background: #c3c4c7;
+		opacity: 0;
+		transition: opacity 0.15s;
+	}
+
+	.hpab-preview__resizer:hover::before,
+	.hpab-preview__resizer:focus-visible::before,
+	.hpab-preview--resizing .hpab-preview__resizer::before {
+		opacity: 1;
+		background: #2271b1;
+	}
+
+	.hpab-preview__resizer:focus-visible {
+		outline: none;
+	}
+
+	.hpab-preview--resizing,
+	.hpab-preview--resizing * {
+		user-select: none;
 	}
 
 	form.hp-form--table:has(> .hpab-preview) > .hpab-preview > .hpab-preview__inner {

@@ -2094,6 +2094,12 @@ final class Hpab_Action_Bar extends Component {
 				// Illustrative, not read from the site: a badge with nothing in it would show
 				// nothing, and the owner is here to see what the badge colours do.
 				'badgeCount' => 3,
+
+				'labels'     => [
+					'hiddenOnMobile'  => esc_html__( 'The bar is switched off on mobile. Tick Mobile under Display to show it.', 'action-bar-for-hivepress' ),
+					'hiddenOnTablet'  => esc_html__( 'The bar is switched off on tablets. Tick Tablet under Display to show it.', 'action-bar-for-hivepress' ),
+					'hiddenOnDesktop' => esc_html__( 'The bar is switched off on desktop. Tick Desktop under Display to show it.', 'action-bar-for-hivepress' ),
+				],
 			]
 		);
 	}
@@ -2147,15 +2153,88 @@ final class Hpab_Action_Bar extends Component {
 	 * @return void
 	 */
 	public function render_preview_section() {
-		echo '<div class="hpab-preview"><div class="hpab-preview__inner">';
+		echo '<div class="hpab-preview">';
+
+		// The resize handle. A separator role with a value, so a screen reader can operate it with
+		// the arrow keys the script listens for; the pointer does the rest.
+		echo '<div class="hpab-preview__resizer" role="separator" aria-orientation="vertical" tabindex="0" aria-label="' . esc_attr__( 'Resize the preview: drag, or use the arrow keys. Double-click to reset.', 'action-bar-for-hivepress' ) . '" title="' . esc_attr__( 'Drag to resize. Double-click to reset.', 'action-bar-for-hivepress' ) . '"></div>';
+
+		echo '<div class="hpab-preview__inner">';
 		echo '<h2 class="hpab-preview__title">' . esc_html__( 'Live preview', 'action-bar-for-hivepress' ) . '</h2>';
+
+		// The side panel shows the phone. The wider viewports open a slide-in dialog, because a
+		// 1280px bar scaled into a 320px column shows nothing anyone can read.
+		echo '<div class="hpab-preview__modes" role="group" aria-label="' . esc_attr__( 'Preview size', 'action-bar-for-hivepress' ) . '">';
+		echo '<span class="hpab-preview__mode hpab-preview__mode--current" aria-current="true">' . esc_html__( 'Mobile', 'action-bar-for-hivepress' ) . '</span>';
+		echo '<button type="button" class="hpab-preview__mode" data-hpab-open="tablet">' . esc_html__( 'Tablet', 'action-bar-for-hivepress' ) . '</button>';
+		echo '<button type="button" class="hpab-preview__mode" data-hpab-open="desktop">' . esc_html__( 'Desktop', 'action-bar-for-hivepress' ) . '</button>';
+		echo '</div>';
 
 		$this->render_preview_panel( 'guest', esc_html__( 'Logged-out bar', 'action-bar-for-hivepress' ) );
 		$this->render_preview_panel( 'user', esc_html__( 'User bar', 'action-bar-for-hivepress' ) );
 		$this->render_preview_panel( 'vendor', esc_html__( 'Vendor bar', 'action-bar-for-hivepress' ) );
 
-		echo '<p class="description hpab-preview__description">' . esc_html__( 'How each bar will look with the settings on this page, following every change as you make it. The badge number and the highlighted first item are examples, not live figures. Nothing is stored until you press Save Changes.', 'action-bar-for-hivepress' ) . '</p>';
+		echo '<p class="description hpab-preview__description">' . esc_html__( 'How each bar will look on a phone with the settings on this page, following every change as you make it. Choose Tablet or Desktop to see it at those widths. The badge number and the highlighted first item are examples, not live figures. Nothing is stored until you press Save Changes.', 'action-bar-for-hivepress' ) . '</p>';
 		echo '</div></div>';
+
+		$this->render_preview_dialog();
+	}
+
+	/**
+	 * Renders a stage: the device the bar is laid out in, and the note shown instead of it when the
+	 * bar is switched off for the viewport being previewed.
+	 *
+	 * @param string $title Accessible name for the bar.
+	 * @return void
+	 */
+	protected function render_preview_stage( $title ) {
+		echo '<div class="hpab-preview__stage">';
+		echo '<div class="hpab-preview__device"><nav class="hp-action-bar hpab-preview__bar" aria-label="' . esc_attr( $title ) . '"></nav></div>';
+		echo '<p class="hpab-preview__note" hidden></p>';
+		echo '</div>';
+	}
+
+	/**
+	 * Renders the slide-in dialog the tablet and desktop previews open in.
+	 *
+	 * Printed once, hidden, at the end of the preview section; admin-preview.js fills its stages
+	 * from the same form values as the side panel. The shape is Email Studio's preview panel so the
+	 * two plugins' previews behave the same way: a backdrop that closes it, a dialog on the right,
+	 * a device switch in its head, Escape to close, focus handed back to the button that opened it.
+	 *
+	 * @return void
+	 */
+	protected function render_preview_dialog() {
+		echo '<div class="hpab-dialog" id="hpab-preview-dialog" hidden>';
+		echo '<div class="hpab-dialog__backdrop" data-hpab-close></div>';
+		echo '<div class="hpab-dialog__dialog" role="dialog" aria-modal="true" aria-labelledby="hpab-preview-dialog-title" data-device="tablet">';
+
+		echo '<div class="hpab-dialog__head">';
+		echo '<div><h2 class="hpab-dialog__title" id="hpab-preview-dialog-title">' . esc_html__( 'Live preview', 'action-bar-for-hivepress' ) . '</h2>';
+		echo '<p class="hpab-dialog__subtitle">' . esc_html__( 'Drawn at the real width for this size. The badge number and the highlighted first item are examples.', 'action-bar-for-hivepress' ) . '</p></div>';
+		echo '<div class="hpab-dialog__group" role="group" aria-label="' . esc_attr__( 'Preview size', 'action-bar-for-hivepress' ) . '">';
+		echo '<button type="button" class="button hpab-dialog__device" data-device="tablet" aria-pressed="false">' . esc_html__( 'Tablet', 'action-bar-for-hivepress' ) . '</button>';
+		echo '<button type="button" class="button hpab-dialog__device" data-device="desktop" aria-pressed="false">' . esc_html__( 'Desktop', 'action-bar-for-hivepress' ) . '</button>';
+		echo '</div>';
+		echo '<button type="button" class="hpab-dialog__close" data-hpab-close aria-label="' . esc_attr__( 'Close preview', 'action-bar-for-hivepress' ) . '"><span class="dashicons dashicons-no-alt" aria-hidden="true"></span></button>';
+		echo '</div>';
+
+		echo '<div class="hpab-dialog__stage">';
+
+		foreach ( [
+			'guest'  => esc_html__( 'Logged-out bar', 'action-bar-for-hivepress' ),
+			'user'   => esc_html__( 'User bar', 'action-bar-for-hivepress' ),
+			'vendor' => esc_html__( 'Vendor bar', 'action-bar-for-hivepress' ),
+		] as $bar => $title ) {
+			echo '<div class="hpab-dialog__panel hpab-preview__panel" data-bar="' . esc_attr( $bar ) . '" data-context="dialog">';
+			echo '<h3 class="hpab-dialog__panel-title">' . esc_html( $title ) . '</h3>';
+			$this->render_preview_stage( $title );
+			echo '</div>';
+		}
+
+		echo '</div>';
+		echo '</div>';
+		echo '</div>';
 	}
 
 	/**
@@ -2174,7 +2253,7 @@ final class Hpab_Action_Bar extends Component {
 		echo '<span class="hpab-preview__panel-title">' . esc_html( $title ) . '</span>';
 		echo '</button>';
 		echo '<div class="hpab-preview__body" id="' . esc_attr( $id ) . '">';
-		echo '<div class="hpab-preview__stage"><nav class="hp-action-bar hpab-preview__bar" aria-label="' . esc_attr( $title ) . '"></nav></div>';
+		$this->render_preview_stage( $title );
 		echo '</div>';
 		echo '</div>';
 	}

@@ -67,16 +67,35 @@
 			labels = data.labels || {},
 			repaintTimer = null;
 
-		var panels = {};
+		// Two sets of stages read the same form: the side panel (one per bar, drawn as a phone)
+		// and the dialog's (one per bar, drawn at tablet or desktop width while it is open).
+		var panels = {},
+			dialog = document.getElementById( 'hpab-preview-dialog' ),
+			dialogPanels = {},
+			dialogDevice = 'tablet',
+			lastFocus = null;
 
-		Array.prototype.forEach.call( root.querySelectorAll( '.hpab-preview__panel' ), function ( element ) {
-			panels[ element.getAttribute( 'data-bar' ) ] = {
+		function readPanel( element ) {
+			return {
 				element: element,
 				header: element.querySelector( '.hpab-preview__header' ),
 				body: element.querySelector( '.hpab-preview__body' ),
 				bar: element.querySelector( '.hp-action-bar' ),
+				stage: element.querySelector( '.hpab-preview__stage' ),
+				device: element.querySelector( '.hpab-preview__device' ),
+				note: element.querySelector( '.hpab-preview__note' ),
 			};
+		}
+
+		Array.prototype.forEach.call( root.querySelectorAll( '.hpab-preview__panel' ), function ( element ) {
+			panels[ element.getAttribute( 'data-bar' ) ] = readPanel( element );
 		} );
+
+		if ( dialog ) {
+			Array.prototype.forEach.call( dialog.querySelectorAll( '.hpab-preview__panel' ), function ( element ) {
+				dialogPanels[ element.getAttribute( 'data-bar' ) ] = readPanel( element );
+			} );
+		}
 
 		function input( option ) {
 			return document.querySelector( '[name="' + option + '"]' );
@@ -341,6 +360,165 @@
 			panel.element.classList.toggle( 'hpab-preview__panel--empty', ! items.length );
 		}
 
+		/* ---- viewport modes ------------------------------------------------ */
+
+		// The widths get_inline_styles() draws the bar at: up to 767px is mobile, 768 to 1024
+		// tablet, wider is desktop. 375 and 1280 are a phone and a laptop rather than the edges
+		// of their bands, which is what a person pictures.
+		var MODES = {
+			mobile: { width: 375, option: 'hp_action_bar_enable_mobile', fallback: true },
+			tablet: { width: 768, option: 'hp_action_bar_enable_tablet', fallback: false },
+			desktop: { width: 1280, option: 'hp_action_bar_enable_desktop', fallback: false },
+		};
+
+		function modeEnabled( name ) {
+			var field = input( MODES[ name ].option );
+
+			// An absent checkbox means the option has never been rendered here; the bar's own
+			// rule is then its default, which is on for mobile and off for the other two.
+			return field ? field.checked : MODES[ name ].fallback;
+		}
+
+		/**
+		 * Sizes one stage to a mode: the device is laid out at the viewport's real width, scaled
+		 * down only if the stage is narrower than that, and the stage takes the scaled height so
+		 * nothing below it jumps. Desktop applies the rules the front end applies above 1024px:
+		 * a centred bar whose items stop stretching.
+		 */
+		function applyMode( panel, mode ) {
+			var device = panel.device,
+				stage = panel.stage,
+				bar = panel.bar;
+
+			if ( ! device || ! stage || ! bar ) {
+				return;
+			}
+
+			var width = MODES[ mode ].width,
+				available = stage.clientWidth,
+				scale = available > 0 ? Math.min( 1, available / width ) : 1;
+
+			bar.classList.toggle( 'hpab-preview__bar--desktop', 'desktop' === mode );
+			device.style.width = width + 'px';
+			device.style.transform = 1 === scale ? '' : 'scale(' + scale + ')';
+
+			var enabled = modeEnabled( mode );
+
+			device.hidden = ! enabled;
+
+			if ( panel.note ) {
+				panel.note.hidden = enabled;
+				panel.note.textContent = enabled ? '' : ( labels[ 'hiddenOn' + mode.charAt( 0 ).toUpperCase() + mode.slice( 1 ) ] || '' );
+			}
+
+			// Height is measured after the transform: layout happens at full width, and the
+			// stage must be as tall as the scaled result plus its own top padding.
+			var padding = parseInt( window.getComputedStyle( stage ).paddingTop, 10 ) || 0;
+
+			stage.style.height = enabled ? Math.ceil( device.offsetHeight * scale + padding ) + 'px' : '';
+		}
+
+		function paintDialog() {
+			if ( ! dialog || dialog.hidden ) {
+				return;
+			}
+
+			var guestOn = !! value( OPTIONS.enableGuest ),
+				vendorOn = !! value( OPTIONS.enableVendor );
+
+			BARS.forEach( function ( bar ) {
+				var panel = dialogPanels[ bar ];
+
+				if ( ! panel ) {
+					return;
+				}
+
+				var shown = 'guest' === bar ? guestOn : ( 'vendor' === bar ? vendorOn : true );
+
+				panel.element.hidden = ! shown;
+
+				if ( shown ) {
+					drawBar( panel, bar );
+					applyMode( panel, dialogDevice );
+				}
+			} );
+		}
+
+		function setDialogDevice( device ) {
+			if ( ! MODES[ device ] || 'mobile' === device ) {
+				return;
+			}
+
+			dialogDevice = device;
+
+			if ( dialog ) {
+				dialog.querySelector( '.hpab-dialog__dialog' ).setAttribute( 'data-device', device );
+
+				Array.prototype.forEach.call( dialog.querySelectorAll( '.hpab-dialog__device' ), function ( button ) {
+					button.setAttribute( 'aria-pressed', button.getAttribute( 'data-device' ) === device ? 'true' : 'false' );
+					button.classList.toggle( 'is-active', button.getAttribute( 'data-device' ) === device );
+				} );
+			}
+
+			paintDialog();
+		}
+
+		function openDialog( device, opener ) {
+			if ( ! dialog ) {
+				return;
+			}
+
+			lastFocus = opener || document.activeElement;
+			dialog.hidden = false;
+			document.body.classList.add( 'hpab-dialog-open' );
+			setDialogDevice( device );
+
+			var close = dialog.querySelector( '.hpab-dialog__close' );
+
+			if ( close ) {
+				close.focus();
+			}
+		}
+
+		function closeDialog() {
+			if ( ! dialog || dialog.hidden ) {
+				return;
+			}
+
+			dialog.hidden = true;
+			document.body.classList.remove( 'hpab-dialog-open' );
+
+			if ( lastFocus && lastFocus.focus ) {
+				lastFocus.focus();
+			}
+		}
+
+		Array.prototype.forEach.call( root.querySelectorAll( '[data-hpab-open]' ), function ( button ) {
+			button.addEventListener( 'click', function () {
+				openDialog( button.getAttribute( 'data-hpab-open' ), button );
+			} );
+		} );
+
+		if ( dialog ) {
+			Array.prototype.forEach.call( dialog.querySelectorAll( '[data-hpab-close]' ), function ( element ) {
+				element.addEventListener( 'click', closeDialog );
+			} );
+
+			Array.prototype.forEach.call( dialog.querySelectorAll( '.hpab-dialog__device' ), function ( button ) {
+				button.addEventListener( 'click', function () {
+					setDialogDevice( button.getAttribute( 'data-device' ) );
+				} );
+			} );
+
+			document.addEventListener( 'keydown', function ( event ) {
+				if ( 'Escape' === event.key && ! dialog.hidden ) {
+					closeDialog();
+				}
+			} );
+
+			window.addEventListener( 'resize', paintDialog );
+		}
+
 		function paint() {
 			var guestOn = !! value( OPTIONS.enableGuest ),
 				vendorOn = !! value( OPTIONS.enableVendor );
@@ -360,8 +538,11 @@
 
 				if ( shown ) {
 					drawBar( panel, bar );
+					applyMode( panel, 'mobile' );
 				}
 			} );
+
+			paintDialog();
 		}
 
 		function repaint() {
@@ -403,6 +584,11 @@
 				store[ bar ] = open ? 1 : 0;
 				writeStore( store );
 			}
+
+			// A stage that was hidden had no height to measure.
+			if ( open && ! panel.element.hidden ) {
+				applyMode( panel, 'mobile' );
+			}
 		}
 
 		var remembered = readStore();
@@ -430,5 +616,123 @@
 		$( document ).on( 'sortupdate', 'div[data-component="repeater"] tbody', repaint );
 
 		paint();
+
+		/* ---- resizable panel ------------------------------------------------ */
+
+		var WIDTH_STORE = 'hpabPreviewWidth',
+			WIDTH_DEFAULT = 320,
+			WIDTH_MIN = 280,
+			resizer = root.querySelector( '.hpab-preview__resizer' ),
+			form = root.closest( 'form' );
+
+		function maxWidth() {
+			// Leave the settings column at least 480px; below that the fields wrap badly.
+			return Math.max( WIDTH_MIN, Math.floor( ( form ? form.getBoundingClientRect().width : window.innerWidth ) - 480 ) );
+		}
+
+		function applyWidth( width, remember ) {
+			width = Math.round( Math.min( maxWidth(), Math.max( WIDTH_MIN, width ) ) );
+
+			if ( form ) {
+				form.style.setProperty( '--hpab-preview-width', width + 'px' );
+			}
+
+			if ( resizer ) {
+				resizer.setAttribute( 'aria-valuenow', String( width ) );
+				resizer.setAttribute( 'aria-valuemin', String( WIDTH_MIN ) );
+				resizer.setAttribute( 'aria-valuemax', String( maxWidth() ) );
+			}
+
+			if ( remember ) {
+				try {
+					window.localStorage.setItem( WIDTH_STORE, String( width ) );
+				} catch ( error ) {
+					// Storage blocked; the width holds for this page only.
+				}
+			}
+
+			return width;
+		}
+
+		function currentWidth() {
+			var stored = 0;
+
+			try {
+				stored = parseInt( window.localStorage.getItem( WIDTH_STORE ), 10 );
+			} catch ( error ) {
+				stored = 0;
+			}
+
+			return stored > 0 ? stored : WIDTH_DEFAULT;
+		}
+
+		if ( resizer && form ) {
+			applyWidth( currentWidth(), false );
+
+			var dragging = null;
+
+			resizer.addEventListener( 'pointerdown', function ( event ) {
+				if ( 0 !== event.button ) {
+					return;
+				}
+
+				dragging = { x: event.clientX, width: parseInt( resizer.getAttribute( 'aria-valuenow' ), 10 ) || WIDTH_DEFAULT };
+				resizer.setPointerCapture( event.pointerId );
+				root.classList.add( 'hpab-preview--resizing' );
+				event.preventDefault();
+			} );
+
+			resizer.addEventListener( 'pointermove', function ( event ) {
+				if ( ! dragging ) {
+					return;
+				}
+
+				// The handle is on the LEFT edge, so moving the pointer left makes the panel wider.
+				applyWidth( dragging.width + ( dragging.x - event.clientX ), false );
+			} );
+
+			function endDrag( event ) {
+				if ( ! dragging ) {
+					return;
+				}
+
+				dragging = null;
+				root.classList.remove( 'hpab-preview--resizing' );
+
+				if ( event.pointerId !== undefined && resizer.hasPointerCapture( event.pointerId ) ) {
+					resizer.releasePointerCapture( event.pointerId );
+				}
+
+				applyWidth( parseInt( resizer.getAttribute( 'aria-valuenow' ), 10 ) || WIDTH_DEFAULT, true );
+			}
+
+			resizer.addEventListener( 'pointerup', endDrag );
+			resizer.addEventListener( 'pointercancel', endDrag );
+
+			resizer.addEventListener( 'dblclick', function () {
+				applyWidth( WIDTH_DEFAULT, true );
+			} );
+
+			resizer.addEventListener( 'keydown', function ( event ) {
+				var step = event.shiftKey ? 80 : 20,
+					width = parseInt( resizer.getAttribute( 'aria-valuenow' ), 10 ) || WIDTH_DEFAULT;
+
+				if ( 'ArrowLeft' === event.key ) {
+					applyWidth( width + step, true );
+				} else if ( 'ArrowRight' === event.key ) {
+					applyWidth( width - step, true );
+				} else if ( 'Home' === event.key ) {
+					applyWidth( WIDTH_DEFAULT, true );
+				} else {
+					return;
+				}
+
+				event.preventDefault();
+			} );
+
+			window.addEventListener( 'resize', function () {
+				applyWidth( parseInt( resizer.getAttribute( 'aria-valuenow' ), 10 ) || WIDTH_DEFAULT, false );
+			} );
+		}
 	} );
 }() );
