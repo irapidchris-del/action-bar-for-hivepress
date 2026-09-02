@@ -2184,8 +2184,9 @@ final class Hpab_Action_Bar extends Component {
 				if ( current_user_can( 'activate_plugins' ) ) {
 					$url = wp_nonce_url( self_admin_url( 'plugins.php?action=activate&plugin=' . rawurlencode( $extension['file'] ) ), 'activate-plugin_' . $extension['file'] );
 
-					/* translators: %s: extension name. */
-					$sentence .= ' <a href="' . esc_url( $url ) . '" class="button button-secondary">' . sprintf( esc_html__( 'Activate %s', 'action-bar-for-hivepress' ), esc_html( $extension['name'] ) ) . '</a>';
+					// A linked verb inside the sentence, not a button: the offer is an aside on a
+					// settings screen, and a button beside the description read as a demand.
+					$sentence .= ' <a href="' . esc_url( $url ) . '" class="hpab-offer__action">' . esc_html__( 'Activate it.', 'action-bar-for-hivepress' ) . '</a>';
 				}
 			} else {
 				/* translators: 1: extension name, linked; 2: what it adds. */
@@ -2194,8 +2195,7 @@ final class Hpab_Action_Bar extends Component {
 				if ( current_user_can( 'install_plugins' ) ) {
 					$url = wp_nonce_url( admin_url( 'admin-post.php?action=hpab_install_extension&extension=' . rawurlencode( $key ) ), 'hpab_install_' . $key );
 
-					/* translators: %s: extension name. */
-					$sentence .= ' <a href="' . esc_url( $url ) . '" class="button button-secondary">' . sprintf( esc_html__( 'Install %s', 'action-bar-for-hivepress' ), esc_html( $extension['name'] ) ) . '</a>';
+					$sentence .= ' <a href="' . esc_url( $url ) . '" class="hpab-offer__action">' . esc_html__( 'Install it.', 'action-bar-for-hivepress' ) . '</a>';
 				}
 			}
 
