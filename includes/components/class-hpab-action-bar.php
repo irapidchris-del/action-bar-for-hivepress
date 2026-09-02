@@ -47,6 +47,11 @@ final class Hpab_Action_Bar extends Component {
 			// The live preview panel. Priority 20, after HivePress has registered the tab's own
 			// sections, so the panel can be moved to the front of the list it is already in.
 			add_action( 'admin_init', [ $this, 'register_preview_section' ], 20 );
+
+			// The sibling extension that gives the bar its bell, offered on the Display section.
+			// After HivePress's own settings pass at 10.
+			add_filter( 'hivepress/v1/settings', [ $this, 'add_extension_links' ], 20 );
+			add_action( 'admin_post_hpab_install_extension', [ $this, 'install_extension' ] );
 		} else {
 
 			// Enqueue frontend assets.
@@ -2102,6 +2107,171 @@ final class Hpab_Action_Bar extends Component {
 				],
 			]
 		);
+	}
+
+	/**
+	 * The sibling extensions that enhance this plugin, for the settings screen to link and offer.
+	 *
+	 * The same block as Notifications for HivePress carries (its insights component), copied with
+	 * this plugin's prefix rather than shared: a sentence on a settings screen must not make one
+	 * extension depend on another. `file` is the plugin basename WordPress knows the extension by;
+	 * `zip` is the fixed asset name on the permanent /releases/latest/download/ link, the same
+	 * channel the extensions update themselves from; `topic` is the announcement on the HivePress
+	 * community forum. Product names, so not translated.
+	 *
+	 * @var array
+	 */
+	const EXTENSIONS = [
+		'notifications' => [
+			'name'    => 'Notifications for HivePress',
+			'section' => 'display',
+			'file'    => 'notifications-for-hivepress/notifications-for-hivepress.php',
+			'repo'    => 'irapidchris-del/notifications-for-hivepress',
+			'zip'     => 'notifications-for-hivepress.zip',
+			'topic'   => 'https://community.hivepress.io/t/notifications-for-hivepress/17881',
+		],
+	];
+
+	/**
+	 * Gets the state of one of the extensions this plugin can use.
+	 *
+	 * @param string $key Key in self::EXTENSIONS.
+	 * @return string 'active', 'installed' or 'missing'.
+	 */
+	protected function get_extension_state( $key ) {
+		$extension = hp\get_array_value( self::EXTENSIONS, $key );
+
+		if ( ! $extension ) {
+			return 'missing';
+		}
+
+		// The same test the bell itself uses, so the screen never says "active" about a copy the
+		// bar cannot read.
+		if ( 'notifications' === $key && is_object( hivepress()->hpnf_notification ) ) {
+			return 'active';
+		}
+
+		return file_exists( WP_PLUGIN_DIR . '/' . $extension['file'] ) ? 'installed' : 'missing';
+	}
+
+	/**
+	 * Adds the sibling-extension link and button to the Display section.
+	 *
+	 * Appended to the section description, which core prints through hp\sanitize_html(): links
+	 * with a class, strong and i are what that allows, and they are all this needs. Install and
+	 * Activate are offered only to someone allowed to do them.
+	 *
+	 * @param array $settings Settings configuration.
+	 * @return array
+	 */
+	public function add_extension_links( $settings ) {
+		foreach ( self::EXTENSIONS as $key => $extension ) {
+			if ( ! isset( $settings['action_bar']['sections'][ $extension['section'] ]['description'] ) ) {
+				continue;
+			}
+
+			$state = $this->get_extension_state( $key );
+			$link  = '<a href="' . esc_url( $extension['topic'] ) . '" target="_blank"><strong>' . esc_html( $extension['name'] ) . '</strong></a>';
+			$gives = esc_html__( 'adds the bell with its unread badge to the bar', 'action-bar-for-hivepress' );
+
+			if ( 'active' === $state ) {
+				/* translators: 1: extension name, linked; 2: what it adds. */
+				$sentence = sprintf( esc_html__( '%1$s %2$s and is active.', 'action-bar-for-hivepress' ), $link, $gives );
+			} elseif ( 'installed' === $state ) {
+				/* translators: 1: extension name, linked; 2: what it adds. */
+				$sentence = sprintf( esc_html__( '%1$s %2$s but is not active.', 'action-bar-for-hivepress' ), $link, $gives );
+
+				if ( current_user_can( 'activate_plugins' ) ) {
+					$url = wp_nonce_url( self_admin_url( 'plugins.php?action=activate&plugin=' . rawurlencode( $extension['file'] ) ), 'activate-plugin_' . $extension['file'] );
+
+					/* translators: %s: extension name. */
+					$sentence .= ' <a href="' . esc_url( $url ) . '" class="button button-secondary">' . sprintf( esc_html__( 'Activate %s', 'action-bar-for-hivepress' ), esc_html( $extension['name'] ) ) . '</a>';
+				}
+			} else {
+				/* translators: 1: extension name, linked; 2: what it adds. */
+				$sentence = sprintf( esc_html__( '%1$s %2$s but is not installed.', 'action-bar-for-hivepress' ), $link, $gives );
+
+				if ( current_user_can( 'install_plugins' ) ) {
+					$url = wp_nonce_url( admin_url( 'admin-post.php?action=hpab_install_extension&extension=' . rawurlencode( $key ) ), 'hpab_install_' . $key );
+
+					/* translators: %s: extension name. */
+					$sentence .= ' <a href="' . esc_url( $url ) . '" class="button button-secondary">' . sprintf( esc_html__( 'Install %s', 'action-bar-for-hivepress' ), esc_html( $extension['name'] ) ) . '</a>';
+				}
+			}
+
+			$settings['action_bar']['sections'][ $extension['section'] ]['description'] .= ' ' . $sentence;
+		}
+
+		return $settings;
+	}
+
+	/**
+	 * Installs one of the extensions from its permanent GitHub release link.
+	 *
+	 * WordPress's own installer with its own screen, so the owner sees exactly what Upload Plugin
+	 * shows, including the Activate link at the end, and the zip comes from the same address the
+	 * extension's updater will use from then on. Nothing is written until the capability and the
+	 * nonce have both been checked.
+	 *
+	 * @return void
+	 */
+	public function install_extension() {
+		if ( ! current_user_can( 'install_plugins' ) ) {
+			wp_die( esc_html__( 'Sorry, you are not allowed to install plugins on this site.', 'action-bar-for-hivepress' ), 403 );
+		}
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- checked on the next line, once the key is known.
+		$key = sanitize_key( (string) hp\get_array_value( $_GET, 'extension' ) );
+
+		check_admin_referer( 'hpab_install_' . $key );
+
+		$extension = hp\get_array_value( self::EXTENSIONS, $key );
+
+		if ( ! $extension ) {
+			wp_die( esc_html__( 'Unknown extension.', 'action-bar-for-hivepress' ), 400 );
+		}
+
+		require_once ABSPATH . 'wp-admin/includes/file.php';
+		require_once ABSPATH . 'wp-admin/includes/misc.php';
+		require_once ABSPATH . 'wp-admin/includes/plugin.php';
+		require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
+
+		/* translators: %s: extension name. */
+		$title = sprintf( esc_html__( 'Installing %s', 'action-bar-for-hivepress' ), $extension['name'] );
+
+		// The standard installer page: WordPress's header and footer around the upgrader's own
+		// progress messages, the way wp-admin/update.php does it.
+		$GLOBALS['title'] = $title; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- The page title admin-header.php prints; this is the documented way to set it.
+
+		// admin-header.php fires admin_enqueue_scripts with this global as its argument. wp-admin's
+		// own pages set it before including the header; admin-post.php does not, and a plugin whose
+		// callback declares the argument as a string then fatals on null (Plugin Check does).
+		$GLOBALS['hook_suffix'] = 'hpab-install-extension'; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- See above; a name no plugin's screen check matches, so nothing else enqueues for it.
+
+		require_once ABSPATH . 'wp-admin/admin-header.php';
+
+		echo '<div class="wrap">';
+		echo '<h1>' . esc_html( $title ) . '</h1>';
+
+		$skin = new \Plugin_Installer_Skin(
+			[
+				'type'  => 'upload',
+				'title' => $title,
+				'nonce' => 'hpab_install_' . $key,
+				'url'   => admin_url( 'admin.php?page=hp_settings&tab=action_bar' ),
+			]
+		);
+
+		$upgrader = new \Plugin_Upgrader( $skin );
+
+		$upgrader->install( 'https://github.com/' . $extension['repo'] . '/releases/latest/download/' . $extension['zip'] );
+
+		echo '<p><a href="' . esc_url( admin_url( 'admin.php?page=hp_settings&tab=action_bar' ) ) . '">' . esc_html__( 'Back to the Action Bar settings', 'action-bar-for-hivepress' ) . '</a></p>';
+		echo '</div>';
+
+		require_once ABSPATH . 'wp-admin/admin-footer.php';
+
+		exit;
 	}
 
 	/**

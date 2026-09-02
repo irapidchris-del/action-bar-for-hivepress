@@ -4,7 +4,7 @@ Tags: hivepress, mobile, navigation, bottom bar, app
 Requires at least: 5.8
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.6.2
+Stable tag: 1.6.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -82,6 +82,10 @@ Yes. Tick "Desktop" in the Display section and the bar appears on laptops and de
 The plugin includes an update checker that watches the official GitHub repository for new releases. When a newer version is published, WordPress shows the update on the Plugins and Dashboard, Updates screens, and you can install it with the usual one-click update. You can force an immediate check with the Check for updates link on the Plugins screen. No account, licence key, or extra configuration is required.
 
 == Changelog ==
+
+= 1.6.3 =
+* Fixed: typing an item's label drew a broken glyph beside the card's icon. The shared icon library is updated to the version that fixes it.
+* New: the Display section names Notifications for HivePress, which gives the bar its bell and unread badge, linked to its announcement and with an Install or Activate button when it is missing, for owners allowed to do that.
 
 = 1.6.2 =
 * Fixed: dragging the preview wider only widened the box around the bar. The bars now follow the
