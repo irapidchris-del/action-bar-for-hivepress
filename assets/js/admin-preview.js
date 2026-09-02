@@ -506,6 +506,12 @@
 
 			Array.prototype.forEach.call( dialog.querySelectorAll( '.hpab-dialog__device' ), function ( button ) {
 				button.addEventListener( 'click', function () {
+					if ( 'mobile' === button.getAttribute( 'data-device' ) ) {
+						closeDialog();
+
+						return;
+					}
+
 					setDialogDevice( button.getAttribute( 'data-device' ) );
 				} );
 			} );

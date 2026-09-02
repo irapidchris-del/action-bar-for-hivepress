@@ -4,7 +4,7 @@ Tags: hivepress, mobile, navigation, bottom bar, app
 Requires at least: 5.8
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.6.0
+Stable tag: 1.6.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -82,6 +82,12 @@ Yes. Tick "Desktop" in the Display section and the bar appears on laptops and de
 The plugin includes an update checker that watches the official GitHub repository for new releases. When a newer version is published, WordPress shows the update on the Plugins and Dashboard, Updates screens, and you can install it with the usual one-click update. You can force an immediate check with the Check for updates link on the Plugins screen. No account, licence key, or extra configuration is required.
 
 == Changelog ==
+
+= 1.6.1 =
+* Fixed: the Link and Icon boxes on each item card were only a fifth of the card's width, a leftover
+  from the old row layout. Every field on a card now spans it.
+* Changed: the tablet and desktop preview now has a Mobile button beside the other two, which closes
+  it and returns you to the phone preview in the side panel.
 
 = 1.6.0 =
 * Added: a live preview to the right of the settings, drawing the logged-out, user and vendor bars

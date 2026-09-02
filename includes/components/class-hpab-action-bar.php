@@ -2213,6 +2213,9 @@ final class Hpab_Action_Bar extends Component {
 		echo '<div><h2 class="hpab-dialog__title" id="hpab-preview-dialog-title">' . esc_html__( 'Live preview', 'action-bar-for-hivepress' ) . '</h2>';
 		echo '<p class="hpab-dialog__subtitle">' . esc_html__( 'Drawn at the real width for this size. The badge number and the highlighted first item are examples.', 'action-bar-for-hivepress' ) . '</p></div>';
 		echo '<div class="hpab-dialog__group" role="group" aria-label="' . esc_attr__( 'Preview size', 'action-bar-for-hivepress' ) . '">';
+		// Mobile lives in the side panel, so choosing it here closes the dialog - the same switch as
+		// the panel's, read the same way, rather than a control that does nothing in this context.
+		echo '<button type="button" class="button hpab-dialog__device" data-device="mobile" aria-pressed="false">' . esc_html__( 'Mobile', 'action-bar-for-hivepress' ) . '</button>';
 		echo '<button type="button" class="button hpab-dialog__device" data-device="tablet" aria-pressed="false">' . esc_html__( 'Tablet', 'action-bar-for-hivepress' ) . '</button>';
 		echo '<button type="button" class="button hpab-dialog__device" data-device="desktop" aria-pressed="false">' . esc_html__( 'Desktop', 'action-bar-for-hivepress' ) . '</button>';
 		echo '</div>';
