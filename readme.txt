@@ -4,7 +4,7 @@ Tags: hivepress, mobile, navigation, bottom bar, app
 Requires at least: 5.8
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.5.12
+Stable tag: 1.5.13
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -82,6 +82,11 @@ Yes. Tick "Desktop" in the Display section and the bar appears on laptops and de
 The plugin includes an update checker that watches the official GitHub repository for new releases. When a newer version is published, WordPress shows the update on the Plugins and Dashboard, Updates screens, and you can install it with the usual one-click update. You can force an immediate check with the Check for updates link on the Plugins screen. No account, licence key, or extra configuration is required.
 
 == Changelog ==
+
+= 1.5.13 =
+* Fixed: an item with no icon of its own could take the icon of the item above it when the settings
+  were saved. This came in with the icon library in 1.5.12; if any of your bar items gained an icon
+  you did not choose, open the Action Bar tab, correct those rows, and save once.
 
 = 1.5.12 =
 * Changed: icons are now drawn directly into the page instead of being loaded as a font. A
