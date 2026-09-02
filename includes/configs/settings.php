@@ -72,6 +72,7 @@ $hpab_item_fields = [
 	'link'  => [
 		'placeholder' => esc_html__( 'Link', 'action-bar-for-hivepress' ),
 		'type'        => 'select',
+		'attributes'  => [ 'data-hpab-label' => esc_html__( 'Link', 'action-bar-for-hivepress' ) ],
 		'options'     => $hpab_component->get_link_options() + $hpab_component->get_route_link_options() + $hpab_component->get_page_options(),
 		'_order'      => 10,
 	],
@@ -101,7 +102,8 @@ $hpab_item_fields = [
 		'source'      => class_exists( 'FAFH' ) ? FAFH::picker_source() : null,
 
 		'attributes'  => [
-			'data-template' => 'icon',
+			'data-template'   => 'icon',
+			'data-hpab-label' => esc_html__( 'Icon', 'action-bar-for-hivepress' ),
 		],
 
 		'_order'      => 20,
@@ -110,6 +112,7 @@ $hpab_item_fields = [
 	'label' => [
 		'placeholder' => esc_html__( 'Label', 'action-bar-for-hivepress' ),
 		'type'        => 'text',
+		'attributes'  => [ 'data-hpab-label' => esc_html__( 'Label', 'action-bar-for-hivepress' ) ],
 		'max_length'  => 32,
 		'_order'      => 40,
 	],
@@ -133,6 +136,7 @@ $hpab_item_fields = [
 	'style' => [
 		'placeholder' => esc_html__( 'Style', 'action-bar-for-hivepress' ),
 		'type'        => 'select',
+		'attributes'  => [ 'data-hpab-label' => esc_html__( 'Style', 'action-bar-for-hivepress' ) ],
 
 		'options'     => [
 			'default'   => esc_html__( 'Default', 'action-bar-for-hivepress' ),
@@ -145,6 +149,7 @@ $hpab_item_fields = [
 	'badge' => [
 		'placeholder' => esc_html__( 'No badge', 'action-bar-for-hivepress' ),
 		'type'        => 'select',
+		'attributes'  => [ 'data-hpab-label' => esc_html__( 'Badge', 'action-bar-for-hivepress' ) ],
 		'options'     => $hpab_component->get_badge_options(),
 		'_order'      => 70,
 	],

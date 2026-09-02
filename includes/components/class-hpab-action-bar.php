@@ -43,6 +43,10 @@ final class Hpab_Action_Bar extends Component {
 
 			// Enqueue backend assets.
 			add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_backend_assets' ] );
+
+			// The live preview panel. Priority 20, after HivePress has registered the tab's own
+			// sections, so the panel can be moved to the front of the list it is already in.
+			add_action( 'admin_init', [ $this, 'register_preview_section' ], 20 );
 		} else {
 
 			// Enqueue frontend assets.
@@ -2055,9 +2059,124 @@ final class Hpab_Action_Bar extends Component {
 					'jumpTo'    => esc_html__( 'Jump to a section:', 'action-bar-for-hivepress' ),
 					'save'      => esc_html__( 'Save Changes', 'action-bar-for-hivepress' ),
 					'backToTop' => esc_html__( 'Back to top', 'action-bar-for-hivepress' ),
+					'newItem'   => esc_html__( 'New item', 'action-bar-for-hivepress' ),
+					'collapse'  => esc_html__( 'Collapse', 'action-bar-for-hivepress' ),
+					'expand'    => esc_html__( 'Expand', 'action-bar-for-hivepress' ),
 				],
 			]
 		);
+
+		/*
+		 * The live preview draws the bar with the FRONT-END stylesheet, on purpose. An imitation
+		 * written for the admin would drift from the real thing the first time a front-end rule
+		 * changed; the real sheet cannot. backend.min.css undoes only the `position: fixed` so the
+		 * bar sits inside its stage.
+		 */
+		wp_enqueue_style(
+			'hivepress-action-bar-frontend',
+			$this->get_extension_url() . '/assets/css/frontend.min.css',
+			[],
+			$this->get_asset_version( 'assets/css/frontend.min.css' )
+		);
+
+		wp_enqueue_script(
+			'hivepress-action-bar-preview',
+			$this->get_extension_url() . '/assets/js/admin-preview.js',
+			[ 'jquery', 'wp-color-picker', 'hivepress-action-bar-backend' ],
+			$this->get_asset_version( 'assets/js/admin-preview.js' ),
+			true
+		);
+
+		wp_localize_script(
+			'hivepress-action-bar-preview',
+			'hpabPreviewData',
+			[
+				// Illustrative, not read from the site: a badge with nothing in it would show
+				// nothing, and the owner is here to see what the badge colours do.
+				'badgeCount' => 3,
+			]
+		);
+	}
+
+	/**
+	 * Registers the live preview panel on this plugin's settings tab.
+	 *
+	 * Modelled line for line on Account Menu Enhancer's register_preview_section(): HivePress
+	 * renders a tab through do_settings_sections(), so a panel is a settings section with a render
+	 * callback, and moving it to the front of the list is a plain reorder of the array WordPress
+	 * reads later in the same request.
+	 *
+	 * @return void
+	 */
+	public function register_preview_section() {
+		global $pagenow;
+
+		// HivePress registers its settings on options.php as well, so that a save has the field
+		// list to validate against. Nothing is rendered on that request.
+		if ( 'admin.php' !== $pagenow ) {
+			return;
+		}
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( 'hp_settings' !== sanitize_key( (string) hp\get_array_value( $_GET, 'page' ) ) ) {
+			return;
+		}
+
+		if ( ! $this->is_settings_tab() ) {
+			return;
+		}
+
+		add_settings_section( 'hpab_preview', '', [ $this, 'render_preview_section' ], 'hp_settings' );
+
+		if ( ! isset( $GLOBALS['wp_settings_sections']['hp_settings']['hpab_preview'] ) ) {
+			return;
+		}
+
+		$sections = $GLOBALS['wp_settings_sections']['hp_settings'];
+		$preview  = $sections['hpab_preview'];
+
+		unset( $sections['hpab_preview'] );
+
+		// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Reordering our own entry in the settings section list, which is the documented way sections are held and has no setter.
+		$GLOBALS['wp_settings_sections']['hp_settings'] = array_merge( [ 'hpab_preview' => $preview ], $sections );
+	}
+
+	/**
+	 * Renders the live preview panel: one stage per bar, filled by admin-preview.js.
+	 *
+	 * @return void
+	 */
+	public function render_preview_section() {
+		echo '<div class="hpab-preview"><div class="hpab-preview__inner">';
+		echo '<h2 class="hpab-preview__title">' . esc_html__( 'Live preview', 'action-bar-for-hivepress' ) . '</h2>';
+
+		$this->render_preview_panel( 'guest', esc_html__( 'Logged-out bar', 'action-bar-for-hivepress' ) );
+		$this->render_preview_panel( 'user', esc_html__( 'User bar', 'action-bar-for-hivepress' ) );
+		$this->render_preview_panel( 'vendor', esc_html__( 'Vendor bar', 'action-bar-for-hivepress' ) );
+
+		echo '<p class="description hpab-preview__description">' . esc_html__( 'How each bar will look with the settings on this page, following every change as you make it. The badge number and the highlighted first item are examples, not live figures. Nothing is stored until you press Save Changes.', 'action-bar-for-hivepress' ) . '</p>';
+		echo '</div></div>';
+	}
+
+	/**
+	 * Renders one collapsible preview panel.
+	 *
+	 * @param string $bar   Bar key: guest, user or vendor.
+	 * @param string $title Panel title.
+	 * @return void
+	 */
+	protected function render_preview_panel( $bar, $title ) {
+		$id = 'hpab-preview-panel-' . $bar;
+
+		echo '<div class="hpab-preview__panel" data-bar="' . esc_attr( $bar ) . '">';
+		echo '<button type="button" class="hpab-preview__header" aria-expanded="true" aria-controls="' . esc_attr( $id ) . '">';
+		echo '<span class="dashicons dashicons-arrow-up-alt2" aria-hidden="true"></span>';
+		echo '<span class="hpab-preview__panel-title">' . esc_html( $title ) . '</span>';
+		echo '</button>';
+		echo '<div class="hpab-preview__body" id="' . esc_attr( $id ) . '">';
+		echo '<div class="hpab-preview__stage"><nav class="hp-action-bar hpab-preview__bar" aria-label="' . esc_attr( $title ) . '"></nav></div>';
+		echo '</div>';
+		echo '</div>';
 	}
 
 	/**

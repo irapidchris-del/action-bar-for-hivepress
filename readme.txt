@@ -4,7 +4,7 @@ Tags: hivepress, mobile, navigation, bottom bar, app
 Requires at least: 5.8
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.5.13
+Stable tag: 1.6.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -82,6 +82,15 @@ Yes. Tick "Desktop" in the Display section and the bar appears on laptops and de
 The plugin includes an update checker that watches the official GitHub repository for new releases. When a newer version is published, WordPress shows the update on the Plugins and Dashboard, Updates screens, and you can install it with the usual one-click update. You can force an immediate check with the Check for updates link on the Plugins screen. No account, licence key, or extra configuration is required.
 
 == Changelog ==
+
+= 1.6.0 =
+* Added: a live preview to the right of the settings, drawing the logged-out, user and vendor bars
+  with the settings on the page and following every change as you make it. It uses the bar's own
+  stylesheet, so what you see is the bar itself; the badge number and the highlighted first item
+  are examples rather than live figures.
+* Changed: each bar's items are now shown as cards, matching Account Menu Enhancer - a header with
+  the item's icon and label, folding the fields beneath it. Click a header to open or close a card;
+  they remember which you left open. Drag the handle on a header to reorder items, as before.
 
 = 1.5.13 =
 * Fixed: an item with no icon of its own could take the icon of the item above it when the settings

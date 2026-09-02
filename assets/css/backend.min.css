@@ -316,3 +316,317 @@
 		padding-bottom: 56px;
 	}
 }
+
+
+/* --------------------------------------------------------------------------
+ * Item cards
+ *
+ * Each repeater row is the house-style card from Account Menu Enhancer: white surface, 1px
+ * #dcdcde border, 6px radius, a header strip reserved along the top that backend.min.js fills
+ * with the drag handle, a fold toggle, the item's icon and its name. The fields stack beneath it.
+ * These rules replace the phone-only card layout above for every width; the sort handle stays
+ * because here the row order IS the bar order.
+ * ----------------------------------------------------------------------- */
+
+.hp-action-bar-items table.hp-table > tbody > tr {
+	display: block;
+	position: relative;
+	margin: 0 0 16px;
+	padding: 46px 20px 20px;
+	border: 1px solid #dcdcde;
+	border-radius: 6px;
+	background: #fff;
+	box-sizing: border-box;
+}
+
+.hp-action-bar-items table.hp-table > tbody > tr > td {
+	display: block;
+	position: static;
+	float: none;
+	width: 100%;
+	margin: 0 0 12px;
+	padding: 0;
+	border: 0;
+	text-align: start;
+}
+
+/* The drag handle's cell, moved into the header strip beside the toggle. */
+.hp-action-bar-items table.hp-table > tbody > tr > td:first-child {
+	position: absolute;
+	top: 8px;
+	inset-inline-start: 14px;
+	width: 30px;
+	height: 30px;
+	margin: 0;
+	padding: 0;
+	text-align: center;
+}
+
+.hp-action-bar-items table.hp-table > tbody > tr > td:first-child a {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 30px;
+	height: 30px;
+	padding: 0;
+	color: #8c8f94;
+	cursor: grab;
+}
+
+/* The remove button's cell, top right. */
+.hp-action-bar-items table.hp-table > tbody > tr > td:last-child {
+	position: absolute;
+	top: 8px;
+	inset-inline-end: 14px;
+	width: auto;
+	margin: 0;
+	padding: 0;
+}
+
+.hp-action-bar-items table.hp-table > tbody > tr > td:last-child a {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 30px;
+	height: 30px;
+	padding: 0;
+	font-size: 15px;
+}
+
+/* The header strip backend.min.js inserts, sitting after the handle and before the fields. */
+.hp-action-bar-items table.hp-table > tbody > tr > td.hpab-card-head {
+	position: absolute;
+	top: 8px;
+	inset-inline-start: 48px;
+	inset-inline-end: 52px;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	width: auto;
+	height: 30px;
+	margin: 0;
+	overflow: hidden;
+	white-space: nowrap;
+	cursor: pointer;
+}
+
+.hpab-card-toggle {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 26px;
+	height: 26px;
+	padding: 0;
+	border: 0;
+	border-radius: 3px;
+	background: transparent;
+	color: #50575e;
+	cursor: pointer;
+}
+
+.hpab-card-toggle:hover,
+.hpab-card-toggle:focus {
+	color: #2271b1;
+}
+
+.hpab-card-icon {
+	font-size: 14px;
+	color: #50575e;
+}
+
+.hpab-card-icon:empty:not([class*="fa-"]) {
+	display: none;
+}
+
+.hpab-card-name {
+	overflow: hidden;
+	font-size: 13px;
+	font-weight: 600;
+	color: #1d2327;
+	text-overflow: ellipsis;
+}
+
+.hp-action-bar-items table.hp-table > tbody > tr.hpab-card--collapsed {
+	padding-bottom: 6px;
+}
+
+.hp-action-bar-items table.hp-table > tbody > tr.hpab-card--collapsed > td:not(:first-child):not(:last-child):not(.hpab-card-head) {
+	display: none;
+}
+
+.hp-action-bar-items .hpab-field-label {
+	display: block;
+	margin-bottom: 4px;
+	font-size: 12px;
+	font-weight: 600;
+	color: #1d2327;
+}
+
+.hp-action-bar-items table.hp-table > tbody > tr > td select,
+.hp-action-bar-items table.hp-table > tbody > tr > td input[type="text"],
+.hp-action-bar-items table.hp-table > tbody > tr > td input[type="url"],
+.hp-action-bar-items table.hp-table > tbody > tr > td .select2-container {
+	width: 100% !important;
+	max-width: 100%;
+	min-width: 0;
+	box-sizing: border-box;
+}
+
+/* --------------------------------------------------------------------------
+ * Live preview
+ *
+ * A copy of Account Menu Enhancer's panel: a white box that, above 1200px, becomes a sticky
+ * column to the right of the settings and, below that, drops to the bottom of the form. Each bar
+ * is drawn inside a stage by the FRONT-END stylesheet, so the only rule needed on the bar itself
+ * is undoing `position: fixed`.
+ * ----------------------------------------------------------------------- */
+
+:root {
+	--hpab-admin-bar: 32px;
+}
+
+@media screen and (max-width: 782px) {
+	:root {
+		--hpab-admin-bar: 46px;
+	}
+}
+
+@media screen and (max-width: 600px) {
+	:root {
+		--hpab-admin-bar: 0px;
+	}
+}
+
+.hpab-preview {
+	box-sizing: border-box;
+	margin: 20px 0;
+	padding: 12px 16px 16px;
+	background-color: #fff;
+	border: 1px solid #c3c4c7;
+	border-radius: 4px;
+}
+
+.hpab-preview__title {
+	margin: 0 0 10px;
+	padding: 0;
+	font-size: 14px;
+	line-height: 1.4;
+}
+
+.hpab-preview__panel + .hpab-preview__panel {
+	margin-top: 10px;
+	padding-top: 10px;
+	border-top: 1px solid #f0f0f1;
+}
+
+.hpab-preview__panel[hidden] {
+	display: none;
+}
+
+.hpab-preview__header {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	width: 100%;
+	margin: 0 0 8px;
+	padding: 0;
+	border: 0;
+	background: transparent;
+	text-align: start;
+	cursor: pointer;
+}
+
+.hpab-preview__panel--collapsed .hpab-preview__header {
+	margin-bottom: 0;
+}
+
+.hpab-preview__header .dashicons {
+	color: #50575e;
+}
+
+.hpab-preview__panel-title {
+	font-size: 13px;
+	font-weight: 600;
+	color: #1d2327;
+}
+
+.hpab-preview__header:hover .hpab-preview__panel-title,
+.hpab-preview__header:focus .hpab-preview__panel-title {
+	color: #2271b1;
+}
+
+.hpab-preview__body[hidden] {
+	display: none;
+}
+
+/* The stage: a slice of page for the bar to sit on, so the border and any glass have something
+ * behind them. The checkerboard says "this is a preview" without pretending to be a theme. */
+.hpab-preview__stage {
+	position: relative;
+	min-height: 96px;
+	padding: 36px 0 0;
+	overflow: hidden;
+	background-color: #f6f7f7;
+	background-image: linear-gradient(45deg, #ececec 25%, transparent 25%, transparent 75%, #ececec 75%), linear-gradient(45deg, #ececec 25%, transparent 25%, transparent 75%, #ececec 75%);
+	background-size: 16px 16px;
+	background-position: 0 0, 8px 8px;
+	border: 1px solid #dcdcde;
+	border-radius: 3px;
+}
+
+.hpab-preview__stage .hp-action-bar.hpab-preview__bar {
+	position: relative;
+	display: flex;
+	bottom: auto;
+	left: auto;
+	right: auto;
+	z-index: auto;
+	padding-bottom: 4px;
+	min-height: var(--hp-action-bar-height, 56px);
+}
+
+.hpab-preview__stage .hp-action-bar__item {
+	cursor: default;
+}
+
+.hpab-preview__panel--empty .hpab-preview__stage::after {
+	content: "";
+}
+
+.hpab-preview__description {
+	margin: 10px 0 0;
+}
+
+@media screen and (min-width: 1200px) {
+	form.hp-form--table:has(> .hpab-preview) {
+		position: relative;
+		padding-right: 396px;
+	}
+
+	form.hp-form--table:has(> .hpab-preview) > .hpab-preview {
+		position: absolute;
+		top: 0;
+		right: 44px;
+		bottom: 0;
+		width: 320px;
+		margin-top: 0;
+		margin-bottom: 0;
+	}
+
+	form.hp-form--table:has(> .hpab-preview) > .hpab-preview > .hpab-preview__inner {
+		position: sticky;
+		top: calc(var(--hpab-admin-bar) + 14px);
+	}
+}
+
+@media screen and (max-width: 1199px) {
+	form.hp-form--table:has(> .hpab-preview) {
+		display: flex;
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	form.hp-form--table:has(> .hpab-preview) > .hpab-preview {
+		order: 1;
+	}
+}
