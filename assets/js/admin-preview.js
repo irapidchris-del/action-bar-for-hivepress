@@ -2,7 +2,9 @@
  * Action Bar for HivePress - live preview.
  *
  * Draws each bar (logged-out, user, vendor) in a panel to the right of the settings, following
- * every change as it is made and storing nothing until Save. The stage uses the REAL front-end
+ * every change as it is made and storing nothing until Save. The side panel draws the bars at its
+ * own width - drag its edge and the bar's breakpoints apply as it grows, like a browser window -
+ * and the dialog draws them at a fixed tablet or desktop width. The stage uses the REAL front-end
  * stylesheet (enqueued on this tab for the purpose) with the bar's `position: fixed` undone by
  * backend.min.css, so what is drawn is the bar itself rather than an imitation of it - the same
  * CSS variables get_inline_styles() emits are set on the preview from the form's current values.
@@ -396,7 +398,20 @@
 
 			var width = MODES[ mode ].width,
 				available = stage.clientWidth,
+				scale = 1;
+
+			if ( 'mobile' === mode ) {
+				// The side panel: the bar is drawn at the stage's real width, and the bar's own
+				// breakpoints decide what that width gets, so dragging the panel's edge behaves
+				// like dragging a browser window. Below the narrowest phone it is scaled to fit
+				// instead, so the layout never squashes.
+				width = Math.max( MODES.mobile.width, available );
+				scale = available > 0 && available < MODES.mobile.width ? available / MODES.mobile.width : 1;
+				mode = width >= MODES.desktop.width - 256 ? 'desktop' : ( width >= MODES.tablet.width ? 'tablet' : 'mobile' );
+			} else {
+				// The dialog: a fixed device width, scaled down where the window is narrower.
 				scale = available > 0 ? Math.min( 1, available / width ) : 1;
+			}
 
 			bar.classList.toggle( 'hpab-preview__bar--desktop', 'desktop' === mode );
 			device.style.width = width + 'px';
@@ -656,6 +671,15 @@
 					// Storage blocked; the width holds for this page only.
 				}
 			}
+
+			// The bars follow the panel, so every change of width is a change of viewport.
+			BARS.forEach( function ( bar ) {
+				var panel = panels[ bar ];
+
+				if ( panel && ! panel.element.hidden ) {
+					applyMode( panel, 'mobile' );
+				}
+			} );
 
 			return width;
 		}

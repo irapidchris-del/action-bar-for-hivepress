@@ -2174,7 +2174,7 @@ final class Hpab_Action_Bar extends Component {
 		$this->render_preview_panel( 'user', esc_html__( 'User bar', 'action-bar-for-hivepress' ) );
 		$this->render_preview_panel( 'vendor', esc_html__( 'Vendor bar', 'action-bar-for-hivepress' ) );
 
-		echo '<p class="description hpab-preview__description">' . esc_html__( 'How each bar will look on a phone with the settings on this page, following every change as you make it. Choose Tablet or Desktop to see it at those widths. The badge number and the highlighted first item are examples, not live figures. Nothing is stored until you press Save Changes.', 'action-bar-for-hivepress' ) . '</p>';
+		echo '<p class="description hpab-preview__description">' . esc_html__( 'How each bar will look with the settings on this page, following every change as you make it. The bars are drawn at the width of this panel, so drag its edge to see them wider, or choose Tablet or Desktop to see them at those exact widths. The badge number and the highlighted first item are examples, not live figures. Nothing is stored until you press Save Changes.', 'action-bar-for-hivepress' ) . '</p>';
 		echo '</div></div>';
 
 		$this->render_preview_dialog();
