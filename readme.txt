@@ -4,7 +4,7 @@ Tags: hivepress, mobile, navigation, bottom bar, app
 Requires at least: 5.8
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.7.0
+Stable tag: 1.7.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -82,6 +82,9 @@ Yes. Tick "Desktop" in the Display section and the bar appears on laptops and de
 The plugin includes an update checker that watches the official GitHub repository for new releases. When a newer version is published, WordPress shows the update on the Plugins and Dashboard, Updates screens, and you can install it with the usual one-click update. You can force an immediate check with the Check for updates link on the Plugins screen. No account, licence key, or extra configuration is required.
 
 == Changelog ==
+
+= 1.7.1 =
+* New: the page bars work with the HivePress Social Links extension. Every social link switched on for listings or vendors is offered as a page bar item, opens exactly what the extension's own button opens (a WhatsApp number as a wa.me chat, Telegram as t.me, Viber in the Viber app), takes the brand icon by default, and social profiles open in a new tab.
 
 = 1.7.0 =
 * New: page bars. Under Display, tick Listing page bar or Vendor page bar and everyone viewing a single listing or a vendor profile sees that bar instead of their usual one. Their dropdowns add the listing's or vendor's email, phone and website attributes, each opening as an email, a call or a link and left out where the attribute is empty, and a Message pop-up that opens the Messages extension's send-message window for the listing or vendor on screen (the sign-in window for logged-out visitors; left out for the owner). An empty page bar leaves visitors with their usual bar.

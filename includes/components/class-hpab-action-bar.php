@@ -203,7 +203,7 @@ final class Hpab_Action_Bar extends Component {
 	 * offered: with no field type behind it there is no way to tell a number from a note.
 	 *
 	 * @param string $model Model name.
-	 * @return array<string, array<string, string>> Attribute name => label and type.
+	 * @return array<string, array<string, mixed>> Attribute name => label, type and social link arguments.
 	 */
 	public function get_contact_attributes( $model ) {
 		$attributes = [];
@@ -217,13 +217,79 @@ final class Hpab_Action_Bar extends Component {
 
 			if ( in_array( $type, [ 'email', 'phone', 'url' ], true ) ) {
 				$attributes[ (string) $name ] = [
-					'label' => (string) hp\get_array_value( $args, 'label', $name ),
-					'type'  => $type,
+					'label'  => (string) hp\get_array_value( $args, 'label', $name ),
+					'type'   => $type,
+					'social' => null,
 				];
 			}
 		}
 
+		/*
+		 * HivePress Social Links registers each link the owner switched on as one of these
+		 * attributes (hivepress-social-links/includes/components/class-social-links.php,
+		 * add_attributes()), so they are already in the list above. What they need on top is the
+		 * extension's own per-link arguments: the prefix that turns a stored number into a
+		 * wa.me or t.me address, and the name that picks the brand icon.
+		 */
+		if ( hivepress()->get_version( 'social_links' ) && hivepress()->social_links && method_exists( hivepress()->social_links, 'get_links' ) ) {
+			foreach ( (array) hivepress()->social_links->get_links( $model ) as $name => $args ) {
+				if ( isset( $attributes[ $name ] ) ) {
+					$attributes[ $name ]['social'] = [
+						'name'   => (string) $name,
+						'prefix' => (string) hp\get_array_value( (array) $args, 'prefix' ),
+					];
+				}
+			}
+		}
+
 		return $attributes;
+	}
+
+	/**
+	 * Builds the address a social link opens, the way the Social Links extension does.
+	 *
+	 * Mirrors hivepress-social-links/includes/blocks/class-social-links.php line for line, so
+	 * a WhatsApp number opens the same wa.me address from the bar as from the vendor's own
+	 * social buttons: the extension's prefix goes in front of the stored value, and Viber's
+	 * chat?number= prefix is turned into the viber: scheme with the plus sign removed.
+	 *
+	 * @param array  $social Social link arguments: name and prefix.
+	 * @param string $value Stored attribute value.
+	 * @return string
+	 */
+	protected function get_social_item_url( $social, $value ) {
+		$url = esc_url( (string) hp\get_array_value( $social, 'prefix' ) . $value );
+
+		if ( 'viber' === hp\get_array_value( $social, 'name' ) ) {
+			$url = str_replace( [ 'http:', 'https:' ], 'viber:', $url );
+			$url = str_replace( '+', '', $url );
+		}
+
+		return $url;
+	}
+
+	/**
+	 * Gets the brand icon slug for a social link, when Font Awesome has one.
+	 *
+	 * @param string $name Social link name from the extension's config.
+	 * @return string Icon slug, or an empty string when there is no brand glyph for it.
+	 */
+	protected function get_social_icon( $name ) {
+		$map = [
+			'twitter'       => 'x-twitter',
+			'app_store'     => 'app-store',
+			'google_play'   => 'google-play',
+			'website'       => 'globe',
+			'contact_email' => 'envelope',
+		];
+
+		if ( isset( $map[ $name ] ) ) {
+			return $map[ $name ];
+		}
+
+		$slug = str_replace( '_', '-', (string) $name );
+
+		return in_array( $slug, $this->get_brand_icons(), true ) ? $slug : '';
 	}
 
 	/**
@@ -321,10 +387,51 @@ final class Hpab_Action_Bar extends Component {
 			$attribute = hp\get_array_value( $this->get_contact_attributes( $parsed[0] ), $parsed[1] );
 			$type      = $attribute ? $attribute['type'] : '';
 
+			// A social link gets its brand mark; WhatsApp is a WhatsApp glyph, not a handset.
+			if ( $attribute && ! empty( $attribute['social'] ) ) {
+				$icon = $this->get_social_icon( $attribute['social']['name'] );
+
+				if ( $icon ) {
+					return $icon;
+				}
+			}
+
 			return 'email' === $type ? 'envelope' : ( 'phone' === $type ? 'phone' : 'link' );
 		}
 
 		return '';
+	}
+
+	/**
+	 * Whether an item is a social profile that should open in a new tab.
+	 *
+	 * @param string $link Stored link value.
+	 * @return bool
+	 */
+	protected function is_external_item( $link ) {
+		$parsed = $this->parse_attribute_link( $link );
+
+		if ( ! $parsed ) {
+			return false;
+		}
+
+		$attribute = hp\get_array_value( $this->get_contact_attributes( $parsed[0] ), $parsed[1] );
+
+		return $attribute && ! empty( $attribute['social'] ) && 'url' === $attribute['type'];
+	}
+
+	/**
+	 * Gets the URL protocols an item may open.
+	 *
+	 * WordPress's list has mailto: and tel: but not viber:, and esc_url() silently returns an
+	 * empty string for a protocol it does not know, which turned every Viber item into a link to
+	 * nowhere. The Social Links extension escapes its own Viber button with esc_attr() for the
+	 * same reason; adding the one protocol keeps esc_url()'s other checks.
+	 *
+	 * @return string[]
+	 */
+	protected function get_allowed_protocols() {
+		return array_merge( wp_allowed_protocols(), [ 'viber' ] );
 	}
 
 	/**
@@ -367,6 +474,11 @@ final class Hpab_Action_Bar extends Component {
 
 		if ( '' === $value ) {
 			return '';
+		}
+
+		// A Social Links attribute opens what the extension's own button opens.
+		if ( ! empty( $attribute['social'] ) ) {
+			return $this->get_social_item_url( $attribute['social'], $value );
 		}
 
 		switch ( $attribute['type'] ) {
@@ -583,6 +695,7 @@ final class Hpab_Action_Bar extends Component {
 			'app-store',
 			'apple',
 			'apple-pay',
+			'bandcamp',
 			'behance',
 			'bitcoin',
 			'bluesky',
@@ -615,6 +728,7 @@ final class Hpab_Action_Bar extends Component {
 			'mastodon',
 			'medium',
 			'microsoft',
+			'mixcloud',
 			'patreon',
 			'paypal',
 			'pinterest',
@@ -625,6 +739,7 @@ final class Hpab_Action_Bar extends Component {
 			'snapchat',
 			'soundcloud',
 			'spotify',
+			'steam',
 			'stripe',
 			'stripe-s',
 			'telegram',
@@ -635,10 +750,12 @@ final class Hpab_Action_Bar extends Component {
 			'twitter',
 			'viber',
 			'vimeo',
+			'vk',
 			'whatsapp',
 			'windows',
 			'wordpress',
 			'x-twitter',
+			'yelp',
 			'youtube',
 		];
 	}
@@ -1570,6 +1687,7 @@ final class Hpab_Action_Bar extends Component {
 					'badge'       => false,
 					'badge_count' => 0,
 					'bell'        => false,
+					'external'    => false,
 				],
 				$item
 			);
@@ -1739,6 +1857,11 @@ final class Hpab_Action_Bar extends Component {
 
 				'badge_count' => $badge_count,
 				'bell'        => $bell,
+
+				// Social profiles open in a new tab, as the extension's own buttons do; the bar
+				// stays on the vendor's page behind it. Calls, emails and chat apps hand off to
+				// another application anyway, so they keep the plain link.
+				'external'    => $this->is_external_item( $link ),
 			];
 		}
 
@@ -2967,8 +3090,10 @@ final class Hpab_Action_Bar extends Component {
 				$modal_attribute = 0 === strpos( (string) $item['url'], '#' ) ? ' data-hpab-modal' : ' data-hpab-auth-modal';
 			}
 
+			$target_attribute = ! empty( $item['external'] ) ? ' target="_blank" rel="noopener nofollow"' : '';
+
 			// Render item.
-			$output .= '<a href="' . esc_url( $item['url'] ) . '" class="' . esc_attr( implode( ' ', $item_classes ) ) . '"' . $badge_attribute . $modal_attribute . ' aria-label="' . esc_attr( $aria_label ) . '">';
+			$output .= '<a href="' . esc_url( $item['url'], $this->get_allowed_protocols() ) . '" class="' . esc_attr( implode( ' ', $item_classes ) ) . '"' . $badge_attribute . $modal_attribute . $target_attribute . ' aria-label="' . esc_attr( $aria_label ) . '">';
 
 			$output .= '<span class="hp-action-bar__icon">' . $this->render_icon( $item['icon'] );
 
