@@ -955,23 +955,25 @@ final class Hpab_Action_Bar extends Component {
 			// Keep the stored icon selectable. Icons from the beta's free-text box, such as
 			// "far fa-heart", are not in the bundled list, and a slug can drop out of that list when
 			// the bundled set changes; both still render on the front end, so both must survive a save.
+			//
+			// ONLY when this plugin owns the option list as an array (no icon library loaded). When
+			// the library is loaded the column declares the core preset NAME ('icons') plus a REST
+			// source, and core reads that argument as a preset name for as long as a source is set
+			// (hivepress/includes/components/class-form.php:106 hands it to get_config()). Writing
+			// the resolved array back here therefore made get_config() receive an array, which fatals
+			// with "Illegal offset type in isset or empty" (class-core.php:413) on every later load
+			// of the settings tab. That is exactly what took the live Action Bar tab down on
+			// 3 September 2026: one saved vendor item with the icon "circle-plus", a name the
+			// library knows but core's own preset does not, and the tab was a critical error until
+			// the row was removed. The library's own options filter already keeps a saved icon
+			// selectable (includes/fafh/class-fafh.php, filter_field_options()), so with a preset
+			// string there is nothing for this block to do.
 			$icon = hp\get_array_value( $row, 'icon' );
 
-			if ( is_string( $icon ) && $icon ) {
-				/*
-				 * The icon options ship as the name of a HivePress options preset, which core only
-				 * resolves into a list when the field is built. Appending needs the real list, so it
-				 * is resolved here the same way core resolves it - but assigned back only when this
-				 * icon is actually missing, and then together with the select2 icon preview
-				 * attribute that the preset name would otherwise have switched on.
-				 */
-				$icon_options = is_array( $fields['icon']['options'] ) ? $fields['icon']['options'] : (array) hivepress()->get_config( (string) $fields['icon']['options'] );
-
-				if ( ! isset( $icon_options[ $icon ] ) ) {
+			if ( is_string( $icon ) && $icon && is_array( $fields['icon']['options'] ) ) {
+				if ( ! isset( $fields['icon']['options'][ $icon ] ) ) {
 					/* translators: %s: icon name. */
-					$icon_options[ $icon ] = sprintf( esc_html__( '%s (custom)', 'action-bar-for-hivepress' ), $icon );
-
-					$fields['icon']['options'] = $icon_options;
+					$fields['icon']['options'][ $icon ] = sprintf( esc_html__( '%s (custom)', 'action-bar-for-hivepress' ), $icon );
 
 					$fields['icon']['attributes']['data-template'] = 'icon';
 				}
