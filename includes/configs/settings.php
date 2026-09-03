@@ -35,7 +35,7 @@ foreach ( [
 	'active'               => [ esc_html__( 'Active colour', 'action-bar-for-hivepress' ), '#111111', esc_html__( 'Highlights the item matching the page being viewed. Pages that match no item highlight nothing.', 'action-bar-for-hivepress' ) ],
 	'prominent_background' => [ esc_html__( 'Prominent background', 'action-bar-for-hivepress' ), '#333333', esc_html__( 'The raised circle behind an item set to the Prominent style.', 'action-bar-for-hivepress' ) ],
 	'prominent_icon'       => [ esc_html__( 'Prominent icon colour', 'action-bar-for-hivepress' ), '#ffffff', esc_html__( 'The icon inside the Prominent circle. Pick a strong contrast with its background.', 'action-bar-for-hivepress' ) ],
-	'badge_background'     => [ esc_html__( 'Badge background', 'action-bar-for-hivepress' ), '#d63638', esc_html__( 'The unread counter bubble, shown only when the count is above zero.', 'action-bar-for-hivepress' ) ],
+	'badge_background'     => [ esc_html__( 'Badge background', 'action-bar-for-hivepress' ), '#ff5a5f', esc_html__( 'The unread counter bubble, shown only when the count is above zero.', 'action-bar-for-hivepress' ) ],
 	'badge_text'           => [ esc_html__( 'Badge text colour', 'action-bar-for-hivepress' ), '#ffffff', esc_html__( 'The number inside the bubble.', 'action-bar-for-hivepress' ) ],
 ] as $hpab_color_name => $hpab_color_args ) {
 	$hpab_color_field = [

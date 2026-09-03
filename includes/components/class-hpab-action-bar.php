@@ -1672,7 +1672,7 @@ final class Hpab_Action_Bar extends Component {
 			'active'               => $this->get_color( 'active', '#111111' ),
 			'prominent-background' => $this->get_color( 'prominent_background', '#333333' ),
 			'prominent-icon'       => $this->get_color( 'prominent_icon', '#ffffff' ),
-			'badge-background'     => $this->get_color( 'badge_background', '#d63638' ),
+			'badge-background'     => $this->get_color( 'badge_background', '#ff5a5f' ),
 			'badge-text'           => $this->get_color( 'badge_text', '#ffffff' ),
 		];
 

@@ -53,7 +53,7 @@
 		'active': '#111111',
 		'prominent-background': '#333333',
 		'prominent-icon': '#ffffff',
-		'badge-background': '#d63638',
+		'badge-background': '#ff5a5f',
 		'badge-text': '#ffffff',
 	};
 

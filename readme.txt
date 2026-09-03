@@ -85,6 +85,7 @@ The plugin includes an update checker that watches the official GitHub repositor
 
 = 1.6.5 =
 * Changed: the counter badge on an item is now the same 24px circle with bold 12px text as the counters in the site header and account menu, so every badge on a phone reads as one family. A new Badge size setting under Display takes it back to 16px if you prefer the smaller overlay.
+* Changed: the badge background now defaults to the red HivePress uses for its own counters (#ff5a5f) rather than a different red, so a site that never chose a colour gets matching counters everywhere. A colour you have chosen is kept.
 
 = 1.6.4 =
 * Changed: the Install and Activate offer for Notifications for HivePress is now a link within the sentence rather than a button.
