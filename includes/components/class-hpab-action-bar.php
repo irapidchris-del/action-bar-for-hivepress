@@ -1426,26 +1426,38 @@ final class Hpab_Action_Bar extends Component {
 
 		// The flag is versioned: absent runs everything, '1' re-runs only the row normalisation added in
 		// 1.1.0 (boolean badge ticks become a named counter), '2' re-runs only the badge-checkbox
-		// retirement added in 1.5.0, '3' is current.
+		// retirement added in 1.5.0, '3' re-runs only the badge colour step added in 1.6.5, '4' is
+		// current.
 		$migrated = (string) get_option( 'hp_action_bar_migrated' );
 
-		if ( '3' === $migrated ) {
+		if ( '4' === $migrated ) {
 			return;
 		}
 
-		if ( '2' !== $migrated ) {
-			foreach ( [ 'user', 'vendor' ] as $bar ) {
-				if ( ! $migrated && is_null( get_option( 'hp_action_bar_' . $bar . '_items', null ) ) ) {
-					$this->migrate_legacy_items( $bar );
-				}
+		if ( '3' !== $migrated ) {
+			if ( '2' !== $migrated ) {
+				foreach ( [ 'user', 'vendor' ] as $bar ) {
+					if ( ! $migrated && is_null( get_option( 'hp_action_bar_' . $bar . '_items', null ) ) ) {
+						$this->migrate_legacy_items( $bar );
+					}
 
-				$this->normalize_items( $bar );
+					$this->normalize_items( $bar );
+				}
 			}
+
+			$this->migrate_badge_setting();
 		}
 
-		$this->migrate_badge_setting();
+		// 1.6.5: the badge background used to default to WordPress's own #d63638, and the settings
+		// screen wrote that value back on the first save, so a site holding exactly that colour
+		// never chose it. It moves to the red HivePress uses for its own counters (#ff5a5f), the new
+		// default, so the badge matches the header and account-menu counters (Chris, 2026-09-03).
+		// Any other saved colour is a choice and stays.
+		if ( '#d63638' === strtolower( (string) get_option( 'hp_action_bar_color_badge_background' ) ) ) {
+			update_option( 'hp_action_bar_color_badge_background', '#ff5a5f' );
+		}
 
-		update_option( 'hp_action_bar_migrated', '3' );
+		update_option( 'hp_action_bar_migrated', '4' );
 	}
 
 	/**
