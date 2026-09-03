@@ -1714,6 +1714,13 @@ final class Hpab_Action_Bar extends Component {
 
 		$styles .= '--hp-action-bar-icon-size:' . $icon_size . 'px;';
 
+		// The badge draws every measurement from this one value (frontend.min.css): 24 is the
+		// counter family the header and account menus use, 16 the old overlay.
+		$badge_size = absint( get_option( 'hp_action_bar_badge_size', 24 ) );
+		$badge_size = $badge_size >= 14 && $badge_size <= 32 ? $badge_size : 24;
+
+		$styles .= '--hp-action-bar-badge-size:' . $badge_size . 'px;';
+
 		foreach ( $colors as $name => $color ) {
 			$styles .= '--hp-action-bar-' . $name . ':' . $color . ';';
 		}

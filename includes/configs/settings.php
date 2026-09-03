@@ -261,6 +261,16 @@ return [
 							'_order'      => 26,
 						],
 
+						'action_bar_badge_size'          => [
+							'label'       => esc_html__( 'Badge size (px)', 'action-bar-for-hivepress' ),
+							'description' => esc_html__( 'The counter overlaid on an item, 14 to 32. 24 matches the counters in the site header and account menu, so every badge on the page reads as one family; 16 is the smaller overlay earlier versions drew.', 'action-bar-for-hivepress' ),
+							'type'        => 'number',
+							'min_value'   => 14,
+							'max_value'   => 32,
+							'default'     => 24,
+							'_order'      => 27,
+						],
+
 						'action_bar_icon_weight'         => [
 							'label'       => esc_html__( 'Icon weight', 'action-bar-for-hivepress' ),
 							'description' => esc_html__( 'Draws the icons slightly heavier. Normal leaves them exactly as designed.', 'action-bar-for-hivepress' ),

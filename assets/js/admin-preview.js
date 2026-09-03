@@ -31,6 +31,7 @@
 	var OPTIONS = {
 		height: 'hp_action_bar_height',
 		iconSize: 'hp_action_bar_icon_size',
+		badgeSize: 'hp_action_bar_badge_size',
 		iconWeight: 'hp_action_bar_icon_weight',
 		labelPosition: 'hp_action_bar_label_position',
 		labelSize: 'hp_action_bar_label_size',
@@ -235,6 +236,7 @@
 			nav.style.setProperty( '--hp-action-bar-label-size', number( OPTIONS.labelSize, 11, 9, 16 ) + 'px' );
 			nav.style.setProperty( '--hp-action-bar-label-weight', String( weight ) );
 			nav.style.setProperty( '--hp-action-bar-icon-size', number( OPTIONS.iconSize, 20, 14, 32 ) + 'px' );
+			nav.style.setProperty( '--hp-action-bar-badge-size', number( OPTIONS.badgeSize, 24, 14, 32 ) + 'px' );
 
 			Object.keys( COLOURS ).forEach( function ( name ) {
 				var chosen = hex( value( 'hp_action_bar_color_' + name.replace( /-/g, '_' ) ) );
