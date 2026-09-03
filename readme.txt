@@ -4,7 +4,7 @@ Tags: hivepress, mobile, navigation, bottom bar, app
 Requires at least: 5.8
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.6.6
+Stable tag: 1.7.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -82,6 +82,9 @@ Yes. Tick "Desktop" in the Display section and the bar appears on laptops and de
 The plugin includes an update checker that watches the official GitHub repository for new releases. When a newer version is published, WordPress shows the update on the Plugins and Dashboard, Updates screens, and you can install it with the usual one-click update. You can force an immediate check with the Check for updates link on the Plugins screen. No account, licence key, or extra configuration is required.
 
 == Changelog ==
+
+= 1.7.0 =
+* New: page bars. Under Display, tick Listing page bar or Vendor page bar and everyone viewing a single listing or a vendor profile sees that bar instead of their usual one. Their dropdowns add the listing's or vendor's email, phone and website attributes, each opening as an email, a call or a link and left out where the attribute is empty, and a Message pop-up that opens the Messages extension's send-message window for the listing or vendor on screen (the sign-in window for logged-out visitors; left out for the owner). An empty page bar leaves visitors with their usual bar.
 
 = 1.6.6 =
 * Fixed: the settings tab showed a critical error after saving an item whose icon is one the icon library knows but HivePress core's own list does not, such as "circle-plus". The stored icon was being written back into the picker as a full list while the picker also loads over AJAX, which HivePress cannot do at once. The row now keeps its icon and the tab loads.

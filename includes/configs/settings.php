@@ -159,24 +159,51 @@ $hpab_item_fields = [
 $hpab_item_sections = [];
 
 foreach ( [
-	'guest'  => [
+	'guest'        => [
 		'title'       => esc_html__( 'Logged-Out Bar', 'action-bar-for-hivepress' ),
 		'description' => esc_html__( 'Up to 5 items shown to logged-out visitors when the logged-out bar is enabled. The Sign in pop-up link opens HivePress\'s own login window. If every row here is empty or broken, logged-out visitors see the User Bar items instead.', 'action-bar-for-hivepress' ),
 		'_order'      => 35,
 	],
 
-	'user'   => [
+	'user'         => [
 		'title'       => esc_html__( 'User Bar', 'action-bar-for-hivepress' ),
 		'description' => esc_html__( 'Add up to 5 items. This bar is shown to everyone unless the logged-out or vendor bars replace it for those visitors. Pick a destination, an icon and an optional label per row, and drag rows to reorder; the top row is the leftmost button. The Address box only applies to Custom URL. The Badge dropdown picks which unread counter shows on an item, and a stored choice survives even while its plugin is switched off. Items with no destination, or whose destination no longer exists, are left out.', 'action-bar-for-hivepress' ),
 		'_order'      => 40,
 	],
 
-	'vendor' => [
+	'vendor'       => [
 		'title'       => esc_html__( 'Vendor Bar', 'action-bar-for-hivepress' ),
 		'description' => esc_html__( 'Up to 5 items shown to users with a published vendor profile when the vendor bar is enabled. If every row here is empty or broken, vendors see the User Bar items instead.', 'action-bar-for-hivepress' ),
 		'_order'      => 50,
 	],
+
+	/*
+	 * The two page bars. Unlike the three above, which follow WHO is looking, these follow WHAT
+	 * they are looking at, and win over the other three on their page. Their dropdowns carry the
+	 * page-only choices (contact attributes, the Message pop-up), which is why the link options
+	 * are widened per bar in the loop below rather than once for every bar.
+	 */
+	'listing_page' => [
+		'title'       => esc_html__( 'Listing Page Bar', 'action-bar-for-hivepress' ),
+		'description' => esc_html__( 'Up to 5 items shown to everyone viewing a single listing when the listing page bar is enabled. Besides the usual destinations, the dropdown offers the listing\'s own email, phone and website attributes and its vendor\'s, each opening as a call, an email or a link, and a Message pop-up that opens the Messages window for this listing. An attribute item is left out on a listing where that attribute is empty; the Message pop-up needs the Messages extension, opens the sign-in window for logged-out visitors and is left out for the listing\'s own vendor. Only choose attributes meant to be seen by every visitor. If every row here is empty or broken, visitors see their usual bar instead.', 'action-bar-for-hivepress' ),
+		'_order'      => 52,
+	],
+
+	'vendor_page'  => [
+		'title'       => esc_html__( 'Vendor Page Bar', 'action-bar-for-hivepress' ),
+		'description' => esc_html__( 'Up to 5 items shown to everyone viewing a vendor profile when the vendor page bar is enabled. Besides the usual destinations, the dropdown offers the vendor\'s email, phone and website attributes, each opening as a call, an email or a link, and a Message pop-up that opens the Messages window for this vendor. An attribute item is left out on a profile where that attribute is empty; the Message pop-up needs the Messages extension, opens the sign-in window for logged-out visitors and is left out for the vendor themselves. Only choose attributes meant to be seen by every visitor. If every row here is empty or broken, visitors see their usual bar instead.', 'action-bar-for-hivepress' ),
+		'_order'      => 54,
+	],
 ] as $hpab_name => $hpab_section ) {
+
+	// The page bars get their page-only choices at the top of the dropdown; the other bars
+	// cannot use them (there is no listing or vendor on screen to read), so they never see them.
+	$hpab_bar_fields = $hpab_item_fields;
+
+	if ( in_array( $hpab_name, [ 'listing_page', 'vendor_page' ], true ) ) {
+		$hpab_bar_fields['link']['options'] = $hpab_component->get_page_link_options( $hpab_name ) + $hpab_bar_fields['link']['options'];
+	}
+
 	$hpab_section['fields'] = [
 		'action_bar_' . $hpab_name . '_items' => [
 			'label'      => esc_html__( 'Items', 'action-bar-for-hivepress' ),
@@ -191,7 +218,7 @@ foreach ( [
 			 * the dropdowns built above only offer what exists right now, and one Save while an
 			 * extension was switched off wiped the stored choice for good.
 			 */
-			'fields'     => $hpab_component->add_stored_item_options( $hpab_item_fields, $hpab_name ),
+			'fields'     => $hpab_component->add_stored_item_options( $hpab_bar_fields, $hpab_name ),
 
 			'attributes' => [
 				'class' => [ 'hp-action-bar-items' ],
@@ -377,6 +404,22 @@ return [
 							'description' => esc_html__( 'If enabled, users with a published vendor profile see the Vendor Bar items instead of the User Bar items. Tick to reveal its section below.', 'action-bar-for-hivepress' ),
 							'type'        => 'checkbox',
 							'_order'      => 50,
+						],
+
+						'action_bar_enable_listing_page_bar' => [
+							'label'       => esc_html__( 'Listing page bar', 'action-bar-for-hivepress' ),
+							'caption'     => esc_html__( 'Show different items on listing pages', 'action-bar-for-hivepress' ),
+							'description' => esc_html__( 'If enabled, everyone viewing a single listing sees the Listing Page Bar items instead of their usual bar. Its dropdown adds the listing\'s and its vendor\'s contact attributes and a Message pop-up. Tick to reveal its section below.', 'action-bar-for-hivepress' ),
+							'type'        => 'checkbox',
+							'_order'      => 52,
+						],
+
+						'action_bar_enable_vendor_page_bar' => [
+							'label'       => esc_html__( 'Vendor page bar', 'action-bar-for-hivepress' ),
+							'caption'     => esc_html__( 'Show different items on vendor profiles', 'action-bar-for-hivepress' ),
+							'description' => esc_html__( 'If enabled, everyone viewing a vendor profile sees the Vendor Page Bar items instead of their usual bar. Its dropdown adds the vendor\'s contact attributes and a Message pop-up. Tick to reveal its section below.', 'action-bar-for-hivepress' ),
+							'type'        => 'checkbox',
+							'_order'      => 54,
 						],
 
 						'action_bar_safe_area'           => [

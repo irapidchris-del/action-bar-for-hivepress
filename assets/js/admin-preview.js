@@ -26,7 +26,7 @@
 		return;
 	}
 
-	var BARS = [ 'guest', 'user', 'vendor' ];
+	var BARS = [ 'guest', 'user', 'vendor', 'listing_page', 'vendor_page' ];
 
 	var OPTIONS = {
 		height: 'hp_action_bar_height',
@@ -43,6 +43,8 @@
 		enableBadge: 'hp_action_bar_enable_badge',
 		enableGuest: 'hp_action_bar_enable_guest_bar',
 		enableVendor: 'hp_action_bar_enable_vendor_bar',
+		enableListingPage: 'hp_action_bar_enable_listing_page_bar',
+		enableVendorPage: 'hp_action_bar_enable_vendor_page_bar',
 	};
 
 	var COLOURS = {
@@ -435,13 +437,28 @@
 			stage.style.height = enabled ? Math.ceil( device.offsetHeight * scale + padding ) + 'px' : '';
 		}
 
+		/**
+		 * Whether a bar is switched on, read from its own checkbox. The user bar has no switch:
+		 * it is what everyone sees unless another bar takes over.
+		 *
+		 * @param {string} bar Bar name.
+		 * @return {boolean}
+		 */
+		function barShown( bar ) {
+			var switches = {
+				guest: OPTIONS.enableGuest,
+				vendor: OPTIONS.enableVendor,
+				listing_page: OPTIONS.enableListingPage,
+				vendor_page: OPTIONS.enableVendorPage,
+			};
+
+			return switches[ bar ] ? !! value( switches[ bar ] ) : true;
+		}
+
 		function paintDialog() {
 			if ( ! dialog || dialog.hidden ) {
 				return;
 			}
-
-			var guestOn = !! value( OPTIONS.enableGuest ),
-				vendorOn = !! value( OPTIONS.enableVendor );
 
 			BARS.forEach( function ( bar ) {
 				var panel = dialogPanels[ bar ];
@@ -450,7 +467,7 @@
 					return;
 				}
 
-				var shown = 'guest' === bar ? guestOn : ( 'vendor' === bar ? vendorOn : true );
+				var shown = barShown( bar );
 
 				panel.element.hidden = ! shown;
 
@@ -543,9 +560,6 @@
 		}
 
 		function paint() {
-			var guestOn = !! value( OPTIONS.enableGuest ),
-				vendorOn = !! value( OPTIONS.enableVendor );
-
 			BARS.forEach( function ( bar ) {
 				var panel = panels[ bar ];
 
@@ -555,7 +569,7 @@
 
 				// A bar that is switched off is not drawn at all: its section is hidden on the
 				// form, and a preview of something nobody will see would only confuse.
-				var shown = 'guest' === bar ? guestOn : ( 'vendor' === bar ? vendorOn : true );
+				var shown = barShown( bar );
 
 				panel.element.hidden = ! shown;
 

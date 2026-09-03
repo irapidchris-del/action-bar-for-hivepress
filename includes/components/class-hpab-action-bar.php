@@ -150,6 +150,287 @@ final class Hpab_Action_Bar extends Component {
 	}
 
 	/**
+	 * Gets the page bars: the bars that follow what is on screen rather than who is looking.
+	 *
+	 * @return array<string, string> Bar name => the HivePress route it takes over.
+	 */
+	public function get_page_bars() {
+		return [
+			'listing_page' => 'listing_view_page',
+			'vendor_page'  => 'vendor_view_page',
+		];
+	}
+
+	/**
+	 * Gets the page bar that applies to the current request, if any.
+	 *
+	 * A page bar applies when its switch is on and the visitor is on its page. An empty bar is
+	 * still returned here; get_items() falls back to the visitor's usual bar when it resolves to
+	 * no items, the same way an empty vendor bar falls back to the user bar.
+	 *
+	 * @return string Bar name, or an empty string.
+	 */
+	protected function get_current_page_bar() {
+		$route = (string) hivepress()->router->get_current_route_name();
+
+		foreach ( $this->get_page_bars() as $bar => $page_route ) {
+			if ( $route === $page_route && $this->is_setting_enabled( 'enable_' . $bar . '_bar' ) ) {
+				return $bar;
+			}
+		}
+
+		return '';
+	}
+
+	/**
+	 * Gets the models a page bar can read attributes from.
+	 *
+	 * A listing page has both the listing and its vendor in the request context (core's listing
+	 * controller sets both, controllers/class-listing.php); a vendor page has only the vendor.
+	 *
+	 * @param string $bar Bar name.
+	 * @return string[] Model names.
+	 */
+	protected function get_page_bar_models( $bar ) {
+		return 'listing_page' === $bar ? [ 'listing', 'vendor' ] : ( 'vendor_page' === $bar ? [ 'vendor' ] : [] );
+	}
+
+	/**
+	 * Gets the contact attributes of a model: the ones a bar item can open.
+	 *
+	 * Email, phone and URL attributes only, because those are the field types with an obvious
+	 * one-tap action (mailto:, tel:, a link). A text attribute holding a phone number is not
+	 * offered: with no field type behind it there is no way to tell a number from a note.
+	 *
+	 * @param string $model Model name.
+	 * @return array<string, array<string, string>> Attribute name => label and type.
+	 */
+	public function get_contact_attributes( $model ) {
+		$attributes = [];
+
+		if ( ! hivepress()->attribute || ! method_exists( hivepress()->attribute, 'get_attributes' ) ) {
+			return $attributes;
+		}
+
+		foreach ( (array) hivepress()->attribute->get_attributes( $model ) as $name => $args ) {
+			$type = (string) hp\get_array_value( (array) hp\get_array_value( $args, 'edit_field', [] ), 'type' );
+
+			if ( in_array( $type, [ 'email', 'phone', 'url' ], true ) ) {
+				$attributes[ (string) $name ] = [
+					'label' => (string) hp\get_array_value( $args, 'label', $name ),
+					'type'  => $type,
+				];
+			}
+		}
+
+		return $attributes;
+	}
+
+	/**
+	 * Gets the page-only link options for a page bar.
+	 *
+	 * Stored as `attr_{model}_{attribute}` and `message_modal`, prefixes get_bar_items() accepts
+	 * alongside page_, route_ and wcep_. They resolve against the listing or vendor on screen, so
+	 * outside a page bar they resolve to nothing and the item is left out, which is the right
+	 * outcome for a value that somehow ends up in another bar.
+	 *
+	 * @param string $bar Bar name.
+	 * @return array<string, string>
+	 */
+	public function get_page_link_options( $bar ) {
+		$options = [];
+
+		if ( ! isset( $this->get_page_bars()[ $bar ] ) ) {
+			return $options;
+		}
+
+		$options['message_modal'] = 'vendor_page' === $bar
+			? esc_html__( 'Message pop-up for this vendor', 'action-bar-for-hivepress' )
+			: esc_html__( 'Message pop-up for this listing', 'action-bar-for-hivepress' );
+
+		$model_labels = [
+			'listing' => esc_html__( 'Listing', 'action-bar-for-hivepress' ),
+			'vendor'  => esc_html__( 'Vendor', 'action-bar-for-hivepress' ),
+		];
+
+		foreach ( $this->get_page_bar_models( $bar ) as $model ) {
+			foreach ( $this->get_contact_attributes( $model ) as $name => $attribute ) {
+				/* translators: 1: Listing or Vendor, 2: attribute name. */
+				$options[ 'attr_' . $model . '_' . $name ] = sprintf( esc_html__( '%1$s: %2$s', 'action-bar-for-hivepress' ), $model_labels[ $model ], $attribute['label'] );
+			}
+		}
+
+		return $options;
+	}
+
+	/**
+	 * Splits a stored attribute link into its model and attribute name.
+	 *
+	 * @param string $link Stored link value.
+	 * @return array{0: string, 1: string}|null Model and attribute name, or null when not an attribute link.
+	 */
+	protected function parse_attribute_link( $link ) {
+		if ( preg_match( '/^attr_(listing|vendor)_([a-z0-9_]+)$/', (string) $link, $matches ) ) {
+			return [ $matches[1], $matches[2] ];
+		}
+
+		return null;
+	}
+
+	/**
+	 * Gets the label a page-only item falls back to when its row has none.
+	 *
+	 * @param string $link Stored link value.
+	 * @return string Empty when the link is not a page-only one.
+	 */
+	protected function get_page_item_label( $link ) {
+		if ( 'message_modal' === $link ) {
+			return __( 'Message', 'action-bar-for-hivepress' );
+		}
+
+		$parsed = $this->parse_attribute_link( $link );
+
+		if ( $parsed ) {
+			$attribute = hp\get_array_value( $this->get_contact_attributes( $parsed[0] ), $parsed[1] );
+
+			if ( $attribute ) {
+				return $attribute['label'];
+			}
+
+			// The attribute is gone; name it so the dropdown still reads sensibly.
+			return ucfirst( str_replace( '_', ' ', $parsed[1] ) );
+		}
+
+		return '';
+	}
+
+	/**
+	 * Gets the icon a page-only item falls back to when its row has none.
+	 *
+	 * @param string $link Stored link value.
+	 * @return string Icon slug without its family prefix.
+	 */
+	protected function get_page_item_icon( $link ) {
+		if ( 'message_modal' === $link ) {
+			return 'comment';
+		}
+
+		$parsed = $this->parse_attribute_link( $link );
+
+		if ( $parsed ) {
+			$attribute = hp\get_array_value( $this->get_contact_attributes( $parsed[0] ), $parsed[1] );
+			$type      = $attribute ? $attribute['type'] : '';
+
+			return 'email' === $type ? 'envelope' : ( 'phone' === $type ? 'phone' : 'link' );
+		}
+
+		return '';
+	}
+
+	/**
+	 * Gets the listing or vendor on screen.
+	 *
+	 * @param string $model Model name.
+	 * @return object|null
+	 */
+	protected function get_page_model( $model ) {
+		$object = hivepress()->request->get_context( $model );
+
+		return $object instanceof \HivePress\Models\Model ? $object : null;
+	}
+
+	/**
+	 * Resolves an attribute item to the address it opens.
+	 *
+	 * @param string $link Stored link value.
+	 * @return string Empty when the page has no such model or the value is empty.
+	 */
+	protected function get_attribute_item_url( $link ) {
+		$parsed = $this->parse_attribute_link( $link );
+
+		if ( ! $parsed ) {
+			return '';
+		}
+
+		list( $model, $name ) = $parsed;
+
+		$attribute = hp\get_array_value( $this->get_contact_attributes( $model ), $name );
+		$object    = $this->get_page_model( $model );
+
+		if ( ! $attribute || ! $object ) {
+			return '';
+		}
+
+		// Attribute values are read through the model's own getter, like anywhere else in
+		// HivePress; the attribute component registered the field, so the getter exists.
+		$value = trim( (string) call_user_func( [ $object, 'get_' . $name ] ) );
+
+		if ( '' === $value ) {
+			return '';
+		}
+
+		switch ( $attribute['type'] ) {
+			case 'email':
+				return is_email( $value ) ? 'mailto:' . $value : '';
+
+			case 'phone':
+				// The phone field stores digits with an optional leading plus (fields/class-phone.php,
+				// sanitize()); the same shape is what tel: expects.
+				$digits = preg_replace( '/[^\d+]/', '', $value );
+
+				return $digits ? 'tel:' . $digits : '';
+
+			case 'url':
+				return esc_url_raw( $value );
+		}
+
+		return '';
+	}
+
+	/**
+	 * Resolves the Message pop-up item.
+	 *
+	 * The Messages extension renders its send-message modal on listing and vendor pages as
+	 * `#message_send_modal_{id}` for signed-in visitors and points its own button at the sign-in
+	 * pop-up otherwise (hivepress-messages/templates/.../message-send-link.php). The bar does the
+	 * same: signed in, the href is that modal's anchor and the frontend script opens it; signed
+	 * out, the href is the real login page, which the script upgrades to the sign-in pop-up. The
+	 * owner of the listing or vendor gets nothing, since messaging yourself is not a thing.
+	 *
+	 * @return string
+	 */
+	protected function get_message_modal_url() {
+		if ( ! function_exists( 'hivepress' ) || ! hivepress()->get_version( 'messages' ) ) {
+			return '';
+		}
+
+		$route  = (string) hivepress()->router->get_current_route_name();
+		$object = null;
+
+		if ( 'listing_view_page' === $route ) {
+			$object = $this->get_page_model( 'listing' );
+		} elseif ( 'vendor_view_page' === $route ) {
+			$object = $this->get_page_model( 'vendor' );
+		}
+
+		// No method_exists() here: model getters are magic (__call), so method_exists() is always
+		// false on them and would drop the item for every vendor (resources/hivepress-data.md).
+		if ( ! $object ) {
+			return '';
+		}
+
+		if ( is_user_logged_in() ) {
+			if ( (int) $object->get_user__id() === get_current_user_id() ) {
+				return '';
+			}
+
+			return '#message_send_modal_' . (int) $object->get_id();
+		}
+
+		return $this->get_route_url( 'user_login_page' );
+	}
+
+	/**
 	 * Gets the item link options.
 	 *
 	 * @return array<string, string>
@@ -994,6 +1275,14 @@ final class Hpab_Action_Bar extends Component {
 	 */
 	protected function get_unavailable_link_label( $link ) {
 
+		// Page-only links: the attribute may have been deleted, or the bar's page switch is simply
+		// off right now. Either way the row must survive the save.
+		$page_label = $this->get_page_item_label( $link );
+
+		if ( $page_label ) {
+			return $page_label;
+		}
+
 		// A page keeps its title through draft and trash, so name it while it can still come back.
 		if ( 0 === strpos( $link, 'page_' ) ) {
 			$page_id = absint( substr( $link, 5 ) );
@@ -1165,13 +1454,22 @@ final class Hpab_Action_Bar extends Component {
 
 				break;
 
+			case 'message_modal':
+				$url = $this->get_message_modal_url();
+
+				break;
+
 			case 'custom':
 				$url = esc_url_raw( (string) $custom_url );
 
 				break;
 
 			default:
-				if ( 0 === strpos( $link, 'wcep_' ) ) {
+				if ( 0 === strpos( $link, 'attr_' ) ) {
+
+					// A contact attribute of the listing or vendor on screen, stored as attr_{model}_{name}.
+					$url = $this->get_attribute_item_url( $link );
+				} elseif ( 0 === strpos( $link, 'wcep_' ) ) {
 
 					// Any other WooCommerce account endpoint, stored as wcep_{endpoint}.
 					if ( function_exists( 'wc_get_account_endpoint_url' ) ) {
@@ -1216,7 +1514,24 @@ final class Hpab_Action_Bar extends Component {
 			$bar = 'vendor';
 		}
 
-		$items = $this->get_bar_items( $bar );
+		$items = [];
+
+		// A page bar follows what is on screen rather than who is looking, so it is asked first and
+		// wins whenever it has something to show. An empty or broken page bar leaves the visitor
+		// with their usual bar, never with nothing.
+		$page_bar = $this->get_current_page_bar();
+
+		if ( $page_bar ) {
+			$items = $this->get_bar_items( $page_bar );
+
+			if ( $items ) {
+				$bar = $page_bar;
+			}
+		}
+
+		if ( ! $items ) {
+			$items = $this->get_bar_items( $bar );
+		}
 
 		// Removing every row from a special bar stores an empty option rather than no option, which would
 		// otherwise leave those visitors with no navigation at all, so an empty vendor or logged-out bar
@@ -1299,7 +1614,7 @@ final class Hpab_Action_Bar extends Component {
 			// Get item link.
 			$link = hp\get_array_value( $row, 'link' );
 
-			if ( ! $link || ( ! isset( $this->get_link_options()[ $link ] ) && 0 !== strpos( (string) $link, 'page_' ) && 0 !== strpos( (string) $link, 'route_' ) && 0 !== strpos( (string) $link, 'wcep_' ) ) ) {
+			if ( ! $link || ( ! isset( $this->get_link_options()[ $link ] ) && 'message_modal' !== $link && 0 !== strpos( (string) $link, 'page_' ) && 0 !== strpos( (string) $link, 'route_' ) && 0 !== strpos( (string) $link, 'wcep_' ) && 0 !== strpos( (string) $link, 'attr_' ) ) ) {
 				continue;
 			}
 
@@ -1325,6 +1640,12 @@ final class Hpab_Action_Bar extends Component {
 				}
 			}
 
+			// Page-only items have an obvious glyph each: an envelope, a handset, a link, a speech
+			// bubble. A row with no icon picked gets that rather than the generic circle.
+			if ( ! $icon && ( 'message_modal' === $link || 0 === strpos( (string) $link, 'attr_' ) ) ) {
+				$icon = $this->get_page_item_icon( $link );
+			}
+
 			if ( $icon && false === strpos( $icon, ' ' ) ) {
 
 				// Brand glyphs live in Font Awesome's separate brands family: `fas fa-stripe` is an
@@ -1338,6 +1659,11 @@ final class Hpab_Action_Bar extends Component {
 
 			// Get item label.
 			$label = sanitize_text_field( (string) hp\get_array_value( $row, 'label' ) );
+
+			// A page-only item with no label reads as the attribute's own name, or "Message".
+			if ( '' === $label && ( 'message_modal' === $link || 0 === strpos( (string) $link, 'attr_' ) ) ) {
+				$label = sanitize_text_field( $this->get_page_item_label( $link ) );
+			}
 
 			// Get item style.
 			$style = hp\get_array_value( $row, 'style' );
@@ -2364,6 +2690,8 @@ final class Hpab_Action_Bar extends Component {
 		$this->render_preview_panel( 'guest', esc_html__( 'Logged-out bar', 'action-bar-for-hivepress' ) );
 		$this->render_preview_panel( 'user', esc_html__( 'User bar', 'action-bar-for-hivepress' ) );
 		$this->render_preview_panel( 'vendor', esc_html__( 'Vendor bar', 'action-bar-for-hivepress' ) );
+		$this->render_preview_panel( 'listing_page', esc_html__( 'Listing page bar', 'action-bar-for-hivepress' ) );
+		$this->render_preview_panel( 'vendor_page', esc_html__( 'Vendor page bar', 'action-bar-for-hivepress' ) );
 
 		echo '<p class="description hpab-preview__description">' . esc_html__( 'How each bar will look with the settings on this page, following every change as you make it. The bars are drawn at the width of this panel, so drag its edge to see them wider, or choose Tablet or Desktop to see them at those exact widths. The badge number and the highlighted first item are examples, not live figures. Nothing is stored until you press Save Changes.', 'action-bar-for-hivepress' ) . '</p>';
 		echo '</div></div>';
@@ -2416,9 +2744,11 @@ final class Hpab_Action_Bar extends Component {
 		echo '<div class="hpab-dialog__stage">';
 
 		foreach ( [
-			'guest'  => esc_html__( 'Logged-out bar', 'action-bar-for-hivepress' ),
-			'user'   => esc_html__( 'User bar', 'action-bar-for-hivepress' ),
-			'vendor' => esc_html__( 'Vendor bar', 'action-bar-for-hivepress' ),
+			'guest'        => esc_html__( 'Logged-out bar', 'action-bar-for-hivepress' ),
+			'user'         => esc_html__( 'User bar', 'action-bar-for-hivepress' ),
+			'vendor'       => esc_html__( 'Vendor bar', 'action-bar-for-hivepress' ),
+			'listing_page' => esc_html__( 'Listing page bar', 'action-bar-for-hivepress' ),
+			'vendor_page'  => esc_html__( 'Vendor page bar', 'action-bar-for-hivepress' ),
 		] as $bar => $title ) {
 			echo '<div class="hpab-dialog__panel hpab-preview__panel" data-bar="' . esc_attr( $bar ) . '" data-context="dialog">';
 			echo '<h3 class="hpab-dialog__panel-title">' . esc_html( $title ) . '</h3>';
@@ -2601,6 +2931,10 @@ final class Hpab_Action_Bar extends Component {
 			}
 
 			if ( ! $aria_label ) {
+				$aria_label = $this->get_page_item_label( $item['link'] );
+			}
+
+			if ( ! $aria_label ) {
 				$aria_label = hp\get_array_value( $this->get_link_options(), $item['link'], esc_attr__( 'Menu item', 'action-bar-for-hivepress' ) );
 			}
 
@@ -2626,6 +2960,12 @@ final class Hpab_Action_Bar extends Component {
 			// login pop-up. The href stays the real login page, which is what a visitor without
 			// scripting, or on a theme that renders no footer modals, falls back to.
 			$modal_attribute = 'auth_modal' === $item['link'] ? ' data-hpab-auth-modal' : '';
+
+			// The Message pop-up: signed in, the href is the Messages modal's anchor and the script
+			// opens it; signed out, the href is the login page, upgraded to the sign-in pop-up.
+			if ( 'message_modal' === $item['link'] ) {
+				$modal_attribute = 0 === strpos( (string) $item['url'], '#' ) ? ' data-hpab-modal' : ' data-hpab-auth-modal';
+			}
 
 			// Render item.
 			$output .= '<a href="' . esc_url( $item['url'] ) . '" class="' . esc_attr( implode( ' ', $item_classes ) ) . '"' . $badge_attribute . $modal_attribute . ' aria-label="' . esc_attr( $aria_label ) . '">';

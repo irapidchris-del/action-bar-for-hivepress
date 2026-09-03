@@ -217,6 +217,31 @@
 		});
 	});
 
+	/* ---- message pop-up ---------------------------------------------------- */
+
+	/*
+	 * The Message pop-up item's href is the anchor of the Messages extension's own
+	 * send-message modal (#message_send_modal_{id}), rendered in the footer of the
+	 * listing or vendor page. Opened the same way as the sign-in pop-up above; when
+	 * the modal is not on the page the click falls through to the bare anchor, which
+	 * does nothing rather than something wrong.
+	 */
+	Array.prototype.forEach.call(bar.querySelectorAll('.hp-action-bar__item[data-hpab-modal]'), function (item) {
+		item.addEventListener('click', function (event) {
+			var target = (item.getAttribute('href') || '').replace(/^.*#/, '');
+
+			if (target && document.getElementById(target) && window.jQuery && window.jQuery.fancybox) {
+				event.preventDefault();
+
+				window.jQuery.fancybox.close();
+				window.jQuery.fancybox.open({
+					src: '#' + target,
+					touch: false,
+				});
+			}
+		});
+	});
+
 	/* ---- notifications bell ------------------------------------------------ */
 
 	/*
