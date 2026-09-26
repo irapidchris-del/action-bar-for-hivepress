@@ -510,13 +510,46 @@ return [
 			[
 
 				/*
+				 * Quick actions are appended to whichever bar is showing, after the owner's own
+				 * rows, so they do not use up one of the five item slots above. Each is offered
+				 * only while the extension that does the work is active, which is why the section
+				 * describes both rather than hiding one: an owner who has not installed Search
+				 * Alerts should be able to see why there is no alert button.
+				 */
+				'quick_actions' => [
+					'title'       => esc_html__( 'Quick Actions', 'action-bar-for-hivepress' ),
+					'description' => esc_html__( 'Two extra buttons that act on the page somebody is looking at rather than taking them somewhere. Save appears on a listing page and needs the Favorites extension; Alert me appears on a search results page and needs the Search Alerts extension. Both are added after your own items, so they cost you none of the five slots, and both open the sign-in pop-up for a logged-out visitor rather than failing.', 'action-bar-for-hivepress' ),
+					'_order'      => 55,
+
+					'fields'      => [
+						'action_bar_item_favorite'     => [
+							'label'       => esc_html__( 'Save Listing', 'action-bar-for-hivepress' ),
+							'caption'     => esc_html__( 'Add a Save button on listing pages', 'action-bar-for-hivepress' ),
+							'description' => esc_html__( 'Saves the listing to the visitor\'s favourites, the same as the heart on the page, and the two stay in step. Needs the Favorites extension; with it inactive nothing is added.', 'action-bar-for-hivepress' ),
+							'type'        => 'checkbox',
+							'default'     => true,
+							'_order'      => 10,
+						],
+
+						'action_bar_item_search_alert' => [
+							'label'       => esc_html__( 'Search Alert', 'action-bar-for-hivepress' ),
+							'caption'     => esc_html__( 'Add an Alert me button on search results', 'action-bar-for-hivepress' ),
+							'description' => esc_html__( 'Emails the visitor when a new listing matches the search they are looking at. Only appears on an actual search, never on an unfiltered list, and hides itself once somebody reaches the ten-alert limit the extension sets. Needs the Search Alerts extension.', 'action-bar-for-hivepress' ),
+							'type'        => 'checkbox',
+							'default'     => true,
+							'_order'      => 20,
+						],
+					],
+				],
+
+				/*
 				 * The section description exists to answer a question WordPress itself creates. Its delete
 				 * screen prints "(will also delete its data)" whenever an uninstall.php is present at all
 				 * (wp-admin/plugins.php:376-380), whatever that file does, and ours keeps everything unless
 				 * this box is ticked. Without a note here an owner reads the core warning and reasonably
 				 * concludes their settings are going.
 				 */
-				'removal' => [
+				'removal'       => [
 					'title'       => esc_html__( 'Removing the Plugin', 'action-bar-for-hivepress' ),
 					'description' => esc_html__( 'Deleting this plugin keeps your items and settings unless you tick the box below, whatever the WordPress delete screen says. Deactivating never removes anything.', 'action-bar-for-hivepress' ),
 					'_order'      => 60,

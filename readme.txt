@@ -4,11 +4,11 @@ Tags: hivepress, mobile, navigation, bottom bar, app
 Requires at least: 5.8
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.7.2
+Stable tag: 1.8.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Adds a customisable, app-style bottom navigation bar to HivePress websites, on any screen size you choose.
+Adds a customisable, app-style bottom navigation bar to HivePress websites, on any screen size, with optional Save and alert buttons.
 
 == Description ==
 
@@ -18,6 +18,7 @@ Features:
 
 * Up to five items per bar, each with a Font Awesome icon, an optional label, and a link. Drag to reorder them.
 * Link choices for the homepage, listings, listing submission, vendors, account or login, messages, favourites, the signed-in user's own public profile, a sign-in pop-up for logged-out visitors, the Notifications for HivePress bell, any HivePress account or extension page, any published WordPress page, the WooCommerce cart and account area (when WooCommerce is installed), or any custom URL.
+* Quick Actions: an optional Save button on listing pages and an Alert me button on search results, added after your own items so they cost none of the five slots. Save uses the Favorites extension and Alert me uses the Search Alerts extension, each appearing only while that extension is active. Both keep in step with the control already on the page, and both open the sign-in pop-up for a logged-out visitor.
 * Optional prominent style per item, lifting it into a raised circle, ideal for one main action such as Add listing.
 * A separate Vendor Bar shown to users with a published vendor profile instead of the standard User Bar.
 * A separate Logged-Out Bar, switched on with its own toggle, so visitors who are not signed in can be shown a different set of items.
@@ -82,6 +83,13 @@ Yes. Tick "Desktop" in the Display section and the bar appears on laptops and de
 The plugin includes an update checker that watches the official GitHub repository for new releases. When a newer version is published, WordPress shows the update on the Plugins and Dashboard, Updates screens, and you can install it with the usual one-click update. You can force an immediate check with the Check for updates link on the Plugins screen. No account, licence key, or extra configuration is required.
 
 == Changelog ==
+
+= 1.8.0 =
+* New: Quick Actions. A Save button on Listing pages adds the Listing to the visitor's favourites without leaving the page, and an Alert me button on filtered search results saves that search so the visitor is emailed when new Listings match.
+* New: Save needs the HivePress Favorites extension and Alert me needs the Search Alerts extension. Each appears only while its extension is active, both are on by default, and either can be switched off under HivePress, Settings, Action Bar, Quick Actions.
+* New: both buttons are added after the bar's own items, so a bar that already has five items keeps all five.
+* New: both buttons switch without a reload and keep in step with the heart and the alert toggle already on the page, in both directions.
+* New: a logged-out visitor pressing either button gets the HivePress sign-in pop-up.
 
 = 1.7.2 =
 * Fixed: updating two of these extensions one after the other could fail on the second with "up to date" until Check for updates was pressed again. WordPress rebuilds its update list after each update by asking wordpress.org first, and gives up on the whole list when that call is slow; the plugin now keeps its own update in the list regardless.

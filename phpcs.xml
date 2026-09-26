@@ -4,6 +4,11 @@
 
 	<exclude-pattern>vendor/*</exclude-pattern>
 
+	<!-- The test harness legitimately breaks house rules the shipped code keeps (direct option
+	     writes, no nonces, echo without escaping), so analysing it floods the gate with findings
+	     that say nothing about the plugin. It is never shipped either. -->
+	<exclude-pattern>tests/*</exclude-pattern>
+
 	<rule ref="WordPress">
 		<exclude name="WordPress.PHP.StrictInArray.MissingTrueStrict"/>
 		<exclude name="WordPress.NamingConventions.ValidHookName.UseUnderscores"/>

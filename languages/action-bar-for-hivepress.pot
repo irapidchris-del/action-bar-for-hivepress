@@ -2,41 +2,21 @@
 # This file is distributed under the GPLv2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Action Bar for HivePress 1.7.0\n"
-"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/action-bar-for-hivepress\n"
+"Project-Id-Version: Action Bar for HivePress 1.8.0\n"
+"Report-Msgid-Bugs-To: https://github.com/irapidchris-del/action-bar-for-hivepress/issues\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-09-03T20:30:33+00:00\n"
+"POT-Creation-Date: 2026-09-07T14:33:47+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: action-bar-for-hivepress\n"
 
-#. Plugin Name of the plugin
-#: action-bar-for-hivepress.php
-msgid "Action Bar for HivePress"
-msgstr ""
-
-#. Plugin URI of the plugin
-#: action-bar-for-hivepress.php
-msgid "https://github.com/irapidchris-del/action-bar-for-hivepress"
-msgstr ""
-
 #. Description of the plugin
 #: action-bar-for-hivepress.php
-msgid "Adds a customisable, app-style bottom navigation bar to HivePress websites, on any screen size you choose."
-msgstr ""
-
-#. Author of the plugin
-#: action-bar-for-hivepress.php
-msgid "ChrisB @ HivePress Community"
-msgstr ""
-
-#. Author URI of the plugin
-#: action-bar-for-hivepress.php
-msgid "https://community.hivepress.io/u/chrisb/summary"
+msgid "Adds a customisable, app-style bottom navigation bar to HivePress websites, on any screen size, with optional Save and alert buttons."
 msgstr ""
 
 #: action-bar-for-hivepress.php:113
@@ -72,384 +52,400 @@ msgid "Account"
 msgstr ""
 
 #: includes/components/class-hpab-action-bar.php:136
-#: includes/components/class-hpab-action-bar.php:442
+#: includes/components/class-hpab-action-bar.php:554
 msgid "Add listing"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:248
+#: includes/components/class-hpab-action-bar.php:314
 msgid "Message pop-up for this vendor"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:249
+#: includes/components/class-hpab-action-bar.php:315
 msgid "Message pop-up for this listing"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:252
+#: includes/components/class-hpab-action-bar.php:318
 msgid "Listing"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:253
+#: includes/components/class-hpab-action-bar.php:319
 msgid "Vendor"
 msgstr ""
 
 #. translators: 1: Listing or Vendor, 2: attribute name.
-#: includes/components/class-hpab-action-bar.php:259
+#: includes/components/class-hpab-action-bar.php:325
 #, php-format
 msgid "%1$s: %2$s"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:288
+#: includes/components/class-hpab-action-bar.php:354
 msgid "Message"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:440
+#: includes/components/class-hpab-action-bar.php:552
 msgid "Homepage"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:441
+#: includes/components/class-hpab-action-bar.php:553
 msgid "Listings"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:443
+#: includes/components/class-hpab-action-bar.php:555
 msgid "Vendors"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:444
+#: includes/components/class-hpab-action-bar.php:556
 msgid "Account or login"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:448
+#: includes/components/class-hpab-action-bar.php:560
 msgid "My profile"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:452
+#: includes/components/class-hpab-action-bar.php:564
 msgid "Sign in pop-up"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:453
+#: includes/components/class-hpab-action-bar.php:565
 msgid "Messages"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:454
+#: includes/components/class-hpab-action-bar.php:566
 msgid "Favourites"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:455
+#: includes/components/class-hpab-action-bar.php:567
 msgid "Custom URL"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:462
-#: includes/components/class-hpab-action-bar.php:1305
+#: includes/components/class-hpab-action-bar.php:574
+#: includes/components/class-hpab-action-bar.php:1422
 msgid "Notifications bell"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:467
-#: includes/components/class-hpab-action-bar.php:1310
+#: includes/components/class-hpab-action-bar.php:579
+#: includes/components/class-hpab-action-bar.php:1427
 msgid "Placed orders"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:468
-#: includes/components/class-hpab-action-bar.php:1314
+#: includes/components/class-hpab-action-bar.php:580
+#: includes/components/class-hpab-action-bar.php:1431
 msgid "Cart"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:562
+#: includes/components/class-hpab-action-bar.php:674
 msgid "Account activity (HivePress)"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:563
+#: includes/components/class-hpab-action-bar.php:675
 msgid "Unread messages"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:564
+#: includes/components/class-hpab-action-bar.php:676
 msgid "Unread notifications"
 msgstr ""
 
 #. translators: %s: icon name.
-#: includes/components/class-hpab-action-bar.php:747
+#: includes/components/class-hpab-action-bar.php:864
 #, php-format
 msgid "%s (brand)"
 msgstr ""
 
 #. translators: %s: menu item label.
-#: includes/components/class-hpab-action-bar.php:962
+#: includes/components/class-hpab-action-bar.php:1079
 #, php-format
 msgid "%s (WooCommerce)"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:978
+#: includes/components/class-hpab-action-bar.php:1095
 msgid "Requests"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:979
+#: includes/components/class-hpab-action-bar.php:1096
 msgid "Post a request"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:980
+#: includes/components/class-hpab-action-bar.php:1097
 msgid "Select plan"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:981
+#: includes/components/class-hpab-action-bar.php:1098
 msgid "Become a vendor"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:982
+#: includes/components/class-hpab-action-bar.php:1099
 msgid "My listings"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:983
+#: includes/components/class-hpab-action-bar.php:1100
 msgid "My requests"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:984
+#: includes/components/class-hpab-action-bar.php:1101
 msgid "Offers"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:985
+#: includes/components/class-hpab-action-bar.php:1102
 msgid "Bookings"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:986
+#: includes/components/class-hpab-action-bar.php:1103
 msgid "Searches"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:987
+#: includes/components/class-hpab-action-bar.php:1104
 msgid "Memberships"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:988
+#: includes/components/class-hpab-action-bar.php:1105
 msgid "Dashboard"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:989
+#: includes/components/class-hpab-action-bar.php:1106
 msgid "Calendar"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:990
+#: includes/components/class-hpab-action-bar.php:1107
 msgid "Received orders"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:991
+#: includes/components/class-hpab-action-bar.php:1108
 msgid "Payouts"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:992
+#: includes/components/class-hpab-action-bar.php:1109
 msgid "Sign out"
 msgstr ""
 
 #. translators: %s: page slug.
-#: includes/components/class-hpab-action-bar.php:1175
+#: includes/components/class-hpab-action-bar.php:1292
 #, php-format
 msgid "(no title) - /%s/"
 msgstr ""
 
 #. translators: %s: option name.
-#: includes/components/class-hpab-action-bar.php:1218
-#: includes/components/class-hpab-action-bar.php:1232
+#: includes/components/class-hpab-action-bar.php:1335
+#: includes/components/class-hpab-action-bar.php:1349
 #, php-format
 msgid "%s (currently unavailable)"
 msgstr ""
 
 #. translators: %s: icon name.
-#: includes/components/class-hpab-action-bar.php:1257
+#: includes/components/class-hpab-action-bar.php:1374
 #, php-format
 msgid "%s (custom)"
 msgstr ""
 
 #. translators: %s: page ID.
-#: includes/components/class-hpab-action-bar.php:1296
+#: includes/components/class-hpab-action-bar.php:1413
 #, php-format
 msgid "Page #%s"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:2411
+#: includes/components/class-hpab-action-bar.php:2534
 msgid "Jump to a section:"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:2412
+#: includes/components/class-hpab-action-bar.php:2535
 msgid "Save Changes"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:2413
+#: includes/components/class-hpab-action-bar.php:2536
 msgid "Back to top"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:2414
+#: includes/components/class-hpab-action-bar.php:2537
 msgid "New item"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:2415
+#: includes/components/class-hpab-action-bar.php:2538
 msgid "Collapse"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:2416
+#: includes/components/class-hpab-action-bar.php:2539
 msgid "Expand"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:2451
+#: includes/components/class-hpab-action-bar.php:2574
 msgid "The bar is switched off on mobile. Tick Mobile under Display to show it."
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:2452
+#: includes/components/class-hpab-action-bar.php:2575
 msgid "The bar is switched off on tablets. Tick Tablet under Display to show it."
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:2453
+#: includes/components/class-hpab-action-bar.php:2576
 msgid "The bar is switched off on desktop. Tick Desktop under Display to show it."
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:2522
+#: includes/components/class-hpab-action-bar.php:2645
 msgid "adds the bell with its unread badge to the bar"
 msgstr ""
 
 #. translators: 1: extension name, linked; 2: what it adds.
-#: includes/components/class-hpab-action-bar.php:2526
+#: includes/components/class-hpab-action-bar.php:2649
 #, php-format
 msgid "%1$s %2$s and is active."
 msgstr ""
 
 #. translators: 1: extension name, linked; 2: what it adds.
-#: includes/components/class-hpab-action-bar.php:2529
+#: includes/components/class-hpab-action-bar.php:2652
 #, php-format
 msgid "%1$s %2$s but is not active."
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:2536
+#: includes/components/class-hpab-action-bar.php:2659
 msgid "Activate it."
 msgstr ""
 
 #. translators: 1: extension name, linked; 2: what it adds.
-#: includes/components/class-hpab-action-bar.php:2540
+#: includes/components/class-hpab-action-bar.php:2663
 #, php-format
 msgid "%1$s %2$s but is not installed."
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:2545
+#: includes/components/class-hpab-action-bar.php:2668
 msgid "Install it."
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:2567
+#: includes/components/class-hpab-action-bar.php:2690
 msgid "Sorry, you are not allowed to install plugins on this site."
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:2578
+#: includes/components/class-hpab-action-bar.php:2701
 msgid "Unknown extension."
 msgstr ""
 
 #. translators: %s: extension name.
-#: includes/components/class-hpab-action-bar.php:2587
+#: includes/components/class-hpab-action-bar.php:2710
 #, php-format
 msgid "Installing %s"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:2616
+#: includes/components/class-hpab-action-bar.php:2739
 msgid "Back to the Action Bar settings"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:2677
+#: includes/components/class-hpab-action-bar.php:2800
 msgid "Resize the preview: drag, or use the arrow keys. Double-click to reset."
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:2677
+#: includes/components/class-hpab-action-bar.php:2800
 msgid "Drag to resize. Double-click to reset."
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:2680
-#: includes/components/class-hpab-action-bar.php:2732
+#: includes/components/class-hpab-action-bar.php:2803
+#: includes/components/class-hpab-action-bar.php:2855
 msgid "Live preview"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:2684
-#: includes/components/class-hpab-action-bar.php:2734
+#: includes/components/class-hpab-action-bar.php:2807
+#: includes/components/class-hpab-action-bar.php:2857
 msgid "Preview size"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:2685
-#: includes/components/class-hpab-action-bar.php:2737
+#: includes/components/class-hpab-action-bar.php:2808
+#: includes/components/class-hpab-action-bar.php:2860
 #: includes/configs/settings.php:249
 msgid "Mobile"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:2686
-#: includes/components/class-hpab-action-bar.php:2738
+#: includes/components/class-hpab-action-bar.php:2809
+#: includes/components/class-hpab-action-bar.php:2861
 #: includes/configs/settings.php:257
 msgid "Tablet"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:2687
-#: includes/components/class-hpab-action-bar.php:2739
+#: includes/components/class-hpab-action-bar.php:2810
+#: includes/components/class-hpab-action-bar.php:2862
 #: includes/configs/settings.php:264
 msgid "Desktop"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:2690
-#: includes/components/class-hpab-action-bar.php:2747
+#: includes/components/class-hpab-action-bar.php:2813
+#: includes/components/class-hpab-action-bar.php:2870
 #: includes/configs/settings.php:394
 msgid "Logged-out bar"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:2691
-#: includes/components/class-hpab-action-bar.php:2748
+#: includes/components/class-hpab-action-bar.php:2814
+#: includes/components/class-hpab-action-bar.php:2871
 msgid "User bar"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:2692
-#: includes/components/class-hpab-action-bar.php:2749
+#: includes/components/class-hpab-action-bar.php:2815
+#: includes/components/class-hpab-action-bar.php:2872
 #: includes/configs/settings.php:402
 msgid "Vendor bar"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:2693
-#: includes/components/class-hpab-action-bar.php:2750
+#: includes/components/class-hpab-action-bar.php:2816
+#: includes/components/class-hpab-action-bar.php:2873
 #: includes/configs/settings.php:410
 msgid "Listing page bar"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:2694
-#: includes/components/class-hpab-action-bar.php:2751
+#: includes/components/class-hpab-action-bar.php:2817
+#: includes/components/class-hpab-action-bar.php:2874
 #: includes/configs/settings.php:418
 msgid "Vendor page bar"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:2696
+#: includes/components/class-hpab-action-bar.php:2819
 msgid "How each bar will look with the settings on this page, following every change as you make it. The bars are drawn at the width of this panel, so drag its edge to see them wider, or choose Tablet or Desktop to see them at those exact widths. The badge number and the highlighted first item are examples, not live figures. Nothing is stored until you press Save Changes."
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:2733
+#: includes/components/class-hpab-action-bar.php:2856
 msgid "Drawn at the real width for this size. The badge number and the highlighted first item are examples."
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:2741
+#: includes/components/class-hpab-action-bar.php:2864
 msgid "Close preview"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:2831
-#: includes/components/class-hpab-action-bar.php:2859
+#: includes/components/class-hpab-action-bar.php:2954
+#: includes/components/class-hpab-action-bar.php:2982
 msgid "Notifications"
 msgstr ""
 
 #. translators: 1: item name, 2: number of unread items.
-#: includes/components/class-hpab-action-bar.php:2835
-#: includes/components/class-hpab-action-bar.php:2947
+#: includes/components/class-hpab-action-bar.php:2958
+#: includes/components/class-hpab-action-bar.php:3070
 #, php-format
 msgctxt "action bar item"
 msgid "%1$s, %2$s unread"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:2860
+#: includes/components/class-hpab-action-bar.php:2983
 msgid "See all"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:2861
+#: includes/components/class-hpab-action-bar.php:2984
 msgid "Loading…"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:2903
+#: includes/components/class-hpab-action-bar.php:3026
 msgid "Mobile navigation"
 msgstr ""
 
-#: includes/components/class-hpab-action-bar.php:2938
+#: includes/components/class-hpab-action-bar.php:3061
 msgid "Menu item"
+msgstr ""
+
+#: includes/components/class-hpab-quick-actions.php:204
+msgid "Save"
+msgstr ""
+
+#: includes/components/class-hpab-quick-actions.php:204
+msgid "Saved"
+msgstr ""
+
+#: includes/components/class-hpab-quick-actions.php:266
+msgid "Alert me"
+msgstr ""
+
+#: includes/components/class-hpab-quick-actions.php:266
+msgid "Alert set"
 msgstr ""
 
 #: includes/configs/settings.php:30
@@ -872,59 +868,108 @@ msgid "Use the colour wheel or type a hex code such as #f5f5f5. Clear a field an
 msgstr ""
 
 #: includes/configs/settings.php:520
-msgid "Removing the Plugin"
+msgid "Quick Actions"
 msgstr ""
 
 #: includes/configs/settings.php:521
-msgid "Deleting this plugin keeps your items and settings unless you tick the box below, whatever the WordPress delete screen says. Deactivating never removes anything."
+msgid "Two extra buttons that act on the page somebody is looking at rather than taking them somewhere. Save appears on a listing page and needs the Favorites extension; Alert me appears on a search results page and needs the Search Alerts extension. Both are added after your own items, so they cost you none of the five slots, and both open the sign-in pop-up for a logged-out visitor rather than failing."
 msgstr ""
 
 #: includes/configs/settings.php:526
-msgid "Delete all data"
+msgid "Save Listing"
 msgstr ""
 
 #: includes/configs/settings.php:527
-msgid "Delete everything when this plugin is deleted"
+msgid "Add a Save button on listing pages"
 msgstr ""
 
 #: includes/configs/settings.php:528
+msgid "Saves the listing to the visitor's favourites, the same as the heart on the page, and the two stay in step. Needs the Favorites extension; with it inactive nothing is added."
+msgstr ""
+
+#: includes/configs/settings.php:535
+msgid "Search Alert"
+msgstr ""
+
+#: includes/configs/settings.php:536
+msgid "Add an Alert me button on search results"
+msgstr ""
+
+#: includes/configs/settings.php:537
+msgid "Emails the visitor when a new listing matches the search they are looking at. Only appears on an actual search, never on an unfiltered list, and hides itself once somebody reaches the ten-alert limit the extension sets. Needs the Search Alerts extension."
+msgstr ""
+
+#: includes/configs/settings.php:553
+msgid "Removing the Plugin"
+msgstr ""
+
+#: includes/configs/settings.php:554
+msgid "Deleting this plugin keeps your items and settings unless you tick the box below, whatever the WordPress delete screen says. Deactivating never removes anything."
+msgstr ""
+
+#: includes/configs/settings.php:559
+msgid "Delete all data"
+msgstr ""
+
+#: includes/configs/settings.php:560
+msgid "Delete everything when this plugin is deleted"
+msgstr ""
+
+#: includes/configs/settings.php:561
 msgid "With this ticked, deleting the plugin removes every bar item, colour and setting, with no way back. Leave unticked to keep them for a reinstall."
 msgstr ""
 
-#: includes/updater.php:669
+#: includes/updater.php:701
 msgid "See the GitHub releases page for the changelog."
 msgstr ""
 
-#: includes/updater.php:682
+#: includes/updater.php:714
+#: includes/updater.php:879
 msgid "Check for updates"
 msgstr ""
 
 #. translators: %s: version number of the new release.
-#: includes/updater.php:752
+#: includes/updater.php:784
 #, php-format
 msgid "A new version of Action Bar for HivePress (%s) is available."
 msgstr ""
 
-#: includes/updater.php:755
+#: includes/updater.php:787
 msgid "Action Bar for HivePress is up to date."
 msgstr ""
 
-#: includes/updater.php:758
+#: includes/updater.php:790
 msgid "Action Bar for HivePress has no releases published yet, so there is nothing to update to. This is normal for a new install and nothing is wrong."
 msgstr ""
 
-#: includes/updater.php:761
+#: includes/updater.php:793
 msgid "No releases have been published for Action Bar for HivePress yet, so there is nothing to update to. This is normal for a brand new copy and does not mean anything is wrong."
 msgstr ""
 
-#: includes/updater.php:764
+#: includes/updater.php:796
 msgid "GitHub limits how many update checks one server may make each hour, and this server has reached that limit. Nothing is wrong with the plugin or your site, and checking will work again within the hour."
 msgstr ""
 
-#: includes/updater.php:767
+#: includes/updater.php:799
 msgid "Could not reach GitHub to check for updates. Please try again later."
 msgstr ""
 
-#: includes/updater.php:809
+#. translators: 1: number of plugins checked, 2: number with an update available.
+#: includes/updater.php:956
+#, php-format
+msgid "Checked %1$s plugin for updates: %2$s can be updated."
+msgid_plural "Checked %1$s plugins for updates: %2$s can be updated."
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %s: number of plugins checked.
+#: includes/updater.php:959
+#, php-format
+msgid "Checked %s plugin for updates: it is up to date."
+msgid_plural "Checked %s plugins for updates: all are up to date."
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/updater.php:998
 msgid "Could not rename the update directory."
 msgstr ""

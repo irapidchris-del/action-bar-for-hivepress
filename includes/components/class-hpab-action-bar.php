@@ -1902,7 +1902,7 @@ final class Hpab_Action_Bar extends Component {
 		// 1.6.5: the badge background used to default to WordPress's own #d63638, and the settings
 		// screen wrote that value back on the first save, so a site holding exactly that colour
 		// never chose it. It moves to the red HivePress uses for its own counters (#ff5a5f), the new
-		// default, so the badge matches the header and account-menu counters (Chris, 2026-09-03).
+		// default, so the badge matches the header and account-menu counters.
 		// Any other saved colour is a choice and stays.
 		if ( '#d63638' === strtolower( (string) get_option( 'hp_action_bar_color_badge_background' ) ) ) {
 			update_option( 'hp_action_bar_color_badge_background', '#ff5a5f' );
