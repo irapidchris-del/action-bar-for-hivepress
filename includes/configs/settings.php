@@ -127,10 +127,14 @@ $hpab_item_fields = [
 
 		// Named "Address" rather than "Custom URL", which is already the name of an option in the
 		// dropdown one column to the left. Two different controls cannot share a name on the same row.
-		'placeholder' => esc_html__( 'Address for Custom URL', 'action-bar-for-hivepress' ),
-		'type'        => 'url',
-		'max_length'  => 2048,
-		'_order'      => 15,
+		'placeholder'  => esc_html__( 'Address for Custom URL', 'action-bar-for-hivepress' ),
+		'type'         => 'url',
+
+		// Drawn as a plain text box: a browser rejects a type="url" input holding a same-page link
+		// such as #booking and then refuses to submit the whole settings form.
+		'display_type' => 'text',
+		'max_length'   => 2048,
+		'_order'       => 15,
 	],
 
 	'style' => [

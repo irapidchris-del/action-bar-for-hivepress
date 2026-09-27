@@ -4,7 +4,7 @@ Tags: hivepress, mobile, navigation, bottom bar, app
 Requires at least: 5.8
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.8.0
+Stable tag: 1.8.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -83,6 +83,9 @@ Yes. Tick "Desktop" in the Display section and the bar appears on laptops and de
 The plugin includes an update checker that watches the official GitHub repository for new releases. When a newer version is published, WordPress shows the update on the Plugins and Dashboard, Updates screens, and you can install it with the usual one-click update. You can force an immediate check with the Check for updates link on the Plugins screen. No account, licence key, or extra configuration is required.
 
 == Changelog ==
+
+= 1.8.1 =
+* Fixed: the Action Bar settings page could not be saved while an item's Address was a link to part of the same page, such as #booking. The Address box now accepts those links as well as full web addresses.
 
 = 1.8.0 =
 * New: Quick Actions. A Save button on Listing pages adds the Listing to the visitor's favourites without leaving the page, and an Alert me button on filtered search results saves that search so the visitor is emailed when new Listings match.
