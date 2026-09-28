@@ -349,6 +349,14 @@
 	text-align: start;
 }
 
+/* The field's cell takes the column's width. Left to size itself, a bar whose cards are all folded
+ * shrank to the width of their header text, because the fields that gave it width are hidden. The
+ * cards themselves stop at core's 500px (table.hp-table). */
+.form-table td:has(.hp-action-bar-items) {
+	width: 100%;
+}
+
+
 /* The drag handle's cell, moved into the header strip beside the toggle. */
 .hp-action-bar-items table.hp-table > tbody > tr > td:first-child {
 	position: absolute;

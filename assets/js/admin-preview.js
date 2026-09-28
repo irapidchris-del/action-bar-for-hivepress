@@ -11,8 +11,9 @@
  *
  * Dummy data, on purpose: the badge count and the "current page" highlight are illustrations of
  * what those settings do, not readings from the site. The description under the panel says so.
+ * Save and Alert me are drawn as a visitor first sees them, not yet switched on.
  *
- * Icons are emitted as `<i class="fa-solid fa-NAME">` and drawn by the shared icon library's
+ * Icons are emitted as `<i class="fa-solid fa-NAME">` (fa-regular for an outline value) and drawn by the shared icon library's
  * admin script, which watches the document and swaps them for inline SVG; brands resolve from the
  * library's own index, so no list of brand names lives here.
  */
@@ -70,6 +71,7 @@
 
 		var data = window.hpabPreviewData || {},
 			labels = data.labels || {},
+			quickDefaults = data.quick && 'object' === typeof data.quick ? data.quick : {},
 			repaintTimer = null;
 
 		// Two sets of stages read the same form: the side panel (one per bar, drawn as a phone)
@@ -150,22 +152,34 @@
 			return 'rgba(' + parseInt( h.slice( 1, 3 ), 16 ) + ',' + parseInt( h.slice( 3, 5 ), 16 ) + ',' + parseInt( h.slice( 5, 7 ), 16 ) + ',' + alpha + ')';
 		}
 
+		// The icon from a picker value: a bare name, or "far fa-{name}" for an outline. Older values
+		// may still carry a solid or brand family prefix, which is dropped as before.
 		function iconName( raw ) {
-			raw = ( raw || '' ).trim().toLowerCase();
+			var name = '',
+				outline = false;
 
-			// Stored values may carry a family prefix from before the icon library; the name is
-			// the last fa- token either way.
-			var tokens = raw.split( /\s+/ ), name = '';
-
-			tokens.forEach( function ( token ) {
-				if ( 0 === token.indexOf( 'fa-' ) && ! /^fa-(fw|solid|regular|brands|lg|xs|sm|\dx)$/.test( token ) ) {
+			( raw || '' ).trim().toLowerCase().split( /\s+/ ).forEach( function ( token ) {
+				if ( 'far' === token || 'fa-regular' === token ) {
+					outline = true;
+				} else if ( -1 !== [ 'fa-solid', 'fa-brands', 'fa-fw' ].indexOf( token ) ) {
+					return;
+				} else if ( 0 === token.indexOf( 'fa-' ) ) {
 					name = token.slice( 3 );
-				} else if ( -1 === token.indexOf( '-' ) || /^[a-z0-9-]+$/.test( token ) && 'fas' !== token && 'fab' !== token && 'far' !== token ) {
-					name = name || token;
+				} else if ( ! name && /^[a-z0-9-]+$/.test( token ) && -1 === [ 'fas', 'fab' ].indexOf( token ) ) {
+					name = token;
 				}
 			} );
 
-			return /^[a-z0-9-]+$/.test( name ) ? name : '';
+			if ( ! /^[a-z0-9-]+$/.test( name ) ) {
+				return '';
+			}
+
+			return outline ? 'far fa-' + name : name;
+		}
+
+		// The bare name of an iconName() value, without its outline prefix.
+		function bareIcon( icon ) {
+			return 0 === icon.indexOf( 'far fa-' ) ? icon.slice( 7 ) : icon;
 		}
 
 		/**
@@ -184,7 +198,7 @@
 				}
 			}
 
-			var items = [], foundBell = false;
+			var items = [], foundBell = false, foundQuick = {};
 
 			rows.forEach( function ( row ) {
 				if ( items.length >= 5 ) {
@@ -209,20 +223,101 @@
 
 				foundBell = foundBell || bell;
 
-				var option = link.options[ link.selectedIndex ];
+				// Save and Alert me: one of each per bar, their own default icon and label, drawn
+				// in the "not yet saved" state a visitor first sees.
+				var quick = quickDefaults[ link.value ] || null;
+
+				// Left out with its extension inactive, as on the front end.
+				if ( quick && ( ! quick.active || foundQuick[ link.value ] ) ) {
+					return;
+				}
+
+				if ( quick ) {
+					foundQuick[ link.value ] = true;
+				}
+
+				var option = link.options[ link.selectedIndex ],
+					labelText = label ? label.value.trim() : '';
 
 				items.push( {
 					link: link.value,
 					linkText: option ? option.text : '',
-					icon: iconName( icon ? icon.value : '' ) || 'circle',
-					label: label ? label.value.trim() : '',
+					icon: iconName( icon ? icon.value : '' ) || ( quick ? quick.icon : 'circle' ),
+					label: labelText || ( quick ? quick.label : '' ),
 					style: style && 'prominent' === style.value ? 'prominent' : 'default',
 					badge: ! bell && badge && badge.value && '1' === ( input( OPTIONS.enableBadge ) ? value( OPTIONS.enableBadge ) : '1' ) ? badge.value : '',
 					bell: bell,
+					quick: !! quick,
 				} );
 			} );
 
 			return items;
+		}
+
+		/* ---- outline icons for Save and Alert me --------------------------- */
+
+		/*
+		 * The front end draws these two in the outline (regular) style until they are switched on,
+		 * where Font Awesome has one. The icon library's admin shim draws by name only, which means
+		 * solid, so the outline glyphs come from this plugin's own endpoint: "viewBox|path" pairs,
+		 * or an empty string for an icon with no outline, which then keeps the solid glyph.
+		 */
+		var outlines = data.outlines && 'object' === typeof data.outlines ? data.outlines : {},
+			outlinesPending = {},
+			outlinesTimer = null;
+
+		function requestOutline( name ) {
+			if ( ! data.outlinesUrl || Object.prototype.hasOwnProperty.call( outlines, name ) || outlinesPending[ name ] ) {
+				return;
+			}
+
+			outlinesPending[ name ] = true;
+
+			window.clearTimeout( outlinesTimer );
+			outlinesTimer = window.setTimeout( function () {
+				var names = Object.keys( outlinesPending );
+
+				outlinesPending = {};
+
+				$.post( data.outlinesUrl, { action: 'hpab_preview_outlines', nonce: data.outlinesNonce, names: names } ).done( function ( response ) {
+					var pairs = response && response.success && response.data ? response.data : {};
+
+					names.forEach( function ( requested ) {
+						outlines[ requested ] = 'string' === typeof pairs[ requested ] ? pairs[ requested ] : '';
+					} );
+
+					repaint();
+				} ).fail( function () {
+					names.forEach( function ( requested ) {
+						outlines[ requested ] = '';
+					} );
+				} );
+			}, 30 );
+		}
+
+		/**
+		 * Builds an <svg> from a "viewBox|path" pair, with nodes rather than markup.
+		 */
+		function outlineSvg( pair ) {
+			var parts = 'string' === typeof pair ? pair.split( '|' ) : [];
+
+			if ( 2 !== parts.length || ! /^[0-9 .]+$/.test( parts[ 0 ] ) || ! /^[A-Za-z0-9 .,\-]+$/.test( parts[ 1 ] ) ) {
+				return null;
+			}
+
+			var ns = 'http://www.w3.org/2000/svg',
+				svg = document.createElementNS( ns, 'svg' ),
+				path = document.createElementNS( ns, 'path' );
+
+			svg.setAttribute( 'viewBox', parts[ 0 ] );
+			svg.setAttribute( 'class', 'fafh-icon__svg' );
+			svg.setAttribute( 'aria-hidden', 'true' );
+			svg.setAttribute( 'focusable', 'false' );
+			path.setAttribute( 'vector-effect', 'non-scaling-stroke' );
+			path.setAttribute( 'd', parts[ 1 ] );
+			svg.appendChild( path );
+
+			return svg;
 		}
 
 		function styleBar( nav ) {
@@ -316,14 +411,28 @@
 				} );
 
 				// The first item stands in for "the page being viewed", so the active colour has
-				// something to show.
-				if ( 0 === index && 'prominent' !== item.style ) {
+				// something to show. Not Save or Alert me: on them the colour means "switched on".
+				if ( 0 === index && 'prominent' !== item.style && ! item.quick ) {
 					a.classList.add( 'hp-action-bar__item--active' );
 				}
 
 				iconWrap.className = 'hp-action-bar__icon';
-				icon.className = 'fa-solid fa-' + item.icon;
+				// An outline value ("far fa-heart") is drawn in the regular style, anything else solid.
+				var bare = bareIcon( item.icon );
+
+				icon.className = ( bare !== item.icon ? 'fa-regular fa-' : 'fa-solid fa-' ) + bare;
 				icon.setAttribute( 'aria-hidden', 'true' );
+
+				if ( item.quick ) {
+					var outline = outlines[ bare ] ? outlineSvg( outlines[ bare ] ) : null;
+
+					if ( outline ) {
+						icon.className = 'fafh-icon';
+						icon.appendChild( outline );
+					} else {
+						requestOutline( bare );
+					}
+				}
 				iconWrap.appendChild( icon );
 
 				if ( item.badge ) {
@@ -651,6 +760,16 @@
 			window.setTimeout( repaint, 60 );
 		} );
 		$( document ).on( 'sortupdate', 'div[data-component="repeater"] tbody', repaint );
+
+		// A row removed with its X: core's handler on the repeater detaches the row before the click
+		// reaches the document, so the delegated listener above can no longer match it and the
+		// preview kept drawing the removed item. Watching the rows themselves catches every add,
+		// removal and reorder.
+		if ( window.MutationObserver ) {
+			Array.prototype.forEach.call( document.querySelectorAll( '.hp-action-bar-items table.hp-table > tbody' ), function ( tbody ) {
+				new window.MutationObserver( repaint ).observe( tbody, { childList: true } );
+			} );
+		}
 
 		paint();
 

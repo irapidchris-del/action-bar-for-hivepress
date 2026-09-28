@@ -4,7 +4,7 @@ Tags: hivepress, mobile, navigation, bottom bar, app
 Requires at least: 5.8
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.8.1
+Stable tag: 1.9.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -17,8 +17,8 @@ Action Bar for HivePress gives your marketplace a more app-like feel by adding a
 Features:
 
 * Up to five items per bar, each with a Font Awesome icon, an optional label, and a link. Drag to reorder them.
-* Link choices for the homepage, listings, listing submission, vendors, account or login, messages, favourites, the signed-in user's own public profile, a sign-in pop-up for logged-out visitors, the Notifications for HivePress bell, any HivePress account or extension page, any published WordPress page, the WooCommerce cart and account area (when WooCommerce is installed), or any custom URL.
-* Quick Actions: an optional Save button on listing pages and an Alert me button on search results, added after your own items so they cost none of the five slots. Save uses the Favorites extension and Alert me uses the Search Alerts extension, each appearing only while that extension is active. Both keep in step with the control already on the page, and both open the sign-in pop-up for a logged-out visitor.
+* Link choices for the homepage, listings, listing submission, vendors, account or login, messages, favourites, the signed-in user's own public profile, a sign-in pop-up for logged-out visitors, the Save and Alert me buttons, the Notifications for HivePress bell, any HivePress account or extension page, any published WordPress page, the WooCommerce cart and account area (when WooCommerce is installed), or any custom URL.
+* Quick Actions: a Save button on Listing pages and an Alert me button on filtered search results. Place either one in a bar as an item, with its own position, icon, label and style, or let the Quick Actions settings add them after your own items so they cost none of the five slots. Save uses the Favorites extension and Alert me uses the Search Alerts extension, each appearing only while that extension is active. Both keep in step with the control already on the page, and both open the sign-in pop-up for a logged-out visitor.
 * Optional prominent style per item, lifting it into a raised circle, ideal for one main action such as Add listing.
 * A separate Vendor Bar shown to users with a published vendor profile instead of the standard User Bar.
 * A separate Logged-Out Bar, switched on with its own toggle, so visitors who are not signed in can be shown a different set of items.
@@ -48,7 +48,7 @@ Once installed, the plugin checks for new versions automatically and updates thr
 
 = Which icons can I use? =
 
-Each item has an icon dropdown with live previews that you can search by name. It lists the thousand or so Font Awesome 5 solid icons HivePress uses for its own attribute icons, the names added in Font Awesome 6 and 7, and a set of brand icons such as Stripe, PayPal and WhatsApp, which are marked "(brand)" so you can tell them apart. The plugin ships the solid, regular and brand fonts, so those three styles render; the light, thin and duotone styles belong to Font Awesome Pro and are not included. To set a full class name yourself, such as `far fa-heart`, use the `hivepress/v1/action_bar/items` filter. Note that a theme or plugin which replaces or subsets Font Awesome can remove glyphs, so check your chosen icons still appear after such a change.
+Each item has an icon dropdown with live previews that you can search by name. It lists the thousand or so Font Awesome 5 solid icons HivePress uses for its own attribute icons, the names added in Font Awesome 6 and 7, and a set of brand icons such as Stripe, PayPal and WhatsApp, which are marked "(brand)" so you can tell them apart. The plugin ships the solid, regular and brand fonts, so those three styles render; the light, thin and duotone styles belong to Font Awesome Pro and are not included. An icon that also comes as an outline, such as the heart or the bell, is listed a second time marked (outline); pick that entry for the outline look. Note that a theme or plugin which replaces or subsets Font Awesome can remove glyphs, so check your chosen icons still appear after such a change.
 
 = How does the notification badge work? =
 
@@ -70,6 +70,10 @@ Tick "Room for the home bar" in the Display section. On iPhones without a home b
 
 For signed-in users it links directly to the account settings page, and for signed-out visitors it links to the login page. The generic account URL in HivePress only forwards to the first account menu item, which changes with the user state and installed extensions, so a fixed destination is more predictable. Use the `hivepress/v1/action_bar/items` filter if you prefer a different target.
 
+= How do I choose where the Save or Alert me button goes? =
+
+Add an item to the bar and pick "Save (favourites)" or "Alert me (saved search)" in its Link dropdown. Then drag it into place and set its icon, label and style like any other item; left empty, the icon and label match the automatic buttons. Save shows only on Listing pages and Alert me only on filtered search results, so on other pages the bar simply leaves the item out. While the button is switched on, its icon fills in where Font Awesome has an outline and a filled version, such as the heart, the bell or the bookmark; any other icon keeps its shape and turns the Active colour. A bar with its own Save or Alert me item never gets the automatic one from the Quick Actions settings as well.
+
 = Which breakpoints are used? =
 
 The bar switches on how wide the browser window is, not on what device someone is using. By default that is 47.99em and below for small screens, 48em to 64em for medium ones, and 64.01em and above for large ones, which works out as roughly up to 767px, 768px to 1024px, and 1025px and wider on a site using the standard 16px base font size. They are set in em so they follow your theme's base font size and stay in step with HivePress's own grid. All three can be changed with the `hivepress/v1/action_bar/breakpoints` filter, using the keys `mobile_max`, `tablet_min`, `tablet_max` and `desktop_min`.
@@ -83,6 +87,17 @@ Yes. Tick "Desktop" in the Display section and the bar appears on laptops and de
 The plugin includes an update checker that watches the official GitHub repository for new releases. When a newer version is published, WordPress shows the update on the Plugins and Dashboard, Updates screens, and you can install it with the usual one-click update. You can force an immediate check with the Check for updates link on the Plugins screen. No account, licence key, or extra configuration is required.
 
 == Changelog ==
+
+= 1.9.0 =
+* New: Save and Alert me can be placed in a bar as items. Pick "Save (favourites)" or "Alert me (saved search)" in an item's Link dropdown, then set its position, icon, label, style and badge like any other item. Left empty, the icon and label match the automatic buttons.
+* New: as before, Save shows only on Listing pages and Alert me only on filtered search results. The dropdown offers each only in the bars that can show it, and names the extension it needs while that extension is inactive.
+* New: a placed Save or Alert me icon is drawn as an outline until switched on and filled once it is, where Font Awesome has both versions. Any other icon keeps its shape and turns the Active colour.
+* New: the live preview shows both items as a visitor first sees them.
+* New: every icon dropdown also offers the outline version of each icon that has one, marked (outline). Icons already chosen keep their solid look.
+* Changed: the Quick Actions boxes still add both buttons automatically, but no longer to a bar that has its own Save or Alert me item, so no visitor sees two. Existing settings are kept as they are and nothing needs changing after updating.
+* Changed: the items of the Listing Page Bar and Vendor Page Bar are now folding cards like those of the other bars, each headed by its icon and its label (or its link's name while the label is empty), which follow the fields as they change.
+* Changed: an item added with Add item now gets its card header and field names straight away, and opens ready for editing.
+* Fixed: an item removed with its X stayed in the live preview until the page was reloaded.
 
 = 1.8.1 =
 * Fixed: the Action Bar settings page could not be saved while an item's Address was a link to part of the same page, such as #booking. The Address box now accepts those links as well as full web addresses.

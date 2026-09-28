@@ -186,7 +186,10 @@
 	 */
 	function mirrorToggle( toggle ) {
 		var caption = toggle.getAttribute( 'data-caption' ) || '',
-			iconClass = toggle.getAttribute( 'data-icon' ) || '',
+
+			// A bare name is expected; a stored "far fa-heart" style value is cut to its name so
+			// the swap below never writes "fa-far fa-heart".
+			iconClass = ( toggle.getAttribute( 'data-icon' ) || '' ).replace( /^(?:fa[srb]|fa-(?:solid|regular|brands))\s+fa-/, '' ),
 			icon = toggle.querySelector( 'i' ),
 			label = toggle.querySelector( 'span' );
 

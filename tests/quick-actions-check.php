@@ -7,7 +7,11 @@
  *
  *   HPAB_PHASE=seed  wp eval-file tests/quick-actions-check.php                    creates the fixtures, prints their IDs
  *   HPAB_PHASE=check wp eval-file tests/quick-actions-check.php --user=<id>        every assertion
- *   HPAB_PHASE=clean wp eval-file tests/quick-actions-check.php                    removes everything it made
+ *   HPAB_PHASE=clean wp eval-file tests/quick-actions-check.php                    bins the posts it made
+ *
+ * Or skip the seed and point the fixture at existing content (a published Listing, a draft
+ * Listing, any user who is not a Vendor): wp option update hpab_qa_fixture with
+ * {"user":ID,"listing":ID,"draft":ID} as JSON. The clean phase then leaves that content alone.
  *
  * The check phase needs --user= because a signed-in item is only built for a user who was signed in
  * before WordPress loaded. Nothing here sends an email or calls out.
@@ -106,6 +110,7 @@ if ( 'seed' === $phase ) {
 			'vendor'  => (int) $vendor_id,
 			'listing' => (int) $listing_id,
 			'draft'   => (int) $draft_id,
+			'seeded'  => true,
 		]
 	);
 
@@ -125,15 +130,18 @@ Clean.
 if ( 'clean' === $phase ) {
 	$fixture = hpab_fixture();
 
-	foreach ( [ 'listing', 'draft', 'vendor' ] as $key ) {
-		if ( ! empty( $fixture[ $key ] ) ) {
-			wp_delete_post( (int) $fixture[ $key ], true );
+	// Binned, never hard-deleted, and only when this harness made them: a fixture pointed at
+	// existing content (no "seeded" flag) is left exactly as it was.
+	if ( ! empty( $fixture['seeded'] ) ) {
+		foreach ( [ 'listing', 'draft', 'vendor' ] as $key ) {
+			if ( ! empty( $fixture[ $key ] ) ) {
+				wp_trash_post( (int) $fixture[ $key ] );
+			}
 		}
-	}
 
-	if ( ! empty( $fixture['user'] ) ) {
-		require_once ABSPATH . 'wp-admin/includes/user.php';
-		wp_delete_user( (int) $fixture['user'] );
+		if ( ! empty( $fixture['user'] ) ) {
+			echo "user {$fixture['user']} (hpab_qa_user) left in place; remove it under Users if it is no longer wanted\n";
+		}
 	}
 
 	delete_option( 'hpab_qa_fixture' );
@@ -239,6 +247,122 @@ $appended   = $qa->add_items( $owner_rows, 'user' );
 
 hpab_check( "the owner's rows stay first and untouched", isset( $appended[0]['link'] ) && 'home' === $appended[0]['link'] );
 hpab_check( 'the route items are appended after them', count( $appended ) === 1 + count( $qa->get_items() ) );
+
+echo "\n=== Placed items (1.9.0) ===\n";
+
+hpab_check( 'the two link values map to their actions', [ 'quick_favorite' => 'favorite', 'quick_search_alert' => 'search_alert' ] === $qa->get_link_types() );
+
+if ( $has_fav ) {
+	$handle = 'hpab-favorite-' . (int) $fixture['listing'];
+
+	$placed = $qa->build_placed_item( 'quick_favorite', '', '', 'listing_view_page' );
+
+	hpab_check( 'a placed Save with no icon or label matches the appended one', is_array( $placed ) && '#' . $handle === $placed['url'] && 'Save' === $placed['label'] && 'far fa-heart' === $placed['icon'] && 'favorite' === $placed['quick_action'] );
+
+	$placed = $qa->build_placed_item( 'quick_favorite', 'fas fa-star', 'Keep', 'listing_view_page' );
+
+	hpab_check( 'a chosen icon with an outline starts as the outline', is_array( $placed ) && ( class_exists( 'FAFH' ) ? 'far fa-star' : 'fas fa-star' ) === $placed['icon'], is_array( $placed ) ? $placed['icon'] : 'null' );
+	hpab_check( "the owner's label is kept", is_array( $placed ) && 'Keep' === $placed['label'] );
+
+	hivepress()->request->set_context( 'favorite_ids', [ (int) $fixture['listing'] ] );
+	$placed = $qa->build_placed_item( 'quick_favorite', 'fas fa-star', 'Keep', 'listing_view_page' );
+	hpab_check( 'a saved Listing draws the chosen icon filled, with the same label', is_array( $placed ) && 'fas fa-star' === $placed['icon'] && 'Keep' === $placed['label'] );
+	hivepress()->request->set_context( 'favorite_ids', [] );
+
+	$placed = $qa->build_placed_item( 'quick_favorite', 'fab fa-github', '', 'listing_view_page' );
+	hpab_check( 'an icon with no outline keeps its glyph', is_array( $placed ) && 'fab fa-github' === $placed['icon'] );
+
+	$placed = $qa->build_placed_item( 'quick_favorite', 'fas fa-circle-plus', 'Save', 'listing_view_page' );
+	hpab_check( 'a label typed as the default keeps the Saved state label', is_array( $placed ) && 'Save' === $placed['label'] );
+
+	hpab_check( 'a placed Save is left out off a Listing page', null === $qa->build_placed_item( 'quick_favorite', '', '', 'listings_view_page' ) );
+
+	update_option( 'hp_action_bar_item_favorite', '' );
+	hpab_check( 'a placed Save does not depend on the Quick Actions box', is_array( $qa->build_placed_item( 'quick_favorite', '', '', 'listing_view_page' ) ) );
+	delete_option( 'hp_action_bar_item_favorite' );
+}
+
+hpab_check( 'a placed Alert me is left out when there is no search', null === $qa->build_placed_item( 'quick_search_alert', '', '', 'listings_view_page' ) );
+hpab_check( 'an unknown link builds nothing', null === $qa->build_placed_item( 'home', '', '', 'listing_view_page' ) );
+
+echo "\n=== No duplicates with the automatic append ===\n";
+
+// The appended items are built once per request, so they are rebuilt here for the Listing page.
+$reflection = new ReflectionProperty( $qa, 'items' );
+$reflection->setAccessible( true );
+$reflection->setValue( $qa, $qa->build_items( 'listing_view_page' ) );
+
+$types_of = function ( $items ) {
+	return array_values(
+		array_filter(
+			array_map(
+				function ( $item ) {
+					return is_array( $item ) && isset( $item['quick_action'] ) ? $item['quick_action'] : null;
+				},
+				$items
+			)
+		)
+	);
+};
+
+if ( $has_fav ) {
+	$bar_items = [ $qa->build_placed_item( 'quick_favorite', '', '', 'listing_view_page' ) ];
+
+	hpab_check( 'a bar whose resolved items hold a Save gets no second Save', [ 'favorite' ] === $types_of( $qa->add_items( $bar_items, 'hpab_none' ) ), wp_json_encode( $types_of( $qa->add_items( $bar_items, 'hpab_none' ) ) ) );
+
+	update_option( 'hp_action_bar_hpabqa_items', [ [ 'link' => 'quick_favorite' ] ] );
+	hpab_check( 'a bar that stores a Save row gets no appended Save, even where the row resolved to nothing', [] === $types_of( $qa->add_items( [], 'hpabqa' ) ) );
+	delete_option( 'hp_action_bar_hpabqa_items' );
+
+	hpab_check( 'a bar without one still gets the appended Save', [ 'favorite' ] === $types_of( $qa->add_items( [], 'hpabqa' ) ) );
+}
+
+$reflection->setValue( $qa, null );
+
+echo "\n=== The bar resolves placed items (get_items end to end) ===\n";
+
+$bar = hivepress()->hpab_action_bar;
+
+if ( $has_fav && $bar ) {
+	$router = new ReflectionProperty( hivepress()->router, 'route' );
+	$router->setAccessible( true );
+	$router->setValue( hivepress()->router, [ 'name' => 'listing_view_page' ] );
+
+	$bar_cache = new ReflectionProperty( $bar, 'items' );
+	$bar_cache->setAccessible( true );
+
+	$backup = get_option( 'hp_action_bar_user_items', null );
+
+	update_option(
+		'hp_action_bar_user_items',
+		[
+			[ 'link' => 'quick_favorite', 'icon' => 'bookmark', 'label' => '', 'style' => 'prominent', 'badge' => '' ],
+			[ 'link' => 'home', 'icon' => 'home', 'label' => 'Home' ],
+			[ 'link' => 'quick_favorite', 'icon' => 'star', 'label' => 'Twice' ],
+		]
+	);
+
+	$bar_cache->setValue( $bar, null );
+	$reflection->setValue( $qa, null );
+
+	$resolved = $bar->get_items();
+	$first    = isset( $resolved[0] ) ? $resolved[0] : [];
+
+	hpab_check( 'the placed Save is first, where the owner put it', isset( $first['quick_action'] ) && 'favorite' === $first['quick_action'], wp_json_encode( $first ) );
+	hpab_check( 'it keeps the chosen style', isset( $first['style'] ) && 'prominent' === $first['style'] );
+	hpab_check( 'the chosen icon starts as its outline', isset( $first['icon'] ) && ( class_exists( 'FAFH' ) ? 'far fa-bookmark' : 'fas fa-bookmark' ) === $first['icon'], isset( $first['icon'] ) ? $first['icon'] : '' );
+	hpab_check( 'exactly one Save in the bar: no second row, no appended copy', 1 === count( $types_of( $resolved ) ) && 2 === count( $resolved ), wp_json_encode( $types_of( $resolved ) ) );
+
+	if ( is_null( $backup ) ) {
+		delete_option( 'hp_action_bar_user_items' );
+	} else {
+		update_option( 'hp_action_bar_user_items', $backup );
+	}
+
+	$bar_cache->setValue( $bar, null );
+	$reflection->setValue( $qa, null );
+	$router->setValue( hivepress()->router, null );
+}
 
 add_filter(
 	'hpab/quick_action_items',

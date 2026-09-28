@@ -171,7 +171,7 @@ foreach ( [
 
 	'user'         => [
 		'title'       => esc_html__( 'User Bar', 'action-bar-for-hivepress' ),
-		'description' => esc_html__( 'Add up to 5 items. This bar is shown to everyone unless the logged-out or vendor bars replace it for those visitors. Pick a destination, an icon and an optional label per row, and drag rows to reorder; the top row is the leftmost button. The Address box only applies to Custom URL. The Badge dropdown picks which unread counter shows on an item, and a stored choice survives even while its plugin is switched off. Items with no destination, or whose destination no longer exists, are left out.', 'action-bar-for-hivepress' ),
+		'description' => esc_html__( 'Add up to 5 items. This bar is shown to everyone unless the logged-out or vendor bars replace it for those visitors. Pick a destination, an icon and an optional label per row, and drag rows to reorder; the top row is the leftmost button. The Address box only applies to Custom URL. The Badge dropdown picks which unread counter shows on an item, and a stored choice survives even while its plugin is switched off. Items with no destination, or whose destination no longer exists, are left out. Save (favourites) shows only on Listing pages and Alert me (saved search) only on filtered search results; see Quick Actions below.', 'action-bar-for-hivepress' ),
 		'_order'      => 40,
 	],
 
@@ -207,6 +207,9 @@ foreach ( [
 	if ( in_array( $hpab_name, [ 'listing_page', 'vendor_page' ], true ) ) {
 		$hpab_bar_fields['link']['options'] = $hpab_component->get_page_link_options( $hpab_name ) + $hpab_bar_fields['link']['options'];
 	}
+
+	// Save and Alert me, in the bars that can show them.
+	$hpab_bar_fields['link']['options'] = $hpab_component->add_quick_link_options( $hpab_bar_fields['link']['options'], $hpab_name );
 
 	$hpab_section['fields'] = [
 		'action_bar_' . $hpab_name . '_items' => [
@@ -514,22 +517,24 @@ return [
 			[
 
 				/*
-				 * Quick actions are appended to whichever bar is showing, after the owner's own
-				 * rows, so they do not use up one of the five item slots above. Each is offered
-				 * only while the extension that does the work is active, which is why the section
-				 * describes both rather than hiding one: an owner who has not installed Search
-				 * Alerts should be able to see why there is no alert button.
+				 * Two routes into the bar. Placed as an item, a quick action takes a slot and the
+				 * owner's icon, label and style. Switched on here, it is appended to whichever bar is
+				 * showing, after the owner's own rows, outside the five slots: the 1.8.x behaviour,
+				 * kept so existing sites change nothing. A bar with its own item of a kind is skipped.
+				 * Each is offered only while the extension that does the work is active, which is why
+				 * the section describes both rather than hiding one: an owner who has not installed
+				 * Search Alerts should be able to see why there is no alert button.
 				 */
 				'quick_actions' => [
 					'title'       => esc_html__( 'Quick Actions', 'action-bar-for-hivepress' ),
-					'description' => esc_html__( 'Two extra buttons that act on the page somebody is looking at rather than taking them somewhere. Save appears on a listing page and needs the Favorites extension; Alert me appears on a search results page and needs the Search Alerts extension. Both are added after your own items, so they cost you none of the five slots, and both open the sign-in pop-up for a logged-out visitor rather than failing.', 'action-bar-for-hivepress' ),
+					'description' => esc_html__( 'Two buttons that act on the page somebody is looking at rather than taking them somewhere. Save appears on Listing pages and needs the Favorites extension; Alert me appears on filtered search results and needs the Search Alerts extension. To choose where one sits and set its icon, label and style, add it to a bar as an item: pick Save (favourites) or Alert me (saved search) in the Link dropdown. The boxes below add them automatically instead, after your own items, so they cost you none of the five slots; a bar that already has its own Save or Alert me item is skipped, so nobody sees two. Both open the sign-in pop-up for a logged-out visitor rather than failing.', 'action-bar-for-hivepress' ),
 					'_order'      => 55,
 
 					'fields'      => [
 						'action_bar_item_favorite'     => [
 							'label'       => esc_html__( 'Save Listing', 'action-bar-for-hivepress' ),
 							'caption'     => esc_html__( 'Add a Save button on listing pages', 'action-bar-for-hivepress' ),
-							'description' => esc_html__( 'Saves the listing to the visitor\'s favourites, the same as the heart on the page, and the two stay in step. Needs the Favorites extension; with it inactive nothing is added.', 'action-bar-for-hivepress' ),
+							'description' => esc_html__( 'Saves the Listing to the visitor\'s favourites, the same as the heart on the page, and the two stay in step. Not added to a bar that has its own Save item. Needs the Favorites extension; with it inactive nothing is added.', 'action-bar-for-hivepress' ),
 							'type'        => 'checkbox',
 							'default'     => true,
 							'_order'      => 10,
@@ -538,7 +543,7 @@ return [
 						'action_bar_item_search_alert' => [
 							'label'       => esc_html__( 'Search Alert', 'action-bar-for-hivepress' ),
 							'caption'     => esc_html__( 'Add an Alert me button on search results', 'action-bar-for-hivepress' ),
-							'description' => esc_html__( 'Emails the visitor when a new listing matches the search they are looking at. Only appears on an actual search, never on an unfiltered list, and hides itself once somebody reaches the ten-alert limit the extension sets. Needs the Search Alerts extension.', 'action-bar-for-hivepress' ),
+							'description' => esc_html__( 'Emails the visitor when a new Listing matches the search they are looking at. Only appears on an actual search, never on an unfiltered list, and hides itself once somebody reaches the ten-alert limit the extension sets. Not added to a bar that has its own Alert me item. Needs the Search Alerts extension.', 'action-bar-for-hivepress' ),
 							'type'        => 'checkbox',
 							'default'     => true,
 							'_order'      => 20,

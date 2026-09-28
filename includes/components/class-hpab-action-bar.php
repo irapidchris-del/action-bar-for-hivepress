@@ -52,6 +52,9 @@ final class Hpab_Action_Bar extends Component {
 			// After HivePress's own settings pass at 10.
 			add_filter( 'hivepress/v1/settings', [ $this, 'add_extension_links' ], 20 );
 			add_action( 'admin_post_hpab_install_extension', [ $this, 'install_extension' ] );
+
+			// Outline glyphs for the Save and Alert me items in the live preview.
+			add_action( 'wp_ajax_hpab_preview_outlines', [ $this, 'ajax_preview_outlines' ] );
 		} else {
 
 			// Enqueue frontend assets.
@@ -1422,6 +1425,15 @@ final class Hpab_Action_Bar extends Component {
 			return esc_html__( 'Notifications bell', 'action-bar-for-hivepress' );
 		}
 
+		// Save and Alert me keep their names in a bar that does not offer them.
+		if ( 'quick_favorite' === $link ) {
+			return esc_html__( 'Save (favourites)', 'action-bar-for-hivepress' );
+		}
+
+		if ( 'quick_search_alert' === $link ) {
+			return esc_html__( 'Alert me (saved search)', 'action-bar-for-hivepress' );
+		}
+
 		// The two named WooCommerce destinations keep the labels they had while WooCommerce was active.
 		if ( 'wc_orders' === $link ) {
 			return esc_html__( 'Placed orders', 'action-bar-for-hivepress' );
@@ -1722,6 +1734,8 @@ final class Hpab_Action_Bar extends Component {
 
 		$found_bell = false;
 
+		$found_quick = [];
+
 		foreach ( $rows as $row ) {
 
 			// Keep at most five valid items.
@@ -1732,14 +1746,23 @@ final class Hpab_Action_Bar extends Component {
 			// Get item link.
 			$link = hp\get_array_value( $row, 'link' );
 
-			if ( ! $link || ( ! isset( $this->get_link_options()[ $link ] ) && 'message_modal' !== $link && 0 !== strpos( (string) $link, 'page_' ) && 0 !== strpos( (string) $link, 'route_' ) && 0 !== strpos( (string) $link, 'wcep_' ) && 0 !== strpos( (string) $link, 'attr_' ) ) ) {
+			// Save and Alert me act on the page rather than link anywhere, so their address, state and
+			// sign-in fallback come from the Quick Actions component, after the row's icon and label.
+			$quick = is_string( $link ) && isset( $this->get_quick_link_types()[ $link ] );
+
+			if ( ! $link || ( ! $quick && ! isset( $this->get_link_options()[ $link ] ) && 'message_modal' !== $link && 0 !== strpos( (string) $link, 'page_' ) && 0 !== strpos( (string) $link, 'route_' ) && 0 !== strpos( (string) $link, 'wcep_' ) && 0 !== strpos( (string) $link, 'attr_' ) ) ) {
+				continue;
+			}
+
+			// One of each per bar: the toggle script binds one button per Listing or search.
+			if ( $quick && isset( $found_quick[ $link ] ) ) {
 				continue;
 			}
 
 			// Get item URL.
-			$url = $this->get_item_url( $link, hp\get_array_value( $row, 'url' ) );
+			$url = $quick ? '' : $this->get_item_url( $link, hp\get_array_value( $row, 'url' ) );
 
-			if ( ! $url ) {
+			if ( ! $url && ! $quick ) {
 				continue;
 			}
 
@@ -1771,7 +1794,8 @@ final class Hpab_Action_Bar extends Component {
 				$icon = ( in_array( $icon, $this->get_brand_icons(), true ) ? 'fab fa-' : 'fas fa-' ) . $icon;
 			}
 
-			if ( ! $icon ) {
+			// A Save or Alert me row with no icon keeps its own default pair, the outline heart or bell.
+			if ( ! $icon && ! $quick ) {
 				$icon = 'fas fa-circle';
 			}
 
@@ -1781,6 +1805,28 @@ final class Hpab_Action_Bar extends Component {
 			// A page-only item with no label reads as the attribute's own name, or "Message".
 			if ( '' === $label && ( 'message_modal' === $link || 0 === strpos( (string) $link, 'attr_' ) ) ) {
 				$label = sanitize_text_field( $this->get_page_item_label( $link ) );
+			}
+
+			$quick_action = '';
+
+			if ( $quick ) {
+				$built = $this->get_quick_item( $link, $icon, $label );
+
+				// Left out where it cannot work: Save off a Listing page, Alert me off a filtered
+				// search, or either one while its extension is inactive.
+				if ( ! $built ) {
+					continue;
+				}
+
+				$found_quick[ $link ] = true;
+
+				$quick_action = (string) $built['quick_action'];
+
+				// The signed-out form is the sign-in pop-up, so the link becomes auth_modal.
+				$link  = (string) $built['link'];
+				$url   = (string) $built['url'];
+				$icon  = (string) $built['icon'];
+				$label = (string) $built['label'];
 			}
 
 			// Get item style.
@@ -1847,7 +1893,7 @@ final class Hpab_Action_Bar extends Component {
 				$found_bell = true;
 			}
 
-			$items[] = [
+			$item = [
 				'link'        => $link,
 				'url'         => $url,
 				'icon'        => $icon,
@@ -1863,9 +1909,103 @@ final class Hpab_Action_Bar extends Component {
 				// another application anyway, so they keep the plain link.
 				'external'    => $this->is_external_item( $link ),
 			];
+
+			if ( $quick_action ) {
+				$item['quick_action'] = $quick_action;
+			}
+
+			$items[] = $item;
 		}
 
 		return $items;
+	}
+
+	/**
+	 * Gets the Quick Actions component, when it is loaded.
+	 *
+	 * @return Hpab_Quick_Actions|null
+	 */
+	protected function get_quick_actions() {
+		$component = hivepress()->hpab_quick_actions;
+
+		return $component instanceof Hpab_Quick_Actions ? $component : null;
+	}
+
+	/**
+	 * Gets the link values that place a Save or Alert me item.
+	 *
+	 * @return array<string, string> Link value => action type.
+	 */
+	public function get_quick_link_types() {
+		$component = $this->get_quick_actions();
+
+		return $component ? $component->get_link_types() : [];
+	}
+
+	/**
+	 * Builds a placed Save or Alert me item for the current page.
+	 *
+	 * @param string $link Stored link value.
+	 * @param string $icon Resolved icon class string, or empty for the default pair.
+	 * @param string $label Sanitised label, or empty for the default pair.
+	 * @return array<string, mixed>|null
+	 */
+	protected function get_quick_item( $link, $icon, $label ) {
+		$component = $this->get_quick_actions();
+
+		return $component ? $component->build_placed_item( $link, $icon, $label ) : null;
+	}
+
+	/**
+	 * Gets the Save and Alert me choices for one bar's Link dropdown.
+	 *
+	 * Offered only in bars that can show them: Save needs a Listing on screen, so the vendor page
+	 * bar never gets it; Alert me needs search results, so neither page bar does. With its
+	 * extension inactive the choice stays, named with what it needs, so an owner can see why it
+	 * shows nothing rather than wonder where it went.
+	 *
+	 * @param string $bar Bar name.
+	 * @return array<string, string>
+	 */
+	public function get_quick_link_options( $bar ) {
+		$component = $this->get_quick_actions();
+		$options   = [];
+
+		if ( ! $component ) {
+			return $options;
+		}
+
+		if ( 'vendor_page' !== $bar ) {
+			$options['quick_favorite'] = $component->has_favorites()
+				? esc_html__( 'Save (favourites)', 'action-bar-for-hivepress' )
+				: esc_html__( 'Save (favourites, needs the Favorites extension)', 'action-bar-for-hivepress' );
+		}
+
+		if ( ! isset( $this->get_page_bars()[ $bar ] ) ) {
+			$options['quick_search_alert'] = $component->has_search_alerts()
+				? esc_html__( 'Alert me (saved search)', 'action-bar-for-hivepress' )
+				: esc_html__( 'Alert me (saved search, needs the Search Alerts extension)', 'action-bar-for-hivepress' );
+		}
+
+		return $options;
+	}
+
+	/**
+	 * Adds the Save and Alert me choices to a Link dropdown, straight after Favourites.
+	 *
+	 * @param array<string, string> $options Link options.
+	 * @param string                $bar Bar name.
+	 * @return array<string, string>
+	 */
+	public function add_quick_link_options( $options, $bar ) {
+		$quick = $this->get_quick_link_options( $bar );
+		$index = array_search( 'favorites', array_keys( $options ), true );
+
+		if ( false === $index ) {
+			return $options + $quick;
+		}
+
+		return array_slice( $options, 0, $index + 1, true ) + $quick + array_slice( $options, $index + 1, null, true );
 	}
 
 	/**
@@ -2568,15 +2708,114 @@ final class Hpab_Action_Bar extends Component {
 			[
 				// Illustrative, not read from the site: a badge with nothing in it would show
 				// nothing, and the owner is here to see what the badge colours do.
-				'badgeCount' => 3,
+				'badgeCount'    => 3,
 
-				'labels'     => [
+				// What a Save or Alert me row with no icon or label shows, matching the front end,
+				// and whether it shows at all: with its extension inactive the front end leaves it out.
+				'quick'         => [
+					'quick_favorite'     => [
+						'icon'   => 'heart',
+						'label'  => __( 'Save', 'action-bar-for-hivepress' ),
+						'active' => $this->get_quick_actions() && $this->get_quick_actions()->has_favorites(),
+					],
+					'quick_search_alert' => [
+						'icon'   => 'bell',
+						'label'  => __( 'Alert me', 'action-bar-for-hivepress' ),
+						'active' => $this->get_quick_actions() && $this->get_quick_actions()->has_search_alerts(),
+					],
+				],
+
+				// Outlines for the icons the page opens with; any other is fetched when picked.
+				'outlines'      => $this->get_outline_pairs( $this->get_stored_quick_icons() ),
+				'outlinesUrl'   => admin_url( 'admin-ajax.php' ),
+				'outlinesNonce' => wp_create_nonce( 'hpab_preview_outlines' ),
+
+				'labels'        => [
 					'hiddenOnMobile'  => esc_html__( 'The bar is switched off on mobile. Tick Mobile under Display to show it.', 'action-bar-for-hivepress' ),
 					'hiddenOnTablet'  => esc_html__( 'The bar is switched off on tablets. Tick Tablet under Display to show it.', 'action-bar-for-hivepress' ),
 					'hiddenOnDesktop' => esc_html__( 'The bar is switched off on desktop. Tick Desktop under Display to show it.', 'action-bar-for-hivepress' ),
 				],
 			]
 		);
+	}
+
+	/**
+	 * Gets the icon names the preview needs outlines for when the page opens: the two defaults and
+	 * any icon already chosen on a stored Save or Alert me row.
+	 *
+	 * @return string[]
+	 */
+	protected function get_stored_quick_icons() {
+		$names = [ 'heart', 'bell' ];
+		$types = $this->get_quick_link_types();
+
+		foreach ( [ 'guest', 'user', 'vendor', 'listing_page', 'vendor_page' ] as $bar ) {
+			foreach ( array_filter( (array) get_option( 'hp_action_bar_' . $bar . '_items', [] ), 'is_array' ) as $row ) {
+				$link = (string) hp\get_array_value( $row, 'link' );
+				$icon = (string) hp\get_array_value( $row, 'icon' );
+
+				if ( $icon && isset( $types[ $link ] ) ) {
+					$names[] = class_exists( 'FAFH' ) ? (string) \FAFH::parse( $icon )[0] : $icon;
+				}
+			}
+		}
+
+		return array_values( array_unique( $names ) );
+	}
+
+	/**
+	 * Gets the outline (regular) glyph of each icon, for the preview of Save and Alert me.
+	 *
+	 * Only for an icon Font Awesome draws in both styles, the same test the front end applies;
+	 * any other gets an empty string, and the preview keeps its solid glyph.
+	 *
+	 * @param array $names Icon names.
+	 * @return array<string, string> Name => "viewBox|path", or an empty string.
+	 */
+	public function get_outline_pairs( $names ) {
+		$pairs = [];
+
+		if ( ! class_exists( 'FAFH' ) ) {
+			return $pairs;
+		}
+
+		foreach ( array_slice( (array) $names, 0, 20 ) as $name ) {
+			if ( ! is_scalar( $name ) ) {
+				continue;
+			}
+
+			$name = sanitize_key( (string) $name );
+
+			if ( '' === $name ) {
+				continue;
+			}
+
+			$pairs[ $name ] = \FAFH::has( $name, 'regular' ) && \FAFH::has( $name, 'solid' ) ? (string) \FAFH::pair( $name, 'regular' ) : '';
+		}
+
+		return $pairs;
+	}
+
+	/**
+	 * Answers the preview's request for outline glyphs.
+	 *
+	 * Settings-screen only: the nonce is printed on this tab, and the capability is the one the
+	 * HivePress settings page itself requires. It reads bundled Font Awesome Free data and writes
+	 * nothing.
+	 *
+	 * @return void
+	 */
+	public function ajax_preview_outlines() {
+		check_ajax_referer( 'hpab_preview_outlines', 'nonce' );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( null, 403 );
+		}
+
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- each name goes through sanitize_key() in get_outline_pairs(), which is where the shape is known.
+		$names = isset( $_POST['names'] ) ? wp_unslash( $_POST['names'] ) : [];
+
+		wp_send_json_success( $this->get_outline_pairs( is_array( $names ) ? $names : [] ) );
 	}
 
 	/**
